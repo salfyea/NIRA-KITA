@@ -46,7 +46,16 @@ const initialState = (): PersistedState => ({
 const load = (): PersistedState => {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return { ...initialState(), ...JSON.parse(raw) };
+    if (raw) {
+      const base = initialState();
+      const saved = JSON.parse(raw) as Partial<PersistedState>;
+      // Misi baru di data awal tetap muncul bagi pengguna yang sudah punya data tersimpan.
+      const quests = [...(saved.quests ?? [])];
+      base.quests.forEach((q) => {
+        if (!quests.some((x) => x.id === q.id)) quests.push(q);
+      });
+      return { ...base, ...saved, quests };
+    }
   } catch {
     /* penyimpanan tidak tersedia, pakai data awal */
   }
@@ -101,7 +110,9 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         ),
         // Lencana digital terbuka; lencana "tervalidasi mentor" tetap menunggu validasi manusia.
         badges: s.badges.map((b) =>
-          questId === 'QUEST-01' && b.id === 'BADGE-02' ? { ...b, unlocked: true, dateAchieved: 'Hari ini' } : b,
+          (questId === 'QUEST-01' && b.id === 'BADGE-02') || (questId === 'QUEST-04' && b.id === 'BADGE-04')
+            ? { ...b, unlocked: true, dateAchieved: 'Hari ini' }
+            : b,
         ),
       };
     });

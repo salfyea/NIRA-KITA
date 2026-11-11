@@ -70,7 +70,7 @@ export const Onboarding: React.FC = () => {
                 aria-selected={n === i}
                 aria-label={`Slide ${n + 1}`}
                 onClick={() => setI(n)}
-                className="flex h-11 w-8 items-center justify-center"
+                className="flex h-11 w-11 items-center justify-center"
               >
                 <span className={`h-2 rounded-full transition-all ${n === i ? 'w-6 bg-caramel' : 'w-2 bg-bamboo'}`} />
               </button>

@@ -328,6 +328,51 @@ export const INITIAL_QUESTS: Quest[] = [
       { id: 'STEP-2-2', title: 'Refleksi Tahapan Produksi', description: 'Jelaskan urutan pengolahan dari penyaringan hingga pencetakan.', type: 'reflection', completed: false },
     ],
   },
+  {
+    id: 'QUEST-03',
+    title: 'Safe Ground, Safe Hands',
+    indonesianSubtitle: 'Mengenali Bahaya dan Kerja Aman dari Darat',
+    moduleTitle: 'Keselamatan Kerja & Manajemen Risiko',
+    moduleSlug: 'keselamatan-kerja-manajemen-risiko',
+    description:
+      'Kenali bahaya di dapur pengolahan dan lingkungan kebun dari darat: tungku panas, lantai licin, dan alat pelindung. Pelajar tidak pernah diminta memanjat pohon.',
+    duration: '15 Menit',
+    xpReward: 160,
+    badgeReward: 'Ground-Based Heritage Milestone',
+    imageUrl: '',
+    completed: false,
+    objectives: [
+      'Mengenali bahaya umum di dapur pengolahan dari darat.',
+      'Memahami fungsi alat pelindung dan kebiasaan kerja aman.',
+    ],
+    steps: [
+      { id: 'STEP-3-1', title: 'Baca Panduan Pengenalan Bahaya', description: 'Tinjau rekaman pemeriksaan alat pelindung dan lingkungan dapur.', type: 'audio', completed: false },
+      { id: 'STEP-3-2', title: 'Kenali Tanda Bahaya di Darat', description: 'Pilih tanda bahaya yang sesuai pada skenario dapur dan halaman.', type: 'tool_challenge', completed: false },
+      { id: 'STEP-3-3', title: 'Refleksi Kerja Aman', description: 'Tuliskan satu kebiasaan aman yang akan kamu ingat.', type: 'reflection', completed: false },
+    ],
+  },
+  {
+    id: 'QUEST-04',
+    title: 'Stories With Consent',
+    indonesianSubtitle: 'Menceritakan Warisan dengan Izin Perajin',
+    moduleTitle: 'Keberlanjutan Mata Pencaharian & Kewirausahaan Budaya',
+    moduleSlug: 'keberlanjutan-mata-pencaharian-kewirausahaan',
+    description:
+      'Pelajari mengapa kisah perajin hanya boleh dipakai atas izin, bagaimana atribusi ditulis, dan apa yang tampil di Paspor Warisan pada kemasan.',
+    duration: '15 Menit',
+    xpReward: 140,
+    badgeReward: 'Ethical Storyteller',
+    imageUrl: '',
+    completed: false,
+    objectives: [
+      'Memahami persetujuan dan atribusi dalam dokumentasi budaya.',
+      'Menjelaskan isi Paspor Warisan pada kemasan gula kelapa.',
+    ],
+    steps: [
+      { id: 'STEP-4-1', title: 'Pelajari Prinsip Persetujuan', description: 'Baca bagaimana izin publik, izin pelajar, dan privat dibedakan.', type: 'terminology', completed: false },
+      { id: 'STEP-4-2', title: 'Refleksi Kisah yang Beretika', description: 'Jelaskan mengapa nama perajin hanya tampil sesuai preferensinya.', type: 'reflection', completed: false },
+    ],
+  },
 ];
 
 export const JOURNEY_LEVELS = [
