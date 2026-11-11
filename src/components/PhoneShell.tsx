@@ -11,9 +11,6 @@ const TABS = [
   { to: '/learn/profil', label: 'Profil', Icon: User },
 ];
 
-/** Rute yang menampilkan layar penuh tanpa tab bawah (peta dan detail). */
-const isImmersive = (_path: string) => false;
-
 const TabBar: React.FC = () => (
   <nav
     aria-label="Navigasi utama"
@@ -48,9 +45,9 @@ const TabBar: React.FC = () => (
 );
 
 const ROLES = [
-  { label: 'Pelajar', desc: 'Belajar, misi, paspor', Icon: BookOpen, active: true },
-  { label: 'Pengunjung QR', desc: 'Paspor warisan publik', Icon: QrCode, active: false },
-  { label: 'Mentor', desc: 'Unggah dan validasi', Icon: UserCheck, active: false },
+  { label: 'Pelajar', desc: 'Perjalanan, peta, koleksi', Icon: BookOpen, active: true },
+  { label: 'Pengunjung QR', desc: 'Paspor warisan dari QR (placeholder)', Icon: QrCode, active: false },
+  { label: 'Mentor', desc: 'Unggah dan validasi (kode undangan)', Icon: UserCheck, active: false },
   { label: 'Kurator', desc: 'Persetujuan budaya', Icon: ShieldCheck, active: false },
   { label: 'Admin', desc: 'Program dan batch QR', Icon: Users, active: false },
 ];
@@ -107,8 +104,7 @@ const SidePanel: React.FC = () => {
 export const PhoneShell: React.FC = () => {
   const { toast } = useStore();
   const { pathname } = useLocation();
-  const immersive = isImmersive(pathname);
-  const showTabs = pathname.startsWith('/learn') && !immersive && !pathname.startsWith('/learn/bab');
+  const showTabs = pathname.startsWith('/learn') && !pathname.startsWith('/learn/bab');
   const scrollRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
