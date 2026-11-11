@@ -2,7 +2,10 @@ import React, { useId } from 'react';
 
 export type NiraMood = 'happy' | 'cheer' | 'think' | 'wave' | 'sleep';
 
-/** Maskot Nira: tetes nira manis dengan tunas daun kelapa, pipi merah muda, dan tangan mungil. */
+/**
+ * Maskot Nira: kelapa hijau muda yang imut, pucuk daun kelapa di atas, dan setetes nira manis di bukaannya.
+ * Pipi merah muda, mata besar berkilau, tangan dan kaki mungil.
+ */
 export const Nira: React.FC<{ size?: number; mood?: NiraMood; className?: string; float?: boolean }> = ({
   size = 96,
   mood = 'happy',
@@ -11,6 +14,7 @@ export const Nira: React.FC<{ size?: number; mood?: NiraMood; className?: string
 }) => {
   const id = useId().replace(/:/g, '');
   const up = mood === 'cheer';
+  const arm = '#5DAF4A';
   return (
     <svg
       width={size}
@@ -21,90 +25,104 @@ export const Nira: React.FC<{ size?: number; mood?: NiraMood; className?: string
       className={`shrink-0 ${float ? 'mascot-float' : ''} ${className}`}
     >
       <defs>
-        <linearGradient id={`b${id}`} x1="0.2" y1="0" x2="0.8" y2="1">
-          <stop offset="0" stopColor="#E7AE68" />
-          <stop offset="0.55" stopColor="#C8853F" />
-          <stop offset="1" stopColor="#9A612C" />
-        </linearGradient>
-        <linearGradient id={`l${id}`} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#5E9A6E" />
-          <stop offset="1" stopColor="#2B5A44" />
-        </linearGradient>
-        <radialGradient id={`g${id}`} cx="0.5" cy="0.5" r="0.5">
-          <stop offset="0" stopColor="#FFE9B8" stopOpacity="0.9" />
-          <stop offset="1" stopColor="#FFE9B8" stopOpacity="0" />
+        <radialGradient id={`b${id}`} cx="0.38" cy="0.3" r="0.85">
+          <stop offset="0" stopColor="#D6F08E" />
+          <stop offset="0.45" stopColor="#8FD05E" />
+          <stop offset="1" stopColor="#4C9B45" />
         </radialGradient>
+        <linearGradient id={`l${id}`} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#6CBF6B" />
+          <stop offset="1" stopColor="#2B6E4A" />
+        </linearGradient>
+        <linearGradient id={`n${id}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#F6C777" />
+          <stop offset="1" stopColor="#C8853F" />
+        </linearGradient>
       </defs>
 
       {/* bayangan tanah */}
-      <ellipse cx="70" cy="160" rx="34" ry="5" fill="#18382C" opacity="0.16" />
+      <ellipse cx="70" cy="163" rx="36" ry="5" fill="#18382C" opacity="0.18" />
 
-      {/* daun kelapa di puncak */}
-      <path d="M70 34 C70 24 70 20 70 14" stroke="#2B5A44" strokeWidth="3" strokeLinecap="round" fill="none" />
-      <path d="M70 18 C58 4 40 2 26 12 C40 12 56 14 70 18Z" fill={`url(#l${id})`} />
-      <path d="M70 18 C82 2 102 0 116 10 C102 12 86 14 70 18Z" fill="#3F7A57" />
-      <path d="M70 20 C64 8 62 -2 70 -8 C78 -2 76 8 70 20Z" fill="#74AE7E" transform="translate(0 6)" />
+      {/* kaki */}
+      <ellipse cx="52" cy="158" rx="12" ry="6.5" fill="#3F8A3C" />
+      <ellipse cx="88" cy="158" rx="12" ry="6.5" fill="#3F8A3C" />
 
-      {/* badan tetes */}
-      <path d="M70 30 C70 30 20 88 20 120 a50 50 0 0 0 100 0 C120 88 70 30 70 30Z" fill={`url(#b${id})`} />
-      <path d="M70 30 C70 30 120 88 120 120 a50 50 0 0 1 -34 47 C108 140 104 84 70 30Z" fill="#7A4A20" opacity="0.28" />
-      <circle cx="70" cy="110" r="42" fill={`url(#g${id})`} opacity="0.35" />
-      {/* kilau */}
-      <ellipse cx="42" cy="100" rx="7" ry="15" fill="#FFF6E0" opacity="0.55" transform="rotate(14 42 100)" />
-      <circle cx="50" cy="76" r="3.5" fill="#FFF6E0" opacity="0.7" />
-
-      {/* tangan */}
+      {/* tangan (di belakang badan) */}
       {mood === 'wave' ? (
         <>
-          <ellipse cx="20" cy="124" rx="7" ry="10" fill="#B87943" transform="rotate(20 20 124)" />
-          <ellipse cx="122" cy="96" rx="7" ry="11" fill="#B87943" transform="rotate(-35 122 96)" />
+          <ellipse cx="17" cy="124" rx="8" ry="11" fill={arm} transform="rotate(18 17 124)" />
+          <ellipse cx="124" cy="92" rx="8" ry="12" fill={arm} transform="rotate(-38 124 92)" />
         </>
       ) : up ? (
         <>
-          <ellipse cx="18" cy="96" rx="7" ry="11" fill="#B87943" transform="rotate(35 18 96)" />
-          <ellipse cx="122" cy="96" rx="7" ry="11" fill="#B87943" transform="rotate(-35 122 96)" />
+          <ellipse cx="16" cy="88" rx="8" ry="12" fill={arm} transform="rotate(38 16 88)" />
+          <ellipse cx="124" cy="88" rx="8" ry="12" fill={arm} transform="rotate(-38 124 88)" />
         </>
       ) : (
         <>
-          <ellipse cx="20" cy="126" rx="7" ry="10" fill="#B87943" transform="rotate(18 20 126)" />
-          <ellipse cx="120" cy="126" rx="7" ry="10" fill="#B87943" transform="rotate(-18 120 126)" />
+          <ellipse cx="17" cy="126" rx="8" ry="11" fill={arm} transform="rotate(16 17 126)" />
+          <ellipse cx="123" cy="126" rx="8" ry="11" fill={arm} transform="rotate(-16 123 126)" />
         </>
       )}
+
+      {/* badan: kelapa hijau muda yang bulat */}
+      <path
+        d="M70 40 C102 40 126 62 126 102 C126 140 102 162 70 162 C38 162 14 140 14 102 C14 62 38 40 70 40Z"
+        fill={`url(#b${id})`}
+      />
+      {/* alur sabut kelapa */}
+      <g fill="none" stroke="#3F8A3C" strokeWidth="2.4" strokeLinecap="round" opacity="0.35">
+        <path d="M70 48 C58 70 54 92 56 112" />
+        <path d="M70 48 C82 70 86 92 84 112" />
+        <path d="M44 56 C30 80 26 104 32 126" />
+        <path d="M96 56 C110 80 114 104 108 126" />
+      </g>
+      {/* kilau */}
+      <ellipse cx="38" cy="78" rx="8" ry="16" fill="#FFFFFF" opacity="0.5" transform="rotate(28 38 78)" />
+      <circle cx="52" cy="58" r="3.6" fill="#FFFFFF" opacity="0.75" />
+
+      {/* bukaan atas: daging kelapa dan setetes nira */}
+      <ellipse cx="70" cy="42" rx="25" ry="9" fill="#EAF3C4" />
+      <ellipse cx="70" cy="42" rx="25" ry="9" fill="none" stroke="#5DAF4A" strokeWidth="3" />
+      <ellipse cx="70" cy="43" rx="17" ry="5.5" fill={`url(#n${id})`} />
+      <ellipse cx="64" cy="41.5" rx="5" ry="1.6" fill="#FFF3D6" opacity="0.85" />
+
+      {/* tunas daun kelapa */}
+      <path d="M70 40 C70 28 70 22 70 14" stroke="#2B6E4A" strokeWidth="3" strokeLinecap="round" fill="none" />
+      <path d="M70 20 C58 4 38 2 24 14 C40 14 56 16 70 20Z" fill={`url(#l${id})`} />
+      <path d="M70 20 C82 4 102 2 116 14 C100 14 84 16 70 20Z" fill="#4FA56B" />
+      <path d="M70 22 C64 10 62 0 70 -6 C78 0 76 10 70 22Z" fill="#8ED18F" transform="translate(0 6)" />
 
       {/* wajah */}
       {mood === 'sleep' ? (
         <>
-          <path d="M44 114 Q52 120 60 114" stroke="#2A1A10" strokeWidth="3.5" fill="none" strokeLinecap="round" />
-          <path d="M80 114 Q88 120 96 114" stroke="#2A1A10" strokeWidth="3.5" fill="none" strokeLinecap="round" />
+          <path d="M42 104 Q51 112 60 104" stroke="#2A1A10" strokeWidth="3.6" fill="none" strokeLinecap="round" />
+          <path d="M80 104 Q89 112 98 104" stroke="#2A1A10" strokeWidth="3.6" fill="none" strokeLinecap="round" />
         </>
       ) : (
         <>
-          <ellipse cx="52" cy="114" rx="7.5" ry={up ? 8.5 : 9.5} fill="#2A1A10" />
-          <ellipse cx="88" cy="114" rx="7.5" ry={up ? 8.5 : 9.5} fill="#2A1A10" />
-          <circle cx="55" cy="110" r="2.8" fill="#FFFDF8" />
-          <circle cx="91" cy="110" r="2.8" fill="#FFFDF8" />
-          <circle cx="49.5" cy="118" r="1.4" fill="#FFFDF8" opacity="0.8" />
-          <circle cx="85.5" cy="118" r="1.4" fill="#FFFDF8" opacity="0.8" />
+          <ellipse cx="50" cy="104" rx="9" ry={up ? 10 : 11.5} fill="#2A1A10" />
+          <ellipse cx="90" cy="104" rx="9" ry={up ? 10 : 11.5} fill="#2A1A10" />
+          <circle cx="53.5" cy="99" r="3.6" fill="#FFFDF8" />
+          <circle cx="93.5" cy="99" r="3.6" fill="#FFFDF8" />
+          <circle cx="46.5" cy="109" r="1.8" fill="#FFFDF8" opacity="0.85" />
+          <circle cx="86.5" cy="109" r="1.8" fill="#FFFDF8" opacity="0.85" />
         </>
       )}
       {mood === 'think' && (
         <>
-          <path d="M42 100 Q52 95 60 99" stroke="#2A1A10" strokeWidth="2.5" fill="none" strokeLinecap="round" />
-          <path d="M80 99 Q90 95 98 100" stroke="#2A1A10" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+          <path d="M38 88 Q50 82 61 87" stroke="#2A1A10" strokeWidth="3" fill="none" strokeLinecap="round" />
+          <path d="M79 87 Q90 82 102 88" stroke="#2A1A10" strokeWidth="3" fill="none" strokeLinecap="round" />
         </>
       )}
-      <ellipse cx="38" cy="130" rx="8" ry="4.5" fill="#E0685A" opacity="0.5" />
-      <ellipse cx="102" cy="130" rx="8" ry="4.5" fill="#E0685A" opacity="0.5" />
+      <ellipse cx="32" cy="124" rx="9" ry="5.5" fill="#FF7A8A" opacity="0.55" />
+      <ellipse cx="108" cy="124" rx="9" ry="5.5" fill="#FF7A8A" opacity="0.55" />
       {(mood === 'happy' || mood === 'wave' || mood === 'sleep') && (
-        <path d="M60 132 Q70 143 80 132" stroke="#2A1A10" strokeWidth="3.5" fill="none" strokeLinecap="round" />
+        <path d="M57 124 Q70 140 83 124" stroke="#2A1A10" strokeWidth="3.8" fill="none" strokeLinecap="round" />
       )}
-      {mood === 'cheer' && <path d="M58 130 Q70 150 82 130Z" fill="#2A1A10" />}
-      {mood === 'cheer' && <path d="M63 138 Q70 144 77 138 Q70 135 63 138Z" fill="#E0685A" />}
-      {mood === 'think' && <path d="M62 136 Q70 133 78 137" stroke="#2A1A10" strokeWidth="3.5" fill="none" strokeLinecap="round" />}
-
-      {/* kaki */}
-      <ellipse cx="54" cy="158" rx="11" ry="6" fill="#7A4A20" />
-      <ellipse cx="86" cy="158" rx="11" ry="6" fill="#7A4A20" />
+      {mood === 'cheer' && <path d="M54 122 Q70 148 86 122Z" fill="#2A1A10" />}
+      {mood === 'cheer' && <path d="M61 134 Q70 142 79 134 Q70 130 61 134Z" fill="#FF7A8A" />}
+      {mood === 'think' && <path d="M62 132 Q70 128 78 133" stroke="#2A1A10" strokeWidth="3.8" fill="none" strokeLinecap="round" />}
     </svg>
   );
 };
