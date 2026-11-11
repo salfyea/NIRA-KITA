@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Check, FlaskConical, Lock, Megaphone, Sparkles } from 'lucide-react';
+import { Check, FlaskConical, Hand, Lock, Megaphone, Sparkles } from 'lucide-react';
 import { Scene, SLUG_SCENE } from '../art/Scene';
 import { Nira } from '../art/Nira';
 import { ProgressBar, Sheet } from '../components/ui';
@@ -125,6 +125,16 @@ export const Perjalanan: React.FC = () => {
       </div>
 
       <section className="space-y-3 px-5 pb-6">
+        <Link to="/learn/gerak" className="flex min-h-[64px] items-center gap-3 rounded-2xl border border-bamboo bg-coconut p-3 shadow-[0_6px_16px_-10px_rgba(24,56,44,0.5)]">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-caramel-dark text-coconut">
+            <Hand className="h-5 w-5" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold text-deep-forest">Cermin Gerak</p>
+            <p className="text-xs text-ink-soft">Latihan bentuk tangan dengan kamera. Diproses di perangkatmu.</p>
+          </div>
+          <span className="shrink-0 rounded-full bg-caramel-dark px-3 py-1.5 text-xs font-bold text-coconut">Coba</span>
+        </Link>
         <Link to="/learn/lab" className="flex min-h-[64px] items-center gap-3 rounded-2xl border border-bamboo bg-coconut p-3 shadow-[0_6px_16px_-10px_rgba(24,56,44,0.5)]">
           <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-forest text-coconut">
             <FlaskConical className="h-5 w-5" />
