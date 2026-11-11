@@ -162,7 +162,7 @@ export const Dapur: React.FC<DapurProps> = ({
 
       {/* kotoran di kain saring */}
       {debris.map((d) => (
-        <g key={d.id} transform={`translate(${d.x} ${d.y})`}>
+        <g key={d.id} transform={`translate(${d.x} ${d.y}) scale(1.7)`}>
           {d.kind === 'semut' && (
             <g fill="#2A1A10">
               <circle cx="-5" cy="0" r="3" />

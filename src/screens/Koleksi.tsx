@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Clock, Lock, Quote, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Lock, Quote, ShieldCheck } from 'lucide-react';
 import { Scene, SLUG_SCENE } from '../art/Scene';
 import { Nira } from '../art/Nira';
 import { ApprovalChip, Ornate } from '../components/ui';
@@ -9,13 +9,6 @@ import { HeritageRecord } from '../types/jejakNira';
 import { isLearnerVisible, useStore } from '../store';
 
 const sceneOf = (r: HeritageRecord) => SLUG_SCENE[r.relatedModuleSlug] ?? 'identitas';
-
-/** Chip untuk istilah lokal yang masih menunggu validasi komunitas. */
-const CommunityChip: React.FC = () => (
-  <span className="inline-flex items-center gap-1 rounded-full border border-caramel/40 bg-caramel/10 px-2 py-0.5 text-[11px] font-semibold text-caramel-dark">
-    <Clock className="h-3 w-3" /> Menunggu validasi komunitas
-  </span>
-);
 
 export const Koleksi: React.FC = () => {
   const { records, collected } = useStore();
@@ -84,14 +77,10 @@ export const Koleksi: React.FC = () => {
               <span className="mt-0.5 line-clamp-2 block text-sm text-ink-soft">{r.shortDescription}</span>
               <span className="mt-2 flex flex-wrap gap-1.5">
                 <ApprovalChip record={r} />
-                <CommunityChip />
               </span>
             </Ornate>
           ))}
           {glossary.length === 0 && <p className="text-sm text-ink-soft">Belum ada istilah yang disetujui kurator.</p>}
-          <p className="text-xs leading-relaxed text-ink-soft">
-            Istilah lokal ditandai menunggu validasi komunitas sampai penutur setempat meninjaunya. Data bersifat ilustratif.
-          </p>
         </div>
       )}
     </div>
@@ -121,7 +110,6 @@ export const KoleksiDetail: React.FC = () => {
       <div className="space-y-3 px-5 pt-4">
         <div className="flex flex-wrap gap-1.5">
           <ApprovalChip record={r} />
-          {r.localTerm && <CommunityChip />}
         </div>
         <h1 className="text-[28px] leading-tight text-deep-forest">{r.title}</h1>
         {r.localTerm && <p className="text-sm font-semibold text-caramel-dark">Istilah lokal: {r.localTerm}</p>}

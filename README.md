@@ -40,7 +40,7 @@ Stack: Vite + React 19 + TypeScript + Tailwind 4 + react-router-dom v7 + lucide-
 ## Aturan konten dan etika
 Pembelajaran berbasis darat, pelajar tidak pernah diminta memanjat; siluet penderes hanya dari jauh tanpa wajah.
 Hanya konten `Approved` dengan visibilitas `learner`/`public` tampil. Peta hanya simulasi tingkat desa.
-Lab Pengetahuan dan Arsip Gerakan berlabel "konsep visi". Istilah lokal menunggu validasi komunitas. Data ilustratif.
+Lab Pengetahuan dan Arsip Gerakan berlabel "konsep visi". Data ilustratif.
 Foto narasumber tidak dipakai sampai izinnya ada; saat ini ilustrasi.
 
 ## Deploy

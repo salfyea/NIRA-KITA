@@ -62,7 +62,7 @@ export const Profil: React.FC = () => {
       <h2 className="mt-6 text-[22px] text-deep-forest">Tentang aplikasi</h2>
       <p className="mt-2 text-sm leading-relaxed text-ink-soft">
         NIRA KITA adalah prototipe konsep untuk belajar dan melestarikan pengetahuan gula kelapa Cilongok, Banyumas. Data bersifat ilustratif,
-        istilah lokal menunggu validasi komunitas, peta hanyalah simulasi tingkat desa, dan seluruh pembelajaran berbasis darat.
+        peta hanyalah simulasi tingkat desa, dan seluruh pembelajaran berbasis darat.
       </p>
 
       <div className="mt-6 grid gap-2">

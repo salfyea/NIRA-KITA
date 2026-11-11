@@ -4,6 +4,7 @@ import { BookOpen, Gamepad2, MapPin, Quote, Sparkles, Star } from 'lucide-react'
 import { Nira } from '../art/Nira';
 import { Scene, SLUG_SCENE } from '../art/Scene';
 import { Vignette } from '../art/Vignette';
+import { KisahPerajin } from '../components/KisahPerajin';
 import { ApprovalChip, Ornate } from '../components/ui';
 import { MasakGula } from '../game/MasakGula';
 import { attribution } from '../data/attribution';
@@ -144,18 +145,7 @@ export const PasporPublik: React.FC = () => {
       <section id="kisah" className="mt-8 scroll-mt-4 px-6">
         <h2 className="text-[22px] text-deep-forest">Kisah di balik kemasan</h2>
         {story ? (
-          <Ornate className="mt-3 space-y-2 p-4">
-            <ApprovalChip record={story} />
-            <h3 className="text-xl leading-tight text-deep-forest">{story.title}</h3>
-            <p className="text-base leading-relaxed text-charcoal">{story.culturalExplanation}</p>
-            <p className="flex items-start gap-2 text-sm text-ink-soft">
-              <Quote className="mt-0.5 h-4 w-4 shrink-0 text-caramel-dark" />
-              <span>
-                {attribution(story)}
-                {story.isIllustrativePlaceholder && ' · data ilustratif'}
-              </span>
-            </p>
-          </Ornate>
+          <KisahPerajin record={story} />
         ) : (
           <p className="mt-3 text-sm text-ink-soft">Kisah untuk kemasan ini masih menunggu persetujuan kurator dan perajin.</p>
         )}

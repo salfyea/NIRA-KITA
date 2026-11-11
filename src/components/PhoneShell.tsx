@@ -88,7 +88,7 @@ const SidePanel: React.FC = () => {
         </ul>
       </div>
       <p className="text-xs leading-relaxed text-ink-soft">
-        Data ilustratif. Istilah lokal masih menunggu validasi komunitas. Seluruh pembelajaran berbasis darat.
+        Data ilustratif. Seluruh pembelajaran berbasis darat.
       </p>
       <button
         type="button"
