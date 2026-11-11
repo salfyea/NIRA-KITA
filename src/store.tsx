@@ -7,6 +7,7 @@ import {
   ReviewStatus,
   VisibilityScope,
   HeritageRecord,
+  LearnerSubmission,
   Quest,
 } from './types/jejakNira';
 import {
@@ -17,6 +18,8 @@ import {
   JOURNEY_LEVELS,
 } from './data/initialData';
 import { QR_BATCHES, QrBatch } from './data/batches';
+import { BADGE_EN, LEVEL_EN, MOD_EN, QUEST_EN, REC_EN } from './data/en';
+import { useLang } from './i18n';
 
 const STORAGE_KEY = 'niraKita.learner.v2';
 
@@ -32,14 +35,23 @@ interface PersistedState {
   /** Batch kemasan QR (dibuat Admin) dan catatan audit tata kelola. */
   batches: QrBatch[];
   audit: AuditLogEntry[];
+  /** Pengajuan pelajar yang menunggu validasi mentor, dan anotasi mentor pada klip Arsip Gerakan. */
+  submissions: LearnerSubmission[];
+  annotations: Record<string, Annotation>;
   session: Session | null;
   onboarded: boolean;
+}
+
+export interface Annotation {
+  text: string;
+  author: string;
+  approved: boolean;
 }
 
 export interface Session {
   name: string;
   /** Peran sesi. Pendaftaran mandiri selalu menjadi Pelajar. */
-  role: 'learner' | 'curator' | 'admin';
+  role: 'learner' | 'mentor' | 'curator' | 'admin';
 }
 
 const SEED_AUDIT: AuditLogEntry[] = [
@@ -47,6 +59,25 @@ const SEED_AUDIT: AuditLogEntry[] = [
   { id: 'AUD-002', timestamp: '15 Mei 2026, 10.40', actor: 'Nadia Kusuma', role: 'Kurator', action: 'Menyetujui rekaman', target: 'REC-CLG-002', visibilityNote: 'Publik (halaman QR)' },
   { id: 'AUD-003', timestamp: '18 Mei 2026, 14.05', actor: 'Nadia Kusuma', role: 'Kurator', action: 'Menyetujui rekaman', target: 'REC-CLG-004', visibilityNote: 'Akses Pelajar' },
   { id: 'AUD-004', timestamp: '20 Mei 2026, 08.30', actor: 'Admin Program', role: 'Admin', action: 'Membuat batch QR', target: 'NK-001', visibilityNote: 'Menaut ke REC-CLG-001' },
+];
+
+const NO_CHECK = { identifiesTools: false, explainsFunctions: false, understandsSequence: false, identifiesGroundHazards: false, understandsSafetyPrinciples: false };
+const SEED_SUBMISSIONS: LearnerSubmission[] = [
+  {
+    id: 'SUB-001', learnerId: 'L-01', learnerName: 'Rani (pilot)', learnerAvatar: '', questId: 'QUEST-02', questTitle: 'The Alchemy of Warm Sap', moduleTitle: 'Kerajinan Tradisional & Transfer Pengetahuan',
+    submittedDate: '20 Mei 2026', selectedToolAnswer: 'Pengaduk kayu panjang', reflectionText: 'Aku melihat nira disaring dulu, lalu diaduk terus supaya matang merata. Apinya dibesarkan di awal lalu dikecilkan.',
+    status: 'Menunggu Validasi', mentorName: 'Pak Parmadi', competencyChecklist: { ...NO_CHECK },
+  },
+  {
+    id: 'SUB-002', learnerId: 'L-02', learnerName: 'Dimas (pilot)', learnerAvatar: '', questId: 'QUEST-01', questTitle: 'The Forgotten Stories', moduleTitle: 'Identitas Budaya & Warisan Lokal',
+    submittedDate: '21 Mei 2026', selectedToolAnswer: 'Pongkor', reflectionText: 'Pongkor adalah wadah bambu penampung nira. Wadahnya harus bersih supaya nira tidak cepat asam.',
+    status: 'Menunggu Validasi', mentorName: 'Pak Parmadi', competencyChecklist: { ...NO_CHECK },
+  },
+  {
+    id: 'SUB-003', learnerId: 'DEMO', learnerName: 'Kamu (akun demo)', learnerAvatar: '', questId: 'QUEST-03', questTitle: 'Safe Ground, Safe Hands', moduleTitle: 'Keselamatan Kerja & Manajemen Risiko',
+    submittedDate: 'Hari ini', selectedToolAnswer: 'Jarak aman dari tungku', reflectionText: 'Pelajar tidak memanjat. Mengamati dari darat dan menjaga jarak dari tungku serta gula yang panas.',
+    status: 'Menunggu Validasi', mentorName: 'Pak Parmadi', competencyChecklist: { ...NO_CHECK },
+  },
 ];
 
 const initialState = (): PersistedState => ({
@@ -59,6 +90,8 @@ const initialState = (): PersistedState => ({
   labDone: [],
   batches: QR_BATCHES,
   audit: SEED_AUDIT,
+  submissions: SEED_SUBMISSIONS,
+  annotations: {},
   session: null,
   onboarded: false,
 });
@@ -94,6 +127,10 @@ interface Store extends PersistedState {
   signIn: (name: string, role?: Session['role']) => void;
   reviewRecord: (id: string, input: ReviewInput) => void;
   addBatch: (b: Omit<QrBatch, 'code'>) => QrBatch;
+  addRecord: (r: HeritageRecord) => void;
+  validateSubmission: (id: string, input: ValidateInput) => void;
+  saveAnnotation: (clipId: string, text: string) => void;
+  approveAnnotation: (clipId: string) => void;
   signOut: () => void;
   finishOnboarding: () => void;
   reset: () => void;
@@ -106,9 +143,16 @@ export interface ReviewInput {
   note: string;
 }
 
+export interface ValidateInput {
+  status: 'Tervalidasi Mentor' | 'Perlu Revisi';
+  checklist: LearnerSubmission['competencyChecklist'];
+  feedback: string;
+}
+
 const Ctx = createContext<Store | null>(null);
 
 export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const lang = useLang();
   const [state, setState] = useState<PersistedState>(load);
   const [toast, setToast] = useState<string | null>(null);
   const stateRef = React.useRef(state);
@@ -219,6 +263,54 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     });
   }, []);
 
+  const stamp = () => new Date().toLocaleString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  const audited = (s: PersistedState, role: string, action: string, target: string, note: string): AuditLogEntry[] => [
+    { id: `AUD-${String(s.audit.length + 1).padStart(3, '0')}`, timestamp: stamp(), actor: s.session?.name ?? role, role, action, target, visibilityNote: note },
+    ...s.audit,
+  ];
+
+  /** Mentor mengunggah rekaman: masuk antrean kurator sebagai Privat, belum tampil ke siapa pun. */
+  const addRecord = useCallback((r: HeritageRecord) => {
+    setState((s) => ({ ...s, records: [r, ...s.records], audit: audited(s, 'Mentor', 'Mengunggah rekaman', r.id, 'Menunggu tinjauan kurator') }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  /** Validasi manusia oleh mentor. Hanya validasi ini yang membuka lencana tervalidasi mentor. */
+  const validateSubmission = useCallback((id: string, input: ValidateInput) => {
+    setState((s) => {
+      const sub = s.submissions.find((x) => x.id === id);
+      if (!sub) return s;
+      const unlock = input.status === 'Tervalidasi Mentor' && sub.learnerId === 'DEMO';
+      return {
+        ...s,
+        submissions: s.submissions.map((x) =>
+          x.id === id ? { ...x, status: input.status, competencyChecklist: input.checklist, mentorFeedback: input.feedback, validatedDate: 'Hari ini' } : x,
+        ),
+        badges: unlock ? s.badges.map((b) => (b.id === 'BADGE-03' ? { ...b, unlocked: true, dateAchieved: 'Hari ini' } : b)) : s.badges,
+        audit: audited(s, 'Mentor', input.status === 'Tervalidasi Mentor' ? 'Memvalidasi pelajar' : 'Meminta revisi pelajar', sub.learnerName, sub.questTitle),
+      };
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const saveAnnotation = useCallback((clipId: string, text: string) => {
+    setState((s) => ({
+      ...s,
+      annotations: { ...s.annotations, [clipId]: { text, author: s.session?.name ?? 'Mentor', approved: false } },
+      audit: audited(s, 'Mentor', 'Menulis anotasi klip', clipId, 'Menunggu persetujuan kurator'),
+    }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const approveAnnotation = useCallback((clipId: string) => {
+    setState((s) => {
+      const a = s.annotations[clipId];
+      if (!a) return s;
+      return { ...s, annotations: { ...s.annotations, [clipId]: { ...a, approved: true } }, audit: audited(s, 'Kurator', 'Menyetujui anotasi klip', clipId, 'Tampil di Arsip Gerakan') };
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const addBatch = useCallback((b: Omit<QrBatch, 'code'>): QrBatch => {
     const cur = stateRef.current;
     const max = cur.batches.reduce((m, x) => Math.max(m, Number(x.code.replace(/\D/g, '')) || 0), 0);
@@ -249,8 +341,24 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const reached = JOURNEY_LEVELS.filter((l) => state.xp >= l.minXp);
     const level = reached[reached.length - 1] ?? JOURNEY_LEVELS[0];
     const nextLevel = JOURNEY_LEVELS.find((l) => l.minXp > state.xp);
-    return { ...state, level, nextLevel, toast, showToast, completeQuest, checkIn, completeModule, completeLab, signIn, reviewRecord, addBatch, signOut, finishOnboarding, reset };
-  }, [state, toast, showToast, completeQuest, checkIn, completeModule, completeLab, signIn, reviewRecord, addBatch, signOut, finishOnboarding, reset]);
+    const en = lang === 'en';
+    const lvl = (l?: (typeof JOURNEY_LEVELS)[number]) => (l && en && LEVEL_EN[l.level] ? { ...l, indonesianName: LEVEL_EN[l.level].name, description: LEVEL_EN[l.level].description } : l);
+    const loc = en
+      ? {
+          records: state.records.map((r) => (REC_EN[r.id] ? { ...r, ...REC_EN[r.id] } : r)),
+          modules: state.modules.map((m) => {
+            const e = MOD_EN[m.id];
+            return e ? { ...m, ...e, title: e.title ?? m.title, lessons: m.lessons.map((l) => ({ ...l, title: e.lessons?.[l.id] ?? l.title })) } : m;
+          }),
+          quests: state.quests.map((q) => {
+            const e = QUEST_EN[q.id];
+            return e ? { ...q, ...e, steps: q.steps.map((st) => ({ ...st, ...(e.steps?.[st.id] ?? {}) })) } : q;
+          }),
+          badges: state.badges.map((b) => (BADGE_EN[b.id] ? { ...b, ...BADGE_EN[b.id] } : b)),
+        }
+      : { records: state.records, modules: state.modules, quests: state.quests, badges: state.badges };
+    return { ...state, ...loc, level: lvl(level) as typeof level, nextLevel: lvl(nextLevel), toast, showToast, completeQuest, checkIn, completeModule, completeLab, signIn, reviewRecord, addBatch, addRecord, validateSubmission, saveAnnotation, approveAnnotation, signOut, finishOnboarding, reset };
+  }, [state, lang, toast, showToast, completeQuest, checkIn, completeModule, completeLab, signIn, reviewRecord, addBatch, addRecord, validateSubmission, saveAnnotation, approveAnnotation, signOut, finishOnboarding, reset]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 };

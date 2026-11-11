@@ -2,7 +2,7 @@ import { HandLandmarker } from '@mediapipe/tasks-vision';
 import wasmJs from '@mediapipe/tasks-vision/vision_wasm_internal.js?url';
 import wasmBin from '@mediapipe/tasks-vision/vision_wasm_internal.wasm?url';
 
-export { classifyPose } from './pose';
+export { classifyPose, rollDeg, StirTracker, PourTracker } from './pose';
 export type { Pose } from './pose';
 
 let landmarker: Promise<HandLandmarker> | null = null;

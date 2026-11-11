@@ -4,15 +4,17 @@ import { Nira } from '../art/Nira';
 import { Scene, SLUG_SCENE } from '../art/Scene';
 import { ApprovalChip } from '../components/ui';
 import { isLearnerVisible, useStore } from '../store';
+import { t } from '../i18n';
 
 /** Posisi dalam persen bidang peta. Jarak hanya perkiraan kasar tingkat desa (simulasi). */
 const VILLAGES = [
-  { id: 'REC-CLG-001', village: 'Pernasidi', x: 32, y: 52, dist: 'sekitar 1 km' },
-  { id: 'REC-CLG-002', village: 'Panembangan', x: 72, y: 38, dist: 'sekitar 3 km' },
-  { id: 'REC-CLG-004', village: 'Karangtengah', x: 60, y: 74, dist: 'sekitar 5 km' },
+  { id: 'REC-CLG-001', village: 'Pernasidi', x: 32, y: 52, dist: 1 },
+  { id: 'REC-CLG-002', village: 'Panembangan', x: 72, y: 38, dist: 3 },
+  { id: 'REC-CLG-004', village: 'Karangtengah', x: 60, y: 74, dist: 5 },
 ];
 
 const TILT = 58;
+const km = (n: number) => t(`sekitar ${n} km`, `about ${n} km`);
 
 /** Benda tegak di atas bidang miring: diputar balik supaya selalu menghadap pemain. */
 const Billboard: React.FC<{ x: number; y: number; children: React.ReactNode; z?: number }> = ({ x, y, children, z }) => (
@@ -127,7 +129,7 @@ export const Peta: React.FC = () => {
               <span style={{ filter: 'drop-shadow(0 0 1.5px #fff) drop-shadow(0 0 1.5px #fff) drop-shadow(0 2px 3px rgba(24,56,44,0.5))' }}>
                 <Nira mood="wave" size={62} float={false} />
               </span>
-              <span className="-mt-1 rounded-full bg-caramel-dark px-2.5 py-0.5 text-xs font-bold text-coconut shadow">Kamu</span>
+              <span className="-mt-1 rounded-full bg-caramel-dark px-2.5 py-0.5 text-xs font-bold text-coconut shadow">{t('Kamu', 'You')}</span>
             </span>
           </Billboard>
 
@@ -142,7 +144,7 @@ export const Peta: React.FC = () => {
                     setSel(v.id);
                     setRevealed(null);
                   }}
-                  aria-label={`Desa ${v.village}, ${v.dist}${done ? ', sudah terkumpul' : ''}`}
+                  aria-label={`${t('Desa', 'Village')} ${v.village}, ${km(v.dist)}${done ? t(', sudah terkumpul', ', collected') : ''}`}
                   className="marker-bob flex min-h-[44px] min-w-[44px] flex-col items-center"
                 >
                   <span
@@ -156,7 +158,7 @@ export const Peta: React.FC = () => {
                     {v.village}
                   </span>
                   <span className="mt-0.5 whitespace-nowrap rounded-full bg-deep-forest/85 px-2 py-0.5 text-[11px] font-semibold text-coconut">
-                    {v.dist}
+                    {km(v.dist)}
                   </span>
                 </button>
               </Billboard>
@@ -170,10 +172,10 @@ export const Peta: React.FC = () => {
 
       {/* label permanen: peta hanyalah simulasi */}
       <p className="absolute inset-x-3 top-3 z-20 rounded-xl bg-coconut/95 px-3 py-2 text-center text-xs font-semibold leading-snug text-deep-forest shadow">
-        Simulasi, lokasi kasar tingkat desa, bukan pelacakan langsung
+        {t('Simulasi, lokasi kasar tingkat desa, bukan pelacakan langsung', 'Simulation: rough village-level location, not live tracking')}
       </p>
       <p className="absolute bottom-2 left-3 z-10 rounded-full bg-coconut/90 px-2.5 py-1 text-xs font-semibold text-ink-soft">
-        Ketuk penanda desa
+        {t('Ketuk penanda desa', 'Tap a village marker')}
       </p>
 
       {/* bottom sheet desa */}
@@ -185,7 +187,7 @@ export const Peta: React.FC = () => {
               setSel(null);
               setRevealed(null);
             }}
-            aria-label="Tutup"
+            aria-label={t('Tutup', 'Close')}
             className="absolute right-2 top-2 flex h-11 w-11 items-center justify-center rounded-full text-deep-forest"
           >
             <X className="h-5 w-5" />
@@ -198,7 +200,7 @@ export const Peta: React.FC = () => {
                   <Nira mood="cheer" size={64} />
                 </div>
               </div>
-              <p className="mt-3 text-xs font-bold uppercase tracking-[0.16em] text-caramel-dark">Kartu warisan terbuka · +20 XP</p>
+              <p className="mt-3 text-xs font-bold uppercase tracking-[0.16em] text-caramel-dark">{t('Kartu warisan terbuka · +20 XP', 'Heritage card unlocked · +20 XP')}</p>
               <h3 className="text-xl leading-tight text-deep-forest">{reveal.title}</h3>
               <div className="mt-2 flex justify-center">
                 <ApprovalChip record={reveal} />
@@ -208,7 +210,7 @@ export const Peta: React.FC = () => {
           ) : (
             <>
               <p className="text-xs font-bold uppercase tracking-[0.16em] text-caramel-dark">
-                Desa {spot.village} · {spot.dist}
+                {t('Desa', 'Village')} {spot.village} · {km(spot.dist)}
               </p>
               {rec ? (
                 <>
@@ -223,12 +225,12 @@ export const Peta: React.FC = () => {
                     }}
                     className="mt-3 min-h-[52px] w-full rounded-full bg-forest text-base font-semibold text-coconut disabled:bg-sage disabled:text-deep-forest"
                   >
-                    {got ? 'Sudah terkumpul' : 'Check-in terpandu'}
+                    {got ? t('Sudah terkumpul', 'Already collected') : t('Check-in terpandu', 'Guided check-in')}
                   </button>
-                  <p className="mt-2 text-xs text-ink-soft">Check-in terpandu hanya simulasi di dalam aplikasi, tanpa membaca lokasi nyata.</p>
+                  <p className="mt-2 text-xs text-ink-soft">{t('Check-in terpandu hanya simulasi di dalam aplikasi, tanpa membaca lokasi nyata.', 'The guided check-in is only a simulation inside the app, with no real location reading.')}</p>
                 </>
               ) : (
-                <p className="mt-2 text-sm text-ink-soft">Belum ada cerita yang disetujui kurator untuk desa ini.</p>
+                <p className="mt-2 text-sm text-ink-soft">{t('Belum ada cerita yang disetujui kurator untuk desa ini.', 'No curator-approved story for this village yet.')}</p>
               )}
             </>
           )}

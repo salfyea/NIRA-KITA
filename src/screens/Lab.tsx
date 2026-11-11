@@ -5,6 +5,7 @@ import { Nira } from '../art/Nira';
 import { Dapur, Foam } from '../game/Dapur';
 import { Ornate } from '../components/ui';
 import { useStore } from '../store';
+import { t } from '../i18n';
 
 /* ====================== Lab Dapur: eksperimen bebas ====================== */
 
@@ -17,12 +18,12 @@ interface Setup {
 }
 const IDEAL: Setup = { laru: true, disaring: true, diam: 1, api: 55, lama: 4.5 };
 
-const PRESETS: { name: string; set: Setup }[] = [
-  { name: 'Cara yang pas', set: IDEAL },
-  { name: 'Tanpa laru, didiamkan 5 jam', set: { ...IDEAL, laru: false, diam: 5 } },
-  { name: 'Api terlalu besar', set: { ...IDEAL, api: 95 } },
-  { name: 'Dimasak kurang lama', set: { ...IDEAL, lama: 2 } },
-  { name: 'Nira tidak disaring', set: { ...IDEAL, disaring: false } },
+const getPresets = (): { name: string; set: Setup }[] => [
+  { name: t('Cara yang pas', 'The right way'), set: IDEAL },
+  { name: t('Tanpa laru, didiamkan 5 jam', 'No laru, left 5 hours'), set: { ...IDEAL, laru: false, diam: 5 } },
+  { name: t('Api terlalu besar', 'Fire too big'), set: { ...IDEAL, api: 95 } },
+  { name: t('Dimasak kurang lama', 'Cooked too briefly'), set: { ...IDEAL, lama: 2 } },
+  { name: t('Nira tidak disaring', 'Sap not filtered'), set: { ...IDEAL, disaring: false } },
 ];
 
 type Level = 'ok' | 'warn' | 'bad';
@@ -37,26 +38,26 @@ const evaluate = (s: Setup) => {
   const temp = Math.round(Math.max(30, Math.min(135, 32 + cook * 76 + (s.api - 55) * 0.35)));
   const out: Finding[] = [];
 
-  if (!s.laru && s.diam >= 2) out.push({ level: 'bad', text: 'Tanpa laru dan didiamkan lebih dari 2 jam, nira cenderung asam dan berubah menjadi arak.' });
-  else if (!s.laru) out.push({ level: 'warn', text: 'Tanpa laru, nira lebih cepat asam. Penderes memberi laru alami dari kapur dan cangkang manggis.' });
-  else if (s.diam >= 4) out.push({ level: 'warn', text: 'Walau memakai laru, nira sebaiknya segera dimasak. Menunggu terlalu lama berisiko.' });
-  else out.push({ level: 'ok', text: 'Nira dijaga dengan laru dan segera dimasak, jadi tetap segar.' });
+  if (!s.laru && s.diam >= 2) out.push({ level: 'bad', text: t('Tanpa laru dan didiamkan lebih dari 2 jam, nira cenderung asam dan berubah menjadi arak.', 'With no laru and left more than 2 hours, the sap tends to sour and turn into arak (palm liquor).') });
+  else if (!s.laru) out.push({ level: 'warn', text: t('Tanpa laru, nira lebih cepat asam. Penderes memberi laru alami dari kapur dan cangkang manggis.', 'Without laru, the sap sours faster. Tappers add a natural preservative of lime and mangosteen rind.') });
+  else if (s.diam >= 4) out.push({ level: 'warn', text: t('Walau memakai laru, nira sebaiknya segera dimasak. Menunggu terlalu lama berisiko.', 'Even with laru, the sap should be cooked soon. Waiting too long is risky.') });
+  else out.push({ level: 'ok', text: t('Nira dijaga dengan laru dan segera dimasak, jadi tetap segar.', 'The sap is protected with laru and cooked soon, so it stays fresh.') });
 
-  if (!s.disaring) out.push({ level: 'bad', text: 'Tanpa penyaringan, bunga kelapa, lebah, dan semut ikut masuk wajan dan mengotori gula.' });
-  else out.push({ level: 'ok', text: 'Nira disaring dengan kain bersih, kotoran tertahan.' });
+  if (!s.disaring) out.push({ level: 'bad', text: t('Tanpa penyaringan, bunga kelapa, lebah, dan semut ikut masuk wajan dan mengotori gula.', 'Without filtering, coconut flowers, bees, and ants end up in the wok and spoil the sugar.') });
+  else out.push({ level: 'ok', text: t('Nira disaring dengan kain bersih, kotoran tertahan.', 'The sap is filtered through a clean cloth, so the dirt is held back.') });
 
-  if (s.lama === 0) out.push({ level: 'bad', text: 'Belum dimasak sama sekali, nira masih berupa cairan.' });
-  else if (temp < 100) out.push({ level: 'warn', text: `Suhu ±${temp} °C belum sampai 105 sampai 110 °C. Pekatan masih encer, gula lembek dan kadar airnya tinggi.` });
-  else if (temp <= 115) out.push({ level: 'ok', text: `Suhu ±${temp} °C, di rentang akhir pemasakan (sekitar 105 sampai 110 °C). Pekatan siap didinginkan dan dicetak.` });
-  else if (temp <= 125) out.push({ level: 'warn', text: `Suhu ±${temp} °C agak tinggi. Pekatan mulai terlalu pekat dan warnanya terlalu gelap.` });
-  else out.push({ level: 'bad', text: `Suhu ±${temp} °C terlalu tinggi. Gula mudah gosong dan rasanya pahit.` });
+  if (s.lama === 0) out.push({ level: 'bad', text: t('Belum dimasak sama sekali, nira masih berupa cairan.', 'Not cooked at all yet, the sap is still a liquid.') });
+  else if (temp < 100) out.push({ level: 'warn', text: t(`Suhu ±${temp} °C belum sampai 105 sampai 110 °C. Pekatan masih encer, gula lembek dan kadar airnya tinggi.`, `At about ${temp} °C it has not reached 105 to 110 °C. The syrup is still thin, the sugar soft and high in moisture.`) });
+  else if (temp <= 115) out.push({ level: 'ok', text: t(`Suhu ±${temp} °C, di rentang akhir pemasakan (sekitar 105 sampai 110 °C). Pekatan siap didinginkan dan dicetak.`, `At about ${temp} °C, within the end-of-cooking range (around 105 to 110 °C). The syrup is ready to cool and mold.`) });
+  else if (temp <= 125) out.push({ level: 'warn', text: t(`Suhu ±${temp} °C agak tinggi. Pekatan mulai terlalu pekat dan warnanya terlalu gelap.`, `At about ${temp} °C it is a bit high. The syrup is getting too thick and too dark.`) });
+  else out.push({ level: 'bad', text: t(`Suhu ±${temp} °C terlalu tinggi. Gula mudah gosong dan rasanya pahit.`, `At about ${temp} °C it is too high. The sugar burns easily and tastes bitter.`) });
 
-  if (s.api >= 80 && s.lama > 0) out.push({ level: 'warn', text: 'Api besar membuat buih naik cepat dan mudah meluap. Api besar cocok di awal saja.' });
-  if (s.api <= 25 && s.lama > 0) out.push({ level: 'warn', text: 'Api sangat kecil membuat air lambat menguap, waktu memasak jadi sangat panjang.' });
+  if (s.api >= 80 && s.lama > 0) out.push({ level: 'warn', text: t('Api besar membuat buih naik cepat dan mudah meluap. Api besar cocok di awal saja.', 'A big fire makes the foam rise fast and overflow easily. A big fire suits only the start.') });
+  if (s.api <= 25 && s.lama > 0) out.push({ level: 'warn', text: t('Api sangat kecil membuat air lambat menguap, waktu memasak jadi sangat panjang.', 'A very small fire makes water evaporate slowly, so cooking takes very long.') });
 
   const bad = out.filter((o) => o.level === 'bad').length;
   const warn = out.filter((o) => o.level === 'warn').length;
-  const verdict = bad ? { t: 'Gagal atau berisiko', c: 'text-[#9E4F37]' } : warn ? { t: 'Cukup, tapi belum pas', c: 'text-caramel-dark' } : { t: 'Gula siap dicetak', c: 'text-forest' };
+  const verdict = bad ? { t: t('Gagal atau berisiko', 'Failed or risky'), c: 'text-[#9E4F37]' } : warn ? { t: t('Cukup, tapi belum pas', 'Fair, but not quite right'), c: 'text-caramel-dark' } : { t: t('Gula siap dicetak', 'Sugar ready to mold'), c: 'text-forest' };
   return { cook, temp, out, verdict };
 };
 
@@ -127,10 +128,10 @@ const LabDapur: React.FC<{ onTried: () => void }> = ({ onTried }) => {
   return (
     <div>
       <p className="text-sm leading-relaxed text-ink-soft">
-        Ubah pengaturan di bawah dan lihat akibatnya pada nira. Tidak ada skor dan tidak ada batas waktu, silakan bereksperimen.
+        {t('Ubah pengaturan di bawah dan lihat akibatnya pada nira. Tidak ada skor dan tidak ada batas waktu, silakan bereksperimen.', 'Change the settings below and see what happens to the sap. There is no score and no time limit, so experiment freely.')}
       </p>
       <div className="no-scrollbar -mx-5 mt-3 flex gap-2 overflow-x-auto px-5 pb-1">
-        {PRESETS.map((p) => (
+        {getPresets().map((p) => (
           <button
             key={p.name}
             type="button"
@@ -155,26 +156,26 @@ const LabDapur: React.FC<{ onTried: () => void }> = ({ onTried }) => {
         />
       </div>
       <div className="mt-2 grid grid-cols-2 gap-2 text-center text-sm font-bold">
-        <span className="rounded-xl bg-coconut py-2 text-deep-forest">Suhu ±{r.temp} °C</span>
+        <span className="rounded-xl bg-coconut py-2 text-deep-forest">{t('Suhu', 'Temp')} ±{r.temp} °C</span>
         <span className={`rounded-xl bg-coconut py-2 ${r.verdict.c}`}>{r.verdict.t}</span>
       </div>
 
       <div className="mt-4 space-y-4 rounded-2xl bg-coconut p-4">
-        <Toggle label="Laru di pongkor" on={s.laru} onLabel="Pakai laru" offLabel="Tanpa laru" set={(v) => set({ laru: v })} />
-        <Toggle label="Penyaringan" on={s.disaring} onLabel="Disaring" offLabel="Tidak disaring" set={(v) => set({ disaring: v })} />
-        <Slider label="Nira didiamkan sebelum dimasak" value={s.diam} min={0} max={6} step={0.5} unit="jam" onChange={(n) => set({ diam: n })} />
-        <Slider label="Besar api" value={s.api} min={0} max={100} step={5} unit="%" onChange={(n) => set({ api: n })} />
-        <Slider label="Lama memasak" value={s.lama} min={0} max={5} step={0.5} unit="jam" onChange={(n) => set({ lama: n })} />
+        <Toggle label={t('Laru di pongkor', 'Laru in the pongkor')} on={s.laru} onLabel={t('Pakai laru', 'With laru')} offLabel={t('Tanpa laru', 'No laru')} set={(v) => set({ laru: v })} />
+        <Toggle label={t('Penyaringan', 'Filtering')} on={s.disaring} onLabel={t('Disaring', 'Filtered')} offLabel={t('Tidak disaring', 'Not filtered')} set={(v) => set({ disaring: v })} />
+        <Slider label={t('Nira didiamkan sebelum dimasak', 'Sap left before cooking')} value={s.diam} min={0} max={6} step={0.5} unit={t('jam', 'h')} onChange={(n) => set({ diam: n })} />
+        <Slider label={t('Besar api', 'Fire size')} value={s.api} min={0} max={100} step={5} unit="%" onChange={(n) => set({ api: n })} />
+        <Slider label={t('Lama memasak', 'Cooking time')} value={s.lama} min={0} max={5} step={0.5} unit={t('jam', 'h')} onChange={(n) => set({ lama: n })} />
         <button
           type="button"
           onClick={() => setS(IDEAL)}
           className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-full border-2 border-bamboo text-sm font-semibold text-deep-forest"
         >
-          <RotateCcw className="h-4 w-4" /> Kembali ke cara yang pas
+          <RotateCcw className="h-4 w-4" /> {t('Kembali ke cara yang pas', 'Back to the right way')}
         </button>
       </div>
 
-      <h3 className="mt-5 text-xl text-deep-forest">Hasil eksperimenmu</h3>
+      <h3 className="mt-5 text-xl text-deep-forest">{t('Hasil eksperimenmu', 'Your experiment results')}</h3>
       <ul className="mt-2 space-y-2" aria-live="polite">
         {r.out.map((f, i) => (
           <li key={i} className="flex gap-2.5 rounded-xl bg-coconut p-3 text-sm leading-relaxed text-charcoal">
@@ -191,28 +192,29 @@ const LabDapur: React.FC<{ onTried: () => void }> = ({ onTried }) => {
       </ul>
       <p className="mt-3 flex items-start gap-2 text-xs leading-relaxed text-ink-soft">
         <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-        Simulasi sederhana dari jurnal dan liputan tentang gula kelapa Banyumas, bukan standar mutu. Angka perajin sebenarnya bisa berbeda.
+        {t('Simulasi sederhana dari jurnal dan liputan tentang gula kelapa Banyumas, bukan standar mutu. Angka perajin sebenarnya bisa berbeda.', 'A simple simulation drawn from journals and news about Banyumas coconut sugar, not a quality standard. Real artisans\' numbers may differ.')}
       </p>
-      {tried >= 4 && <p className="mt-2 text-xs font-semibold text-forest">Eksperimen selesai, XP sudah ditambahkan.</p>}
+      {tried >= 4 && <p className="mt-2 text-xs font-semibold text-forest">{t('Eksperimen selesai, XP sudah ditambahkan.', 'Experiment complete, XP added.')}</p>}
     </div>
   );
 };
 
 /* ====================== Peta Istilah: menautkan istilah dan fungsi ====================== */
 
-const PAIRS = [
-  { id: 'pongkor', term: 'Pongkor', fn: 'Wadah bambu penampung nira dari mayang' },
-  { id: 'laru', term: 'Laru', fn: 'Kapur dan cangkang manggis agar nira tidak cepat asam' },
-  { id: 'kain', term: 'Kain saring', fn: 'Menahan kotoran sebelum nira masuk wajan' },
-  { id: 'jubung', term: 'Jubung', fn: 'Anyaman bambu untuk mengurangi buih saat memasak' },
-  { id: 'bathok', term: 'Bathok', fn: 'Cetakan gula dari setengah tempurung kelapa' },
-  { id: 'wajan', term: 'Wajan dan tungku', fn: 'Tempat memasak nira dengan api kayu' },
+const getPairs = () => [
+  { id: 'pongkor', term: 'Pongkor', fn: t('Wadah bambu penampung nira dari mayang', 'Bamboo container that catches sap from the flower stalk') },
+  { id: 'laru', term: 'Laru', fn: t('Kapur dan cangkang manggis agar nira tidak cepat asam', 'Lime and mangosteen rind so the sap does not sour quickly') },
+  { id: 'kain', term: t('Kain saring', 'Filter cloth'), fn: t('Menahan kotoran sebelum nira masuk wajan', 'Holds back dirt before the sap enters the wok') },
+  { id: 'jubung', term: 'Jubung', fn: t('Anyaman bambu untuk mengurangi buih saat memasak', 'Woven bamboo that reduces foam while cooking') },
+  { id: 'bathok', term: 'Bathok', fn: t('Cetakan gula dari setengah tempurung kelapa', 'Sugar mold made from half a coconut shell') },
+  { id: 'wajan', term: t('Wajan dan tungku', 'Wok and stove'), fn: t('Tempat memasak nira dengan api kayu', 'Where the sap is cooked over a wood fire') },
 ];
 
 // urutan fungsi diacak tetap agar tidak sejajar dengan istilah
 const FN_ORDER = [3, 0, 5, 2, 4, 1];
 
 const PetaIstilah: React.FC<{ onDone: () => void }> = ({ onDone }) => {
+  const PAIRS = getPairs();
   const [term, setTerm] = React.useState<string | null>(null);
   const [matched, setMatched] = React.useState<string[]>([]);
   const [wrong, setWrong] = React.useState<string | null>(null);
@@ -240,10 +242,10 @@ const PetaIstilah: React.FC<{ onDone: () => void }> = ({ onDone }) => {
   return (
     <div>
       <p className="text-sm leading-relaxed text-ink-soft">
-        Tautkan setiap istilah dengan fungsinya: ketuk istilah di kiri, lalu ketuk fungsi yang cocok di kanan.
+        {t('Tautkan setiap istilah dengan fungsinya: ketuk istilah di kiri, lalu ketuk fungsi yang cocok di kanan.', 'Match each term with its function: tap a term on the left, then tap the matching function on the right.')}
       </p>
       <p role="status" className="mt-2 min-h-[24px] text-sm font-bold text-deep-forest">
-        {done ? `Semua tertaut dalam ${tries} percobaan!` : term ? `Pilih fungsi untuk "${PAIRS.find((p) => p.id === term)?.term}"` : `${matched.length} dari ${PAIRS.length} tertaut`}
+        {done ? t(`Semua tertaut dalam ${tries} percobaan!`, `All matched in ${tries} tries!`) : term ? t(`Pilih fungsi untuk "${PAIRS.find((p) => p.id === term)?.term}"`, `Choose the function for "${PAIRS.find((p) => p.id === term)?.term}"`) : t(`${matched.length} dari ${PAIRS.length} tertaut`, `${matched.length} of ${PAIRS.length} matched`)}
       </p>
       <div className="mt-2 grid grid-cols-2 gap-3">
         <ul className="space-y-2">
@@ -291,7 +293,7 @@ const PetaIstilah: React.FC<{ onDone: () => void }> = ({ onDone }) => {
       {done && (
         <div className="mt-4 text-center">
           <Nira mood="cheer" size={90} className="mx-auto" />
-          <p className="mt-1 text-base font-semibold text-deep-forest">Peta istilahmu lengkap. XP sudah ditambahkan.</p>
+          <p className="mt-1 text-base font-semibold text-deep-forest">{t('Peta istilahmu lengkap. XP sudah ditambahkan.', 'Your term map is complete. XP added.')}</p>
           <button
             type="button"
             onClick={() => {
@@ -301,7 +303,7 @@ const PetaIstilah: React.FC<{ onDone: () => void }> = ({ onDone }) => {
             }}
             className="mt-2 inline-flex min-h-[44px] items-center gap-2 rounded-full border-2 border-bamboo px-5 text-sm font-semibold text-deep-forest"
           >
-            <RotateCcw className="h-4 w-4" /> Main lagi
+            <RotateCcw className="h-4 w-4" /> {t('Main lagi', 'Play again')}
           </button>
         </div>
       )}
@@ -317,28 +319,28 @@ export const Lab: React.FC = () => {
   const award = (id: string, xp: number) => {
     if (!labDone.includes(id)) {
       completeLab(id, xp);
-      showToast(`+${xp} XP dari Lab Pengetahuan`);
+      showToast(t(`+${xp} XP dari Lab Pengetahuan`, `+${xp} XP from the Knowledge Lab`));
     }
   };
   return (
     <div className="px-5 pb-8 pt-4">
       <Link to="/learn" className="inline-flex min-h-[44px] items-center gap-1 text-sm font-semibold text-deep-forest">
-        <ArrowLeft className="h-4 w-4" /> Perjalanan
+        <ArrowLeft className="h-4 w-4" /> {t('Perjalanan', 'Journey')}
       </Link>
       <div className="mt-1 flex items-center gap-3">
         <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-forest text-coconut">
           <FlaskConical className="h-6 w-6" />
         </span>
         <div>
-          <h1 className="text-[28px] leading-tight text-deep-forest">Lab Pengetahuan</h1>
-          <p className="text-sm text-ink-soft">Eksperimen dan menautkan istilah</p>
+          <h1 className="text-[28px] leading-tight text-deep-forest">{t('Lab Pengetahuan', 'Knowledge Lab')}</h1>
+          <p className="text-sm text-ink-soft">{t('Eksperimen dan menautkan istilah', 'Experiments and term matching')}</p>
         </div>
       </div>
 
       <div className="mt-4 grid grid-cols-2 rounded-full border border-bamboo bg-coconut p-1" role="tablist">
         {([
-          ['dapur', 'Lab Dapur'],
-          ['istilah', 'Peta Istilah'],
+          ['dapur', t('Lab Dapur', 'Kitchen Lab')],
+          ['istilah', t('Peta Istilah', 'Term Map')],
         ] as const).map(([k, t]) => (
           <button
             key={k}

@@ -5,6 +5,8 @@ import QRCode from 'qrcode';
 import { Ornate, ProgressBar } from '../components/ui';
 import { HeritageRecord } from '../types/jejakNira';
 import { useStore } from '../store';
+import { t } from '../i18n';
+import { auditAction, auditNote, auditRole, auditStamp } from '../data/display';
 import { StaffBar } from './Kurator';
 
 /** Hanya rekaman yang disetujui, berizin publik, dan diizinkan tampil di QR yang boleh ditautkan ke batch. */
@@ -20,7 +22,7 @@ const QrImage: React.FC<{ code: string; size?: number }> = ({ code, size = 160 }
       .then(setSrc)
       .catch(() => setSrc(''));
   }, [url, size]);
-  return src ? <img src={src} alt={`Kode QR untuk ${url}`} width={size} height={size} className="rounded-lg border border-bamboo" /> : <div style={{ width: size, height: size }} className="rounded-lg bg-bamboo/40" />;
+  return src ? <img src={src} alt={t(`Kode QR untuk ${url}`, `QR code for ${url}`)} width={size} height={size} className="rounded-lg border border-bamboo" /> : <div style={{ width: size, height: size }} className="rounded-lg bg-bamboo/40" />;
 };
 
 const Kpi: React.FC<{ label: string; value: number; target: number; note: string; live?: boolean }> = ({ label, value, target, note, live }) => (
@@ -34,14 +36,15 @@ const Kpi: React.FC<{ label: string; value: number; target: number; note: string
     </div>
     <ProgressBar value={(value / target) * 100} tone="forest" className="mt-2" />
     <p className="mt-2 text-xs leading-relaxed text-ink-soft">
-      {live && <b className="text-forest">Langsung dari data. </b>}
+      {live && <b className="text-forest">{t('Langsung dari data. ', 'Live from the data. ')}</b>}
       {note}
     </p>
   </Ornate>
 );
 
 export const Admin: React.FC = () => {
-  const { records, batches, audit, addBatch, showToast } = useStore();
+  const { records, batches, audit, submissions, addBatch, showToast } = useStore();
+  const validated = submissions.filter((x) => x.status === 'Tervalidasi Mentor').length;
   const [tab, setTab] = React.useState<'ringkasan' | 'batch' | 'audit'>('ringkasan');
   const [product, setProduct] = React.useState('Gula Kelapa Cetak');
   const [village, setVillage] = React.useState(VILLAGES[0]);
@@ -54,7 +57,7 @@ export const Admin: React.FC = () => {
     e.preventDefault();
     const b = addBatch({ productName: product, village, period, linkedRecordIds: linked });
     setLinked([]);
-    showToast(`Batch ${b.code} dibuat. QR siap dicetak.`);
+    showToast(t(`Batch ${b.code} dibuat. QR siap dicetak.`, `Batch ${b.code} created. The QR is ready to print.`));
   };
   const download = async (code: string) => {
     const url = await QRCode.toDataURL(`${window.location.origin}/p/${code}`, { margin: 2, width: 800, color: { dark: '#18382C', light: '#FFFFFF' } });
@@ -68,12 +71,12 @@ export const Admin: React.FC = () => {
     <div className="min-h-full bg-cream pb-10">
       <StaffBar current="admin" />
       <div className="px-5 pt-4">
-        <h1 className="text-[28px] leading-tight text-deep-forest">Koordinasi program</h1>
-        <p className="mt-1 text-sm leading-relaxed text-ink-soft">Pantau capaian pilot, buat batch QR untuk kemasan, dan tinjau catatan audit tata kelola.</p>
+        <h1 className="text-[28px] leading-tight text-deep-forest">{t('Koordinasi program', 'Programme coordination')}</h1>
+        <p className="mt-1 text-sm leading-relaxed text-ink-soft">{t('Pantau capaian pilot, buat batch QR untuk kemasan, dan tinjau catatan audit tata kelola.', 'Track pilot progress, create QR batches for packaging, and review the governance audit log.')}</p>
         <div className="mt-4 grid grid-cols-3 rounded-full border border-bamboo bg-coconut p-1" role="tablist">
           {([
-            ['ringkasan', 'Capaian'],
-            ['batch', 'Batch QR'],
+            ['ringkasan', t('Capaian', 'Progress')],
+            ['batch', t('Batch QR', 'QR batches')],
             ['audit', 'Audit'],
           ] as const).map(([k, t]) => (
             <button key={k} type="button" role="tab" aria-selected={tab === k} onClick={() => setTab(k)} className={`min-h-[44px] rounded-full text-sm font-semibold ${tab === k ? 'bg-forest text-coconut' : 'text-ink-soft'}`}>
@@ -84,12 +87,12 @@ export const Admin: React.FC = () => {
 
         {tab === 'ringkasan' && (
           <div className="mt-4 space-y-3">
-            <Kpi label="Rekaman warisan tervalidasi" value={approved} target={15} live note="Target pilot 12 minggu: minimal 15 rekaman yang disetujui kurator." />
-            <Kpi label="Pelajar mencapai milestone mentor" value={0} target={6} note="Milestone divalidasi manusia (mentor) di lapangan. Belum ada validasi sungguhan, jadi 0." />
-            <Kpi label="Pelajar dalam pilot" value={10} target={10} note="Angka rencana (usia 18 sampai 29). Data ilustratif." />
-            <Kpi label="Mentor penderes" value={2} target={2} note="Angka rencana. Data ilustratif." />
+            <Kpi label={t('Rekaman warisan tervalidasi', 'Validated heritage recordings')} value={approved} target={15} live note={t('Target pilot 12 minggu: minimal 15 rekaman yang disetujui kurator.', '12-week pilot target: at least 15 curator-approved recordings.')} />
+            <Kpi label={t('Pelajar mencapai milestone mentor', 'Learners reaching the mentor milestone')} value={validated} target={6} live note={t('Hanya validasi mentor manusia yang dihitung. Angka ini berasal dari alur Mentor di aplikasi; pilot lapangan belum berjalan.', 'Only human mentor validation counts. This number comes from the Mentor flow in the app; the field pilot has not started.')} />
+            <Kpi label={t('Pelajar dalam pilot', 'Learners in the pilot')} value={10} target={10} note={t('Angka rencana (usia 18 sampai 29). Data ilustratif.', 'Planned figure (ages 18 to 29). Illustrative data.')} />
+            <Kpi label={t('Mentor penderes', 'Tapper mentors')} value={2} target={2} note={t('Angka rencana. Data ilustratif.', 'Planned figure. Illustrative data.')} />
             <p className="rounded-xl bg-bamboo/40 p-3 text-xs leading-relaxed text-deep-forest">
-              Pilot belum berjalan. Hanya jumlah rekaman yang dihitung langsung dari aplikasi ini; angka lain adalah rencana dari proposal dan tidak mengklaim hasil.
+              {t('Pilot belum berjalan. Hanya jumlah rekaman yang dihitung langsung dari aplikasi ini; angka lain adalah rencana dari proposal dan tidak mengklaim hasil.', 'The pilot has not started. Only the recording count is computed live from this app; the other figures are plans from the proposal and claim no results.')}
             </p>
           </div>
         )}
@@ -105,12 +108,12 @@ export const Admin: React.FC = () => {
                       <p className="text-lg font-bold text-deep-forest">{b.code}</p>
                       <p className="text-sm text-charcoal">{b.productName}</p>
                       <p className="text-xs text-ink-soft">
-                        Desa {b.village} · {b.period}
+                        {t('Desa', 'Village')} {b.village} · {b.period}
                       </p>
-                      <p className="mt-1 text-xs text-ink-soft">Rekaman: {b.linkedRecordIds.length ? b.linkedRecordIds.join(', ') : 'belum ada'}</p>
+                      <p className="mt-1 text-xs text-ink-soft">{t('Rekaman', 'Recordings')}: {b.linkedRecordIds.length ? b.linkedRecordIds.join(', ') : t('belum ada', 'none yet')}</p>
                       <div className="mt-2 flex flex-wrap gap-2">
                         <Link to={`/p/${b.code}`} className="inline-flex min-h-[44px] items-center gap-1 rounded-full border border-bamboo px-3 text-xs font-bold text-deep-forest">
-                          <ExternalLink className="h-3.5 w-3.5" /> Buka
+                          <ExternalLink className="h-3.5 w-3.5" /> {t('Buka', 'Open')}
                         </Link>
                         <button type="button" onClick={() => download(b.code)} className="inline-flex min-h-[44px] items-center gap-1 rounded-full bg-forest px-3 text-xs font-bold text-coconut">
                           <Download className="h-3.5 w-3.5" /> PNG
@@ -122,14 +125,14 @@ export const Admin: React.FC = () => {
               ))}
             </ul>
 
-            <h2 className="mt-6 text-[20px] text-deep-forest">Buat batch baru</h2>
+            <h2 className="mt-6 text-[20px] text-deep-forest">{t('Buat batch baru', 'Create a new batch')}</h2>
             <form onSubmit={create} className="mt-2 space-y-3 rounded-2xl bg-coconut p-4">
               <label className="block text-sm font-semibold text-deep-forest">
-                Produk
+                {t('Produk', 'Product')}
                 <input value={product} onChange={(e) => setProduct(e.target.value)} required className="mt-1 min-h-[48px] w-full rounded-xl border border-bamboo bg-cream px-3 text-base" />
               </label>
               <label className="block text-sm font-semibold text-deep-forest">
-                Desa asal
+                {t('Desa asal', 'Village of origin')}
                 <select value={village} onChange={(e) => setVillage(e.target.value)} className="mt-1 min-h-[48px] w-full rounded-xl border border-bamboo bg-cream px-3 text-base">
                   {VILLAGES.map((v) => (
                     <option key={v}>{v}</option>
@@ -137,12 +140,12 @@ export const Admin: React.FC = () => {
                 </select>
               </label>
               <label className="block text-sm font-semibold text-deep-forest">
-                Periode produksi
+                {t('Periode produksi', 'Production period')}
                 <input value={period} onChange={(e) => setPeriod(e.target.value)} required className="mt-1 min-h-[48px] w-full rounded-xl border border-bamboo bg-cream px-3 text-base" />
               </label>
               <fieldset>
-                <legend className="text-sm font-semibold text-deep-forest">Rekaman yang ditampilkan di halaman QR</legend>
-                <p className="text-xs text-ink-soft">Hanya yang disetujui kurator dengan izin publik dan izin QR dari kontributor.</p>
+                <legend className="text-sm font-semibold text-deep-forest">{t('Rekaman yang ditampilkan di halaman QR', 'Recordings shown on the QR page')}</legend>
+                <p className="text-xs text-ink-soft">{t('Hanya yang disetujui kurator dengan izin publik dan izin QR dari kontributor.', 'Only those approved by the curator with public and QR permission from the contributor.')}</p>
                 <ul className="mt-2 space-y-1.5">
                   {sorted.map((r) => {
                     const ok = eligible(r);
@@ -156,7 +159,7 @@ export const Admin: React.FC = () => {
                           )}
                           <span>
                             {r.title}
-                            {!ok && <span className="block text-xs">Belum boleh: menunggu persetujuan kurator atau izin publik.</span>}
+                            {!ok && <span className="block text-xs">{t('Belum boleh: menunggu persetujuan kurator atau izin publik.', 'Not yet allowed: awaiting curator approval or public permission.')}</span>}
                           </span>
                         </label>
                       </li>
@@ -165,7 +168,7 @@ export const Admin: React.FC = () => {
                 </ul>
               </fieldset>
               <button type="submit" className="flex min-h-[56px] w-full items-center justify-center gap-2 rounded-full bg-caramel-dark text-lg font-semibold text-coconut">
-                <Plus className="h-5 w-5" /> Buat batch dan QR
+                <Plus className="h-5 w-5" /> {t('Buat batch dan QR', 'Create batch and QR')}
               </button>
             </form>
           </div>
@@ -176,13 +179,13 @@ export const Admin: React.FC = () => {
             {audit.map((a) => (
               <li key={a.id} className="rounded-2xl bg-coconut p-3">
                 <p className="text-xs font-semibold text-ink-soft">
-                  {a.timestamp} · {a.role}
+                  {auditStamp(a.timestamp)} · {auditRole(a.role)}
                 </p>
                 <p className="mt-0.5 text-base font-semibold text-deep-forest">
-                  {a.action} <span className="text-caramel-dark">{a.target}</span>
+                  {auditAction(a.action)} <span className="text-caramel-dark">{a.target}</span>
                 </p>
                 <p className="text-sm text-ink-soft">
-                  {a.actor} · {a.visibilityNote}
+                  {a.actor} · {auditNote(a.visibilityNote)}
                 </p>
               </li>
             ))}

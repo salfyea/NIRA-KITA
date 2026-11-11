@@ -3,7 +3,8 @@ import { createPortal } from 'react-dom';
 import { useLocation } from 'react-router-dom';
 import { ArrowRight, ChevronUp, Eye, Hand, ShieldCheck, X } from 'lucide-react';
 import { Nira } from '../art/Nira';
-import { TOUR } from '../data/tour';
+import { getTour } from '../data/tour';
+import { t } from '../i18n';
 import { useTour } from './TourContext';
 
 /**
@@ -17,6 +18,7 @@ export const TourOverlay: React.FC = () => {
   React.useEffect(() => setHost(document.getElementById('phone-overlay')), []);
   if (!active || !host) return null;
 
+  const TOUR = getTour();
   const s = TOUR[step];
   const last = step === TOUR.length - 1;
   const hasTabs = pathname.startsWith('/learn') && !pathname.startsWith('/learn/bab');
@@ -26,7 +28,7 @@ export const TourOverlay: React.FC = () => {
       {open ? (
         <section
           role="dialog"
-          aria-label={`Tur juri, langkah ${step + 1} dari ${TOUR.length}`}
+          aria-label={t(`Tur juri, langkah ${step + 1} dari ${TOUR.length}`, `Judges' tour, step ${step + 1} of ${TOUR.length}`)}
           className="sheet-enter pointer-events-auto absolute inset-x-0 bottom-0 rounded-t-[28px] bg-cream px-5 pb-5 pt-3 shadow-[0_-18px_40px_-14px_rgba(16,38,30,0.55)]"
         >
           <div className="mx-auto h-1.5 w-10 rounded-full bg-bamboo" />
@@ -37,10 +39,10 @@ export const TourOverlay: React.FC = () => {
               </span>
             </span>
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-bold uppercase tracking-[0.16em] text-caramel-dark">Tur juri · {step + 1} dari {TOUR.length}</p>
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-caramel-dark">{t('Tur juri', 'Judges\' tour')} · {step + 1} {t('dari', 'of')} {TOUR.length}</p>
               <h2 className="font-serif text-xl leading-tight text-deep-forest">{s.title}</h2>
             </div>
-            <button type="button" onClick={stop} aria-label="Akhiri tur" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-ink-soft">
+            <button type="button" onClick={stop} aria-label={t('Akhiri tur', 'End tour')} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-ink-soft">
               <X className="h-5 w-5" />
             </button>
           </div>
@@ -55,10 +57,10 @@ export const TourOverlay: React.FC = () => {
             <Eye className="mt-0.5 h-5 w-5 shrink-0 text-forest" /> {s.see}
           </p>
           <p className="mt-2 flex gap-2 text-sm font-semibold leading-snug text-forest">
-            <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0" /> Membuktikan: {s.proves}
+            <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0" /> {t('Membuktikan', 'Proves')}: {s.proves}
           </p>
           <p className="mt-2 flex gap-2 rounded-xl bg-caramel/15 p-2.5 text-sm font-semibold leading-snug text-caramel-dark">
-            <Hand className="mt-0.5 h-4 w-4 shrink-0" /> Coba: {s.tryIt}
+            <Hand className="mt-0.5 h-4 w-4 shrink-0" /> {t('Coba', 'Try')}: {s.tryIt}
           </p>
 
           <div className="mt-3 grid grid-cols-[auto_1fr] gap-2">
@@ -68,10 +70,10 @@ export const TourOverlay: React.FC = () => {
               disabled={step === 0}
               className="min-h-[52px] rounded-full border-2 border-bamboo px-5 text-base font-semibold text-deep-forest disabled:opacity-40"
             >
-              Kembali
+              {t('Kembali', 'Back')}
             </button>
             <button type="button" onClick={() => setOpen(false)} className="min-h-[52px] rounded-full bg-forest text-base font-semibold text-coconut">
-              Coba sekarang
+              {t('Coba sekarang', 'Try it now')}
             </button>
           </div>
         </section>
@@ -80,20 +82,20 @@ export const TourOverlay: React.FC = () => {
           className="pointer-events-auto absolute inset-x-3 flex items-center gap-2 rounded-full bg-deep-forest p-1.5 pl-2 text-coconut shadow-[0_10px_26px_-8px_rgba(16,38,30,0.7)]"
           style={{ bottom: hasTabs ? 84 : 14 }}
         >
-          <button type="button" onClick={() => setOpen(true)} className="flex min-h-[44px] min-w-0 flex-1 items-center gap-2 text-left" aria-label="Buka panduan tur">
+          <button type="button" onClick={() => setOpen(true)} className="flex min-h-[44px] min-w-0 flex-1 items-center gap-2 text-left" aria-label={t('Buka panduan tur', 'Open tour guide')}>
             <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#FBE9C9]">
               <span className="mt-2">
                 <Nira mood={s.mood} size={28} float={false} />
               </span>
             </span>
             <span className="min-w-0 flex-1">
-              <span className="block text-[11px] font-bold uppercase tracking-wider text-[#E7C79A]">Tur juri {step + 1}/{TOUR.length}</span>
+              <span className="block text-[11px] font-bold uppercase tracking-wider text-[#E7C79A]">{t('Tur juri', 'Tour')} {step + 1}/{TOUR.length}</span>
               <span className="block truncate text-sm font-semibold">{s.short}</span>
             </span>
             <ChevronUp className="h-4 w-4 shrink-0 text-[#E7C79A]" />
           </button>
           <button type="button" onClick={next} className="flex min-h-[44px] shrink-0 items-center gap-1.5 rounded-full bg-caramel px-4 text-sm font-bold text-deep-forest">
-            {last ? 'Selesai' : 'Lanjut'} <ArrowRight className="h-4 w-4" />
+            {last ? t('Selesai', 'Finish') : t('Lanjut', 'Next')} <ArrowRight className="h-4 w-4" />
           </button>
         </div>
       )}

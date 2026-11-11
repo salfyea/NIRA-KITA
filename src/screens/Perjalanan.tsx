@@ -1,10 +1,11 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Check, FlaskConical, Hand, Lock, Megaphone, Sparkles } from 'lucide-react';
+import { Check, FlaskConical, Hand, Lock, Sparkles } from 'lucide-react';
 import { Scene, SLUG_SCENE } from '../art/Scene';
 import { Nira } from '../art/Nira';
 import { ProgressBar, Sheet } from '../components/ui';
 import { useStore } from '../store';
+import { LangToggle, t } from '../i18n';
 
 const W = 390;
 const ROW = 200;
@@ -45,8 +46,9 @@ export const Perjalanan: React.FC = () => {
   return (
     <div className="bg-cream">
       <header className="relative overflow-hidden px-5 pb-4 pt-6">
-        <p className="text-sm font-semibold text-ink-soft">Halo, {session?.name}</p>
-        <h1 className="text-[28px] leading-tight text-deep-forest">Perjalananmu</h1>
+        <LangToggle className="absolute right-4 top-4 z-10" />
+        <p className="text-sm font-semibold text-ink-soft">{t('Halo', 'Hello')}, {session?.name}</p>
+        <h1 className="text-[28px] leading-tight text-deep-forest">{t('Perjalananmu', 'Your journey')}</h1>
         <div className="mt-3 flex items-center gap-3 rounded-2xl border border-bamboo bg-coconut px-3 py-2.5">
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-caramel/15 text-sm font-bold text-caramel-dark">
             {level.level}
@@ -88,7 +90,7 @@ export const Perjalanan: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setOpenSlug(m.slug)}
-                aria-label={`${m.number}: ${m.title}${st === 'locked' ? ', terkunci' : ''}`}
+                aria-label={`${m.number}: ${m.title}${st === 'locked' ? t(', terkunci', ', locked') : ''}`}
                 className={`relative flex h-[84px] w-[84px] items-center justify-center rounded-full p-1 shadow-lg ${
                   st === 'active' ? 'bg-caramel' : st === 'done' ? 'bg-forest' : 'bg-bamboo'
                 }`}
@@ -111,7 +113,7 @@ export const Perjalanan: React.FC = () => {
                 )}
               </button>
               <p className={`mx-auto mt-1.5 w-[120px] text-xs font-bold ${st === 'locked' ? 'text-ink-soft' : 'text-deep-forest'}`}>
-                {m.number.replace('MODUL ', 'Modul ')}
+                {m.number.replace('MODUL ', t('Modul ', 'Module '))}
                 <span className="block text-[12px] font-semibold leading-tight text-ink-soft">{m.title.split(' & ')[0]}</span>
               </p>
               {st === 'active' && (
@@ -125,38 +127,28 @@ export const Perjalanan: React.FC = () => {
       </div>
 
       <section className="space-y-3 px-5 pb-6">
-        <Link to="/learn/gerak" className="flex min-h-[64px] items-center gap-3 rounded-2xl border border-bamboo bg-coconut p-3 shadow-[0_6px_16px_-10px_rgba(24,56,44,0.5)]">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-caramel-dark text-coconut">
-            <Hand className="h-5 w-5" />
-          </span>
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold text-deep-forest">Cermin Gerak</p>
-            <p className="text-xs text-ink-soft">Latihan bentuk tangan dengan kamera. Diproses di perangkatmu.</p>
-          </div>
-          <span className="shrink-0 rounded-full bg-caramel-dark px-3 py-1.5 text-xs font-bold text-coconut">Coba</span>
-        </Link>
         <Link to="/learn/lab" className="flex min-h-[64px] items-center gap-3 rounded-2xl border border-bamboo bg-coconut p-3 shadow-[0_6px_16px_-10px_rgba(24,56,44,0.5)]">
           <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-forest text-coconut">
             <FlaskConical className="h-5 w-5" />
           </span>
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold text-deep-forest">Lab Pengetahuan</p>
-            <p className="text-xs text-ink-soft">Bereksperimen di dapur dan menautkan istilah.</p>
+            <p className="text-sm font-semibold text-deep-forest">{t('Lab Pengetahuan', 'Knowledge Lab')}</p>
+            <p className="text-xs text-ink-soft">{t('Bereksperimen di dapur dan menautkan istilah.', 'Experiment in the kitchen and link terms together.')}</p>
           </div>
-          <span className="shrink-0 rounded-full bg-forest px-3 py-1.5 text-xs font-bold text-coconut">Buka</span>
+          <span className="shrink-0 rounded-full bg-forest px-3 py-1.5 text-xs font-bold text-coconut">{t('Buka', 'Open')}</span>
         </Link>
-        <div className="flex items-center gap-3 rounded-2xl border border-dashed border-sage bg-coconut/70 p-3">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-sage/30 text-deep-forest">
-            <Megaphone className="h-5 w-5" />
+        <Link to="/learn/arsip" className="flex min-h-[64px] items-center gap-3 rounded-2xl border border-bamboo bg-coconut p-3 shadow-[0_6px_16px_-10px_rgba(24,56,44,0.5)]">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-caramel-dark text-coconut">
+            <Hand className="h-5 w-5" />
           </span>
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold text-deep-forest">Arsip Gerakan</p>
-            <p className="text-xs text-ink-soft">Jejak kegiatan dan gerakan komunitas penjaga nira.</p>
+            <p className="text-sm font-semibold text-deep-forest">{t('Arsip Gerakan', 'Movement Archive')}</p>
+            <p className="text-xs text-ink-soft">{t('Rekaman gerak perajin, dengan kerangka tangan.', 'Recordings of artisans at work, with hand tracking.')}</p>
           </div>
-          <span className="shrink-0 rounded-full bg-caramel/15 px-2 py-1 text-[11px] font-semibold text-caramel-dark">Segera hadir · konsep visi</span>
-        </div>
+          <span className="shrink-0 rounded-full bg-caramel-dark px-3 py-1.5 text-xs font-bold text-coconut">{t('Buka', 'Open')}</span>
+        </Link>
         <p className="flex items-center gap-1.5 text-xs text-ink-soft">
-          <Sparkles className="h-3.5 w-3.5" /> Data ilustratif. Seluruh pembelajaran berbasis darat.
+          <Sparkles className="h-3.5 w-3.5" /> {t('Data ilustratif. Seluruh pembelajaran berbasis darat.', 'Illustrative data. All learning is ground-based.')}
         </p>
       </section>
 
@@ -171,7 +163,7 @@ export const Perjalanan: React.FC = () => {
             <p className="mt-1 text-sm leading-relaxed text-ink-soft">{sel.subtitle}</p>
             {selStatus === 'locked' ? (
               <p className="mt-4 flex items-center gap-2 rounded-xl bg-bamboo/40 p-3 text-sm font-semibold text-deep-forest">
-                <Lock className="h-4 w-4" /> Selesaikan bab sebelumnya untuk membuka bab ini.
+                <Lock className="h-4 w-4" /> {t('Selesaikan bab sebelumnya untuk membuka bab ini.', 'Finish the previous chapter to unlock this one.')}
               </p>
             ) : (
               <>
@@ -185,14 +177,14 @@ export const Perjalanan: React.FC = () => {
                     onClick={() => navigate(`/learn/bab/${sel.slug}`)}
                     className="min-h-[52px] rounded-full bg-forest text-base font-semibold text-coconut"
                   >
-                    {sel.completionPercent >= 100 ? 'Baca lagi' : 'Mulai bab'}
+                    {sel.completionPercent >= 100 ? t('Baca lagi', 'Read again') : t('Mulai bab', 'Start chapter')}
                   </button>
                   {selQuest && (
                     <Link
                       to={`/learn/misi/${selQuest.id}`}
                       className="flex min-h-[52px] items-center justify-center rounded-full border-2 border-caramel-dark text-base font-semibold text-caramel-dark"
                     >
-                      Misi: {selQuest.title}
+                      {t('Misi', 'Quest')}: {selQuest.title}
                     </Link>
                   )}
                 </div>

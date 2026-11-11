@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Check } from 'lucide-react';
 import { useStore } from '../store';
+import { t } from '../i18n';
 import { Ornate, Pill } from '../components/ui';
 
 /** Detail misi. Penyelesaian di sini simulasi; validasi kompetensi darat dilakukan mentor manusia. */
@@ -13,7 +14,7 @@ export const QuestDetail: React.FC = () => {
   return (
     <div className="space-y-5 pb-6">
       <Link to="/learn" className="inline-flex min-h-[44px] items-center gap-1 px-5 pt-4 text-sm font-semibold text-deep-forest">
-        <ArrowLeft className="h-4 w-4" /> Perjalanan
+        <ArrowLeft className="h-4 w-4" /> {t('Perjalanan', 'Journey')}
       </Link>
       <div className="space-y-2 px-5">
         <Pill tone="forest">+{q.xpReward} XP</Pill>
@@ -38,13 +39,13 @@ export const QuestDetail: React.FC = () => {
           disabled={q.completed}
           onClick={() => {
             completeQuest(q.id);
-            showToast(`Misi selesai! +${q.xpReward} XP. Lencana tervalidasi mentor tetap menunggu mentor.`);
+            showToast(t(`Misi selesai! +${q.xpReward} XP. Lencana tervalidasi mentor tetap menunggu mentor.`, `Quest complete! +${q.xpReward} XP. The mentor-validated badge still waits for a mentor.`));
           }}
           className="min-h-[52px] w-full rounded-full bg-forest text-base font-semibold text-coconut disabled:bg-sage disabled:text-deep-forest"
         >
-          {q.completed ? 'Misi selesai' : 'Simulasikan selesai'}
+          {q.completed ? t('Misi selesai', 'Quest complete') : t('Simulasikan selesai', 'Simulate completion')}
         </button>
-        <p className="mt-2 text-xs text-ink-soft">Validasi kompetensi darat dilakukan manusia (mentor), bukan aplikasi.</p>
+        <p className="mt-2 text-xs text-ink-soft">{t('Validasi kompetensi darat dilakukan manusia (mentor), bukan aplikasi.', 'Ground-level competency is validated by humans (mentors), not by the app.')}</p>
       </div>
     </div>
   );

@@ -5,13 +5,16 @@ import './index.css';
 import { StoreProvider } from './store';
 import { App } from './App';
 import { TourProvider } from './tour/TourContext';
+import { LangRoot } from './i18n';
 
 createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <BrowserRouter>
       <StoreProvider>
         <TourProvider>
-          <App />
+          <LangRoot>
+            <App />
+          </LangRoot>
         </TourProvider>
       </StoreProvider>
     </BrowserRouter>

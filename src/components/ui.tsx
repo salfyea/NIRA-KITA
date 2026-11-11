@@ -2,6 +2,7 @@ import React from 'react';
 import { createPortal } from 'react-dom';
 import { ShieldCheck, Lock, Eye, Users } from 'lucide-react';
 import { HeritageRecord } from '../types/jejakNira';
+import { t } from '../i18n';
 
 /** Kartu berornamen: bahasa visual tunggal untuk semua kartu di aplikasi. */
 export const Ornate: React.FC<{
@@ -64,11 +65,11 @@ export const ApprovalChip: React.FC<{ record: HeritageRecord; compact?: boolean 
   const approved = record.reviewStatus === 'Approved';
   const scope =
     record.visibility === 'public'
-      ? { label: 'Izin publik', Icon: Eye }
+      ? { label: t('Izin publik', 'Public permission'), Icon: Eye }
       : record.visibility === 'learner'
-        ? { label: 'Izin pelajar', Icon: Users }
-        : { label: 'Privat', Icon: Lock };
-  const label = approved ? `Disetujui kurator · ${scope.label}` : record.reviewStatus === 'In Review' ? 'Menunggu kurator' : 'Perlu revisi';
+        ? { label: t('Izin pelajar', 'Learner permission'), Icon: Users }
+        : { label: t('Privat', 'Private'), Icon: Lock };
+  const label = approved ? `${t('Disetujui kurator', 'Curator approved')} · ${scope.label}` : record.reviewStatus === 'In Review' ? t('Menunggu kurator', 'Awaiting curator') : t('Perlu revisi', 'Needs revision');
   const Icon = approved ? ShieldCheck : scope.Icon;
   return (
     <span
@@ -79,7 +80,7 @@ export const ApprovalChip: React.FC<{ record: HeritageRecord; compact?: boolean 
       }`}
     >
       <Icon className="h-3 w-3" />
-      {compact ? (approved ? 'Disetujui' : label) : label}
+      {compact ? (approved ? t('Disetujui', 'Approved') : label) : label}
     </span>
   );
 };
