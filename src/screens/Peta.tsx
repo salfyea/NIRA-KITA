@@ -42,7 +42,7 @@ const MiniHouse: React.FC = () => (
 );
 
 export const Peta: React.FC = () => {
-  const { records, collected, checkIn, session } = useStore();
+  const { records, collected, checkIn } = useStore();
   const [sel, setSel] = React.useState<string | null>(null);
   const [revealed, setRevealed] = React.useState<string | null>(null);
 
@@ -108,8 +108,7 @@ export const Peta: React.FC = () => {
 
           {/* cincin pulsa di bawah Nira */}
           <div className="absolute" style={{ left: '48%', top: '58%' }}>
-            <span className="absolute -left-10 -top-10 block h-20 w-20 rounded-full bg-coconut/60 ring-4 ring-caramel" />
-            <span className="marker-ring absolute -left-10 -top-10 block h-20 w-20 rounded-full border-4 border-caramel-dark" />
+            <span className="marker-ring absolute -left-9 -top-9 block h-[72px] w-[72px] rounded-full border-4 border-caramel-dark" />
           </div>
 
           {/* pohon kelapa dan rumah */}
@@ -174,7 +173,7 @@ export const Peta: React.FC = () => {
         Simulasi, lokasi kasar tingkat desa, bukan pelacakan langsung
       </p>
       <p className="absolute bottom-2 left-3 z-10 rounded-full bg-coconut/90 px-2.5 py-1 text-xs font-semibold text-ink-soft">
-        {session?.name ?? 'Kamu'} · ketuk penanda desa
+        Ketuk penanda desa
       </p>
 
       {/* bottom sheet desa */}
