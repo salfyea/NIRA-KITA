@@ -42,7 +42,7 @@ const MiniHouse: React.FC = () => (
 );
 
 export const Peta: React.FC = () => {
-  const { records, collected, checkIn, session } = useStore();
+  const { records, collected, checkIn } = useStore();
   const [sel, setSel] = React.useState<string | null>(null);
   const [revealed, setRevealed] = React.useState<string | null>(null);
 
@@ -108,7 +108,7 @@ export const Peta: React.FC = () => {
 
           {/* cincin pulsa di bawah Nira */}
           <div className="absolute" style={{ left: '48%', top: '58%' }}>
-            <span className="marker-ring absolute -left-7 -top-7 block h-14 w-14 rounded-full border-[3px] border-caramel" />
+            <span className="marker-ring absolute -left-9 -top-9 block h-[72px] w-[72px] rounded-full border-4 border-caramel-dark" />
           </div>
 
           {/* pohon kelapa dan rumah */}
@@ -123,7 +123,12 @@ export const Peta: React.FC = () => {
 
           {/* avatar Nira */}
           <Billboard x={48} y={58} z={5}>
-            <Nira mood="wave" size={46} float={false} />
+            <span className="flex flex-col items-center">
+              <span style={{ filter: 'drop-shadow(0 0 1.5px #fff) drop-shadow(0 0 1.5px #fff) drop-shadow(0 2px 3px rgba(24,56,44,0.5))' }}>
+                <Nira mood="wave" size={62} float={false} />
+              </span>
+              <span className="-mt-1 rounded-full bg-caramel-dark px-2.5 py-0.5 text-xs font-bold text-coconut shadow">Kamu</span>
+            </span>
           </Billboard>
 
           {/* penanda desa */}
@@ -168,7 +173,7 @@ export const Peta: React.FC = () => {
         Simulasi, lokasi kasar tingkat desa, bukan pelacakan langsung
       </p>
       <p className="absolute bottom-2 left-3 z-10 rounded-full bg-coconut/90 px-2.5 py-1 text-xs font-semibold text-ink-soft">
-        {session?.name ?? 'Kamu'} · ketuk penanda desa
+        Ketuk penanda desa
       </p>
 
       {/* bottom sheet desa */}
