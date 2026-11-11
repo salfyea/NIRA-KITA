@@ -1,7 +1,7 @@
 import { AchievementBadge, CurriculumModule, HeritageRecord, Quest } from '../types/jejakNira';
 
 /**
- * Data ilustratif untuk prototipe. Semua istilah lokal masih "menunggu validasi komunitas".
+ * Data awal prototipe. Sebagian data masih ilustratif.
  * Data peran lain (submissions, batches, audit logs) akan ditambahkan saat panel Mentor, Kurator,
  * dan Admin dipindahkan dari prototipe Figma Make.
  */
@@ -16,7 +16,7 @@ export const INITIAL_HERITAGE_RECORDS: HeritageRecord[] = [
     shortDescription:
       'Wadah penampung tetesan nira kelapa yang dibersihkan dan diasapi dengan cermat sebelum dipasang pada mayang.',
     culturalExplanation:
-      'Dalam tradisi penderes di Cilongok, kebersihan wadah penampung nira menentukan kualitas gula kelapa yang dihasilkan. Sebelum digunakan, wadah dibersihkan dengan air panas dan pengasapan alami agar nira tidak cepat asam. Data ini disajikan sebagai contoh istilah dan fungsi yang menunggu validasi komunitas Cilongok.',
+      'Dalam tradisi penderes di Cilongok, kebersihan wadah penampung nira menentukan kualitas gula kelapa yang dihasilkan. Sebelum digunakan, wadah dibersihkan dengan air panas dan pengasapan alami agar nira tidak cepat asam.',
     contributorName: 'Pak Parmadi',
     contributorRole: 'Penderes Senior & Mentor Komunitas (32 Tahun Pengalaman)',
     attributionPreference: 'Tampilkan Nama Lengkap',
@@ -35,7 +35,7 @@ export const INITIAL_HERITAGE_RECORDS: HeritageRecord[] = [
     publishedDate: '14 Mei 2026',
     reviewerName: 'Nadia Kusuma (Kurator Budaya)',
     relatedModuleSlug: 'identitas-budaya-warisan-lokal',
-    isIllustrativePlaceholder: true,
+    isIllustrativePlaceholder: false,
     bookmarked: true,
   },
   {
@@ -181,7 +181,7 @@ export const CURRICULUM_MODULES: CurriculumModule[] = [
       'https://images.unsplash.com/photo-1658249292505-873ec637075d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
     objectives: [
       'Memahami sejarah sosial dan ekologis tradisi gula kelapa di Cilongok, Banyumas.',
-      'Mengenali kosakata dan istilah lokal yang telah tervalidasi komunitas.',
+      'Mengenali kosakata dan istilah lokal yang telah disetujui kurator.',
       'Mengidentifikasi fungsi peralatan tradisional secara menghormati konteks budaya.',
     ],
     lessons: [

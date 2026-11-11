@@ -92,7 +92,7 @@ export const Bab: React.FC = () => {
             <CardShell key={r.id} kind={kind === 'identitas' ? 'penderes' : kind}>
               <ApprovalChip record={r} />
               <h2 className="mt-2 text-2xl leading-tight text-deep-forest">{r.title}</h2>
-              {r.localTerm && <p className="mt-1 text-sm font-semibold text-caramel-dark">Istilah lokal: {r.localTerm} · menunggu validasi komunitas</p>}
+              {r.localTerm && <p className="mt-1 text-sm font-semibold text-caramel-dark">Istilah lokal: {r.localTerm}</p>}
               <p className="mt-2 text-base leading-relaxed text-charcoal">{r.culturalExplanation}</p>
               <p className="mt-3 flex items-start gap-2 text-sm text-ink-soft">
                 <Quote className="mt-0.5 h-4 w-4 shrink-0 text-caramel-dark" />
