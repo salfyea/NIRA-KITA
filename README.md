@@ -36,6 +36,9 @@ Stack: Vite + React 19 + TypeScript + Tailwind 4 + react-router-dom v7 + lucide-
 - `src/store.tsx`: state lokal (localStorage, try/catch), termasuk `session` dan `onboarded`.
 - `src/data/`: data awal, kuis mini, helper atribusi.
 
+## PWA (pasang dan offline)
+`public/manifest.webmanifest` + `public/sw.js` (ditulis tangan, tanpa pustaka). Cangkang aplikasi disimpan saat pemasangan; halaman jaringan-dulu; berkas besar (model tangan, WASM, klip, font) disimpan saat pertama dipakai. Di Profil ada tombol Pasang aplikasi dan "Siapkan untuk offline" (±27 MB). Tidak ada data pengguna atau video kamera yang disimpan. Uji: `qa-out` (lihat riwayat PR #20).
+
 ## Dua bahasa (ID/EN)
 `src/i18n.tsx`: `t('teks Indonesia', 'English text')`, toggle ID/EN (tersimpan di perangkat), dan subtree dimuat ulang saat bahasa berganti. Data awal diterjemahkan lewat `src/data/en.ts`, konten game/tur/praktik lewat fungsi `get...()` di `src/data/`. Terjemahan dibuat dengan bantuan AI dan perlu ditinjau kurator atau penutur asli; istilah budaya (pongkor, laru, bathok, jubung) dipertahankan dengan penjelasan.
 
