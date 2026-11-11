@@ -22,6 +22,8 @@ interface PersistedState {
   badges: AchievementBadge[];
   xp: number;
   collected: string[];
+  /** Eksperimen Lab yang sudah diselesaikan (XP sekali per eksperimen). */
+  labDone: string[];
   session: Session | null;
   onboarded: boolean;
 }
@@ -39,6 +41,7 @@ const initialState = (): PersistedState => ({
   badges: INITIAL_BADGES,
   xp: 320,
   collected: ['REC-CLG-001'],
+  labDone: [],
   session: null,
   onboarded: false,
 });
@@ -70,6 +73,7 @@ interface Store extends PersistedState {
   completeQuest: (questId: string) => void;
   checkIn: (recordId: string) => void;
   completeModule: (moduleSlug: string, recordIds: string[], xp: number) => void;
+  completeLab: (labId: string, xp: number) => void;
   signIn: (name: string) => void;
   signOut: () => void;
   finishOnboarding: () => void;
@@ -141,6 +145,10 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     });
   }, []);
 
+  const completeLab = useCallback((labId: string, xp: number) => {
+    setState((s) => (s.labDone.includes(labId) ? s : { ...s, labDone: [...s.labDone, labId], xp: s.xp + xp }));
+  }, []);
+
   /** Simulasi: hanya nama tampilan yang disimpan, kata sandi tidak pernah disimpan. */
   const signIn = useCallback((name: string) => {
     setState((s) => ({ ...s, session: { name: name.trim() || 'Sahabat Nira', role: 'learner' } }));
@@ -157,8 +165,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const reached = JOURNEY_LEVELS.filter((l) => state.xp >= l.minXp);
     const level = reached[reached.length - 1] ?? JOURNEY_LEVELS[0];
     const nextLevel = JOURNEY_LEVELS.find((l) => l.minXp > state.xp);
-    return { ...state, level, nextLevel, toast, showToast, completeQuest, checkIn, completeModule, signIn, signOut, finishOnboarding, reset };
-  }, [state, toast, showToast, completeQuest, checkIn, completeModule, signIn, signOut, finishOnboarding, reset]);
+    return { ...state, level, nextLevel, toast, showToast, completeQuest, checkIn, completeModule, completeLab, signIn, signOut, finishOnboarding, reset };
+  }, [state, toast, showToast, completeQuest, checkIn, completeModule, completeLab, signIn, signOut, finishOnboarding, reset]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 };

@@ -5,6 +5,7 @@ import { Perjalanan } from './screens/Perjalanan';
 import { Bab } from './screens/Bab';
 import { Koleksi, KoleksiDetail } from './screens/Koleksi';
 import { Profil } from './screens/Profil';
+import { Lab } from './screens/Lab';
 import { QuestDetail } from './screens/Misi';
 import { Peta } from './screens/Peta';
 import { Splash } from './screens/Splash';
@@ -36,6 +37,7 @@ export const App: React.FC = () => (
         <Route path="/learn/koleksi" element={<Koleksi />} />
         <Route path="/learn/koleksi/:id" element={<KoleksiDetail />} />
         <Route path="/learn/profil" element={<Profil />} />
+        <Route path="/learn/lab" element={<Lab />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Route>
