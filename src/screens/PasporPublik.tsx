@@ -94,7 +94,7 @@ export const PasporPublik: React.FC = () => {
               <Sparkles className="h-3.5 w-3.5" /> Paling seru
             </span>
             <span className="mt-2 block font-serif text-2xl leading-tight text-coconut">Masak bareng Nira</span>
-            <span className="mt-1 block text-sm text-coconut">Game ±90 detik. Menangkan kartu warisan.</span>
+            <span className="mt-1 block text-sm text-coconut">Game ±3 menit. Menangkan kartu warisan.</span>
             <span className="mt-3 inline-flex min-h-[44px] items-center gap-2 rounded-full bg-coconut px-4 text-sm font-bold text-deep-forest">
               <Gamepad2 className="h-4 w-4" /> Main sekarang
             </span>
