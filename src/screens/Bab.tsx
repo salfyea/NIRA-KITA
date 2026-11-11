@@ -1,10 +1,12 @@
 import React from 'react';
-import { Navigate, useNavigate, useParams } from 'react-router-dom';
+import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Check, Quote, X } from 'lucide-react';
 import { Scene, SceneKind, SLUG_SCENE } from '../art/Scene';
 import { Nira } from '../art/Nira';
 import { ApprovalChip } from '../components/ui';
 import { CHAPTER_XP, QUIZ_BY_SLUG } from '../data/quiz';
+import { PRAKTIK } from '../data/praktik';
+import { GerakPraktik } from '../components/GerakPraktik';
 import { attribution } from '../data/attribution';
 import { isLearnerVisible, useStore } from '../store';
 
@@ -25,9 +27,20 @@ export const Bab: React.FC = () => {
   const { modules, records, collected, completeModule } = useStore();
   const mod = modules.find((m) => m.slug === slug);
   const scroller = React.useRef<HTMLDivElement>(null);
+  const [params] = useSearchParams();
   const [idx, setIdx] = React.useState(0);
   const [picked, setPicked] = React.useState<number | null>(null);
   const [reward, setReward] = React.useState<{ xp: number; newTitles: string[] } | null>(null);
+
+  // Tautan langsung ke kartu praktik (?kartu=praktik): kartu ketiga dari belakang.
+  React.useEffect(() => {
+    if (params.get('kartu') !== 'praktik') return;
+    const t = setTimeout(() => {
+      const el = scroller.current;
+      if (el && el.children.length >= 3) el.scrollTo({ left: (el.children.length - 3) * el.clientWidth, behavior: 'smooth' });
+    }, 500);
+    return () => clearTimeout(t);
+  }, [params]);
 
   if (!mod || !slug) return <Navigate to="/learn" replace />;
   const kind = SLUG_SCENE[slug] ?? 'identitas';
@@ -36,7 +49,9 @@ export const Bab: React.FC = () => {
   const solved = picked === quiz.correct;
 
   // Urutan kartu: intro, rekaman, tujuan, kuis, hadiah.
-  const total = 1 + Math.max(recs.length, 1) + 1 + 1 + 1;
+  const hasPraktik = !!PRAKTIK[slug];
+  const total = 1 + Math.max(recs.length, 1) + 1 + (hasPraktik ? 1 : 0) + 1 + 1;
+  const praktikAt = hasPraktik ? total - 3 : -1;
   const quizAt = total - 2;
   const rewardAt = total - 1;
 
@@ -119,6 +134,14 @@ export const Bab: React.FC = () => {
           </ul>
           {mod.safetyNotice && <p className="mt-4 rounded-xl bg-bamboo/40 p-3 text-sm text-deep-forest">{mod.safetyNotice}</p>}
         </CardShell>
+
+        {hasPraktik && (
+          <CardShell kind={kind}>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-caramel-dark">Praktik gerak</p>
+            <h2 className="text-2xl leading-tight text-deep-forest">Coba dengan tanganmu</h2>
+            <GerakPraktik slug={slug} onDone={() => undefined} />
+          </CardShell>
+        )}
 
         <CardShell kind={kind} scene={<div className="absolute -bottom-2 left-4"><Nira mood={picked === null ? 'think' : solved ? 'cheer' : 'think'} size={78} /></div>}>
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-caramel-dark">Kuis mini</p>

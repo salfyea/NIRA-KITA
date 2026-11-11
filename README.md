@@ -14,6 +14,8 @@ Stack: Vite + React 19 + TypeScript + Tailwind 4 + react-router-dom v7 + lucide-
 | `/learn/peta` | **Peta** miring bergaya game, check-in terpandu (simulasi) |
 | `/learn/koleksi`, `/learn/koleksi/:id` | **Koleksi**: kartu dan glosarium, detail |
 | `/learn/profil` | **Profil**: level, XP, lencana, setel ulang demo, keluar |
+| `/learn/arsip`, `/learn/arsip/:id` | **Arsip Gerakan**: klip lapangan perajin, tombol kerangka tangan (MediaPipe di perangkat), tautan ke latihan |
+| `/learn/bab/:slug` (kartu Praktik gerak) | Praktik gerak per modul: menuang, menjepit, mengaduk, dan menilai situasi aman/bahaya atau boleh/tidak dengan jempol dan telapak |
 | `/learn/lab` | **Lab Pengetahuan**: Lab Dapur (eksperimen bebas) dan Peta Istilah (mencocokkan istilah dan fungsi), +40 XP sekali per eksperimen |
 | `/kode-undangan` | Kode `KURATOR-2026` membuka `/kurator`, `ADMIN-2026` membuka `/admin`, `MENTOR-2026` masih placeholder |
 | `/kurator`, `/kurator/:id` | **Kurator**: antrean tinjauan, izin kontributor, checklist 6 poin, visibilitas (Privat, Pelajar, Publik QR), keputusan tercatat di audit |

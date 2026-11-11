@@ -6,7 +6,7 @@ import { Bab } from './screens/Bab';
 import { Koleksi, KoleksiDetail } from './screens/Koleksi';
 import { Profil } from './screens/Profil';
 import { Lab } from './screens/Lab';
-import { Gerak } from './screens/Gerak';
+import { Arsip, ArsipDetail } from './screens/Arsip';
 import { Kurator, KuratorDetail, RequireStaff } from './screens/Kurator';
 import { Admin } from './screens/Admin';
 import { QuestDetail } from './screens/Misi';
@@ -46,7 +46,9 @@ export const App: React.FC = () => (
         <Route path="/learn/koleksi/:id" element={<KoleksiDetail />} />
         <Route path="/learn/profil" element={<Profil />} />
         <Route path="/learn/lab" element={<Lab />} />
-        <Route path="/learn/gerak" element={<Gerak />} />
+        <Route path="/learn/arsip" element={<Arsip />} />
+        <Route path="/learn/arsip/:id" element={<ArsipDetail />} />
+        <Route path="/learn/gerak" element={<Navigate to="/learn/bab/kerajinan-tradisional-transfer-pengetahuan?kartu=praktik" replace />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Route>

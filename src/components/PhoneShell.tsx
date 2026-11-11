@@ -3,6 +3,7 @@ import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { Layers, Map as MapIcon, Route, User, BookOpen, ShieldCheck, QrCode, UserCheck, Users } from 'lucide-react';
 import { useStore } from '../store';
 import { Toast } from './ui';
+import { Logo } from '../art/Logo';
 import { TourOverlay } from '../tour/TourOverlay';
 import { useTour } from '../tour/TourContext';
 import { TOUR } from '../data/tour';
@@ -63,7 +64,7 @@ const SidePanel: React.FC = () => {
     <aside className="hidden max-w-sm flex-col justify-center gap-6 pr-10 lg:flex">
       <div>
         <p className="text-xs font-bold uppercase tracking-[0.2em] text-caramel-dark">Prototipe konsep</p>
-        <h1 className="mt-2 text-5xl leading-[1.05] text-deep-forest">NIRA KITA</h1>
+        <Logo className="mt-3" size={72} />
         <p className="mt-3 text-base leading-relaxed text-ink-soft">
           Jejak pengetahuan, warisan masa depan. Platform belajar dan pelestarian pengetahuan gula kelapa Cilongok,
           dengan persetujuan komunitas di setiap langkah.
@@ -90,7 +91,7 @@ const SidePanel: React.FC = () => {
           </ol>
         ) : (
           <>
-            <p className="mt-1 text-sm leading-relaxed text-ink-soft">Tujuh layar yang menunjukkan klaim di proposal, satu per satu, dengan panduan singkat.</p>
+            <p className="mt-1 text-sm leading-relaxed text-ink-soft">{TOUR.length} layar yang menunjukkan klaim di proposal, satu per satu, dengan panduan singkat.</p>
             <button type="button" onClick={() => tour.start(0)} className="mt-3 min-h-[48px] rounded-full bg-forest px-6 text-base font-semibold text-coconut">
               Mulai tur
             </button>
