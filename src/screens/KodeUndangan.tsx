@@ -1,7 +1,8 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Hammer } from 'lucide-react';
 import { Nira } from '../art/Nira';
+import { useStore } from '../store';
 
 const ROLES: Record<string, string> = {
   'MENTOR-2026': 'Mentor',
@@ -14,10 +15,17 @@ export const KodeUndangan: React.FC = () => {
   const [code, setCode] = React.useState('');
   const [role, setRole] = React.useState<string | null>(null);
   const [error, setError] = React.useState(false);
+  const { signIn } = useStore();
+  const navigate = useNavigate();
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     const r = ROLES[code.trim().toUpperCase()];
+    if (r === 'Kurator' || r === 'Admin') {
+      signIn(r === 'Kurator' ? 'Kurator Budaya (demo)' : 'Admin Program (demo)', r === 'Kurator' ? 'curator' : 'admin');
+      navigate(r === 'Kurator' ? '/kurator' : '/admin', { replace: true });
+      return;
+    }
     setRole(r ?? null);
     setError(!r);
   };

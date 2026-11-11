@@ -36,6 +36,8 @@ export const TourProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [s, setS] = React.useState<TourState>(load);
   const navigate = useNavigate();
   const { session, signIn } = useStore();
+  const sessionRef = React.useRef(session);
+  sessionRef.current = session;
 
   React.useEffect(() => {
     try {
@@ -48,10 +50,13 @@ export const TourProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const go = React.useCallback(
     (n: number) => {
       const step = Math.max(0, Math.min(TOUR.length - 1, n));
+      // Layar staf butuh peran yang sesuai; tur menyiapkannya supaya juri tidak perlu kode undangan.
+      const need = TOUR[step].role;
+      if (need && sessionRef.current?.role !== need) signIn(need === 'curator' ? 'Kurator Budaya (demo)' : 'Admin Program (demo)', need);
       setS({ active: true, step, open: true });
       navigate(TOUR[step].route);
     },
-    [navigate],
+    [navigate, signIn],
   );
 
   const start = React.useCallback(

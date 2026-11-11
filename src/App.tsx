@@ -7,6 +7,8 @@ import { Koleksi, KoleksiDetail } from './screens/Koleksi';
 import { Profil } from './screens/Profil';
 import { Lab } from './screens/Lab';
 import { Gerak } from './screens/Gerak';
+import { Kurator, KuratorDetail, RequireStaff } from './screens/Kurator';
+import { Admin } from './screens/Admin';
 import { QuestDetail } from './screens/Misi';
 import { Peta } from './screens/Peta';
 import { Splash } from './screens/Splash';
@@ -32,6 +34,9 @@ export const App: React.FC = () => (
       <Route path="/kode-undangan" element={<KodeUndangan />} />
       <Route path="/p/:code" element={<PasporPublik />} />
       <Route path="/tur" element={<TurStart />} />
+      <Route path="/kurator" element={<RequireStaff><Kurator /></RequireStaff>} />
+      <Route path="/kurator/:id" element={<RequireStaff><KuratorDetail /></RequireStaff>} />
+      <Route path="/admin" element={<RequireStaff><Admin /></RequireStaff>} />
       <Route element={<RequireSession />}>
         <Route path="/learn" element={<Perjalanan />} />
         <Route path="/learn/bab/:slug" element={<Bab />} />

@@ -15,7 +15,10 @@ Stack: Vite + React 19 + TypeScript + Tailwind 4 + react-router-dom v7 + lucide-
 | `/learn/koleksi`, `/learn/koleksi/:id` | **Koleksi**: kartu dan glosarium, detail |
 | `/learn/profil` | **Profil**: level, XP, lencana, setel ulang demo, keluar |
 | `/learn/lab` | **Lab Pengetahuan**: Lab Dapur (eksperimen bebas) dan Peta Istilah (mencocokkan istilah dan fungsi), +40 XP sekali per eksperimen |
-| `/kode-undangan` | Kode Mentor/Kurator/Admin (placeholder rapi) |
+| `/kode-undangan` | Kode `KURATOR-2026` membuka `/kurator`, `ADMIN-2026` membuka `/admin`, `MENTOR-2026` masih placeholder |
+| `/kurator`, `/kurator/:id` | **Kurator**: antrean tinjauan, izin kontributor, checklist 6 poin, visibilitas (Privat, Pelajar, Publik QR), keputusan tercatat di audit |
+| `/admin` | **Admin**: capaian pilot (KPI), pembuat batch QR (kode QR nyata, unduh PNG), catatan audit |
+| `/tur` | Tur 9 langkah untuk juri (akun demo otomatis) |
 | `/p/:code` | Paspor Warisan publik dari QR (placeholder) |
 
 `/learn/*` tanpa sesi diarahkan ke `/masuk`. Kode demo: `MENTOR-2026`, `KURATOR-2026`, `ADMIN-2026`.

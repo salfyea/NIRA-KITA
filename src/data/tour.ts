@@ -10,6 +10,8 @@ export interface TourStep {
   proves: string;
   tryIt: string;
   mood: NiraMood;
+  /** Peran staf yang diperlukan layar ini (otomatis disiapkan oleh tur). */
+  role?: 'curator' | 'admin';
 }
 
 export const TOUR: TourStep[] = [
@@ -82,5 +84,27 @@ export const TOUR: TourStep[] = [
     proves: 'Heritage Archive di bawah kendali komunitas',
     tryIt: 'Buka satu kartu atau tab Glosarium.',
     mood: 'cheer',
+  },
+  {
+    id: 'curator',
+    route: '/kurator/REC-CLG-003',
+    short: 'Kurator memutuskan',
+    title: 'Tata kelola: kurator',
+    see: 'Antrean tinjauan: izin kontributor, checklist enam poin, dan pilihan siapa yang boleh melihat (Privat, Pelajar, Publik QR).',
+    proves: 'Pengetahuan dikendalikan komunitas, bukan diekstraksi',
+    tryIt: 'Centang checklist, lalu coba pilih Publik. Lihat kenapa tidak bisa, dan setujui untuk Pelajar.',
+    mood: 'think',
+    role: 'curator',
+  },
+  {
+    id: 'admin',
+    route: '/admin',
+    short: 'Admin dan batch QR',
+    title: 'Admin: batch QR dan capaian',
+    see: 'Capaian pilot, pembuat batch QR (hanya rekaman yang sudah disetujui), dan catatan audit semua keputusan.',
+    proves: 'Jejak audit dan produk yang bisa dilacak',
+    tryIt: 'Buka tab Audit, lalu Batch QR dan buat batch baru.',
+    mood: 'cheer',
+    role: 'admin',
   },
 ];
