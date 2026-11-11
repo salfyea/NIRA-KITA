@@ -8,8 +8,7 @@ import { KisahPerajin } from '../components/KisahPerajin';
 import { ApprovalChip, Ornate } from '../components/ui';
 import { MasakGula } from '../game/MasakGula';
 import { attribution } from '../data/attribution';
-import { findBatch, QR_BATCHES } from '../data/batches';
-import { INITIAL_HERITAGE_RECORDS } from '../data/initialData';
+import { useStore } from '../store';
 import { loadVisitor, saveVisitor } from '../lib/visitor';
 import { HeritageRecord } from '../types/jejakNira';
 
@@ -22,7 +21,8 @@ const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ b
 export const PasporPublik: React.FC = () => {
   const { code } = useParams();
   const { hash } = useLocation();
-  const batch = findBatch(code);
+  const { batches, records: allRecords } = useStore();
+  const batch = batches.find((b) => b.code.toLowerCase() === (code ?? '').toLowerCase());
   const [result, setResult] = React.useState<{ stars: 1 | 2 | 3; avg: number } | null>(null);
   const [round, setRound] = React.useState(0);
   const [visitor, setVisitor] = React.useState(loadVisitor);
@@ -40,7 +40,7 @@ export const PasporPublik: React.FC = () => {
         <h1 className="mt-4 text-2xl text-deep-forest">Kode kemasan tidak dikenali</h1>
         <p className="mt-2 text-sm text-ink-soft">Periksa lagi QR-nya, atau coba contoh di bawah.</p>
         <div className="mt-4 grid w-full gap-2">
-          {QR_BATCHES.map((b) => (
+          {batches.slice(0, 3).map((b) => (
             <Link key={b.code} to={`/p/${b.code}`} className="flex min-h-[48px] items-center justify-center rounded-full bg-forest text-base font-semibold text-coconut">
               Contoh kemasan {b.code}
             </Link>
@@ -51,7 +51,7 @@ export const PasporPublik: React.FC = () => {
   }
 
   const records = batch.linkedRecordIds
-    .map((id) => INITIAL_HERITAGE_RECORDS.find((r) => r.id === id))
+    .map((id) => allRecords.find((r) => r.id === id))
     .filter((r): r is HeritageRecord => !!r && isPublicQr(r));
   const story = records[0];
   const sceneKind = story ? (SLUG_SCENE[story.relatedModuleSlug] ?? 'kerajinan') : 'kerajinan';

@@ -1,7 +1,11 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import {
   AchievementBadge,
+  AuditLogEntry,
+  CuratorChecklist,
   CurriculumModule,
+  ReviewStatus,
+  VisibilityScope,
   HeritageRecord,
   Quest,
 } from './types/jejakNira';
@@ -12,6 +16,7 @@ import {
   INITIAL_QUESTS,
   JOURNEY_LEVELS,
 } from './data/initialData';
+import { QR_BATCHES, QrBatch } from './data/batches';
 
 const STORAGE_KEY = 'niraKita.learner.v2';
 
@@ -24,6 +29,9 @@ interface PersistedState {
   collected: string[];
   /** Eksperimen Lab yang sudah diselesaikan (XP sekali per eksperimen). */
   labDone: string[];
+  /** Batch kemasan QR (dibuat Admin) dan catatan audit tata kelola. */
+  batches: QrBatch[];
+  audit: AuditLogEntry[];
   session: Session | null;
   onboarded: boolean;
 }
@@ -31,8 +39,15 @@ interface PersistedState {
 export interface Session {
   name: string;
   /** Peran sesi. Pendaftaran mandiri selalu menjadi Pelajar. */
-  role: 'learner';
+  role: 'learner' | 'curator' | 'admin';
 }
+
+const SEED_AUDIT: AuditLogEntry[] = [
+  { id: 'AUD-001', timestamp: '14 Mei 2026, 09.12', actor: 'Nadia Kusuma', role: 'Kurator', action: 'Menyetujui rekaman', target: 'REC-CLG-001', visibilityNote: 'Publik (halaman QR)' },
+  { id: 'AUD-002', timestamp: '15 Mei 2026, 10.40', actor: 'Nadia Kusuma', role: 'Kurator', action: 'Menyetujui rekaman', target: 'REC-CLG-002', visibilityNote: 'Publik (halaman QR)' },
+  { id: 'AUD-003', timestamp: '18 Mei 2026, 14.05', actor: 'Nadia Kusuma', role: 'Kurator', action: 'Menyetujui rekaman', target: 'REC-CLG-004', visibilityNote: 'Akses Pelajar' },
+  { id: 'AUD-004', timestamp: '20 Mei 2026, 08.30', actor: 'Admin Program', role: 'Admin', action: 'Membuat batch QR', target: 'NK-001', visibilityNote: 'Menaut ke REC-CLG-001' },
+];
 
 const initialState = (): PersistedState => ({
   records: INITIAL_HERITAGE_RECORDS,
@@ -42,6 +57,8 @@ const initialState = (): PersistedState => ({
   xp: 320,
   collected: ['REC-CLG-001'],
   labDone: [],
+  batches: QR_BATCHES,
+  audit: SEED_AUDIT,
   session: null,
   onboarded: false,
 });
@@ -74,10 +91,19 @@ interface Store extends PersistedState {
   checkIn: (recordId: string) => void;
   completeModule: (moduleSlug: string, recordIds: string[], xp: number) => void;
   completeLab: (labId: string, xp: number) => void;
-  signIn: (name: string) => void;
+  signIn: (name: string, role?: Session['role']) => void;
+  reviewRecord: (id: string, input: ReviewInput) => void;
+  addBatch: (b: Omit<QrBatch, 'code'>) => QrBatch;
   signOut: () => void;
   finishOnboarding: () => void;
   reset: () => void;
+}
+
+export interface ReviewInput {
+  status: Extract<ReviewStatus, 'Approved' | 'Revision Requested' | 'Rejected'>;
+  visibility: VisibilityScope;
+  checklist: CuratorChecklist;
+  note: string;
 }
 
 const Ctx = createContext<Store | null>(null);
@@ -85,6 +111,8 @@ const Ctx = createContext<Store | null>(null);
 export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, setState] = useState<PersistedState>(load);
   const [toast, setToast] = useState<string | null>(null);
+  const stateRef = React.useRef(state);
+  stateRef.current = state;
 
   useEffect(() => {
     try {
@@ -150,8 +178,64 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, []);
 
   /** Simulasi: hanya nama tampilan yang disimpan, kata sandi tidak pernah disimpan. */
-  const signIn = useCallback((name: string) => {
-    setState((s) => ({ ...s, session: { name: name.trim() || 'Sahabat Nira', role: 'learner' } }));
+  const signIn = useCallback((name: string, role: Session['role'] = 'learner') => {
+    setState((s) => ({ ...s, session: { name: name.trim() || 'Sahabat Nira', role } }));
+  }, []);
+
+  /** Keputusan kurator: status, visibilitas, dan checklist tersimpan, serta tercatat di audit. */
+  const reviewRecord = useCallback((id: string, input: ReviewInput) => {
+    setState((s) => {
+      const rec = s.records.find((r) => r.id === id);
+      if (!rec) return s;
+      const actor = s.session?.name ?? 'Kurator';
+      const label = input.status === 'Approved' ? 'Menyetujui rekaman' : input.status === 'Revision Requested' ? 'Meminta revisi' : 'Menolak rekaman';
+      const scope = input.visibility === 'public' ? 'Publik (halaman QR)' : input.visibility === 'learner' ? 'Akses Pelajar' : 'Privat';
+      const entry: AuditLogEntry = {
+        id: `AUD-${String(s.audit.length + 1).padStart(3, '0')}`,
+        timestamp: new Date().toLocaleString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+        actor,
+        role: 'Kurator',
+        action: label,
+        target: id,
+        visibilityNote: input.status === 'Approved' ? scope : input.note || scope,
+      };
+      return {
+        ...s,
+        records: s.records.map((r) =>
+          r.id === id
+            ? {
+                ...r,
+                reviewStatus: input.status,
+                visibility: input.status === 'Approved' ? input.visibility : 'private',
+                checklist: input.checklist,
+                revisionNotes: input.status === 'Approved' ? undefined : input.note,
+                reviewerName: actor,
+                publishedDate: input.status === 'Approved' ? 'Hari ini' : r.publishedDate,
+              }
+            : r,
+        ),
+        audit: [entry, ...s.audit],
+      };
+    });
+  }, []);
+
+  const addBatch = useCallback((b: Omit<QrBatch, 'code'>): QrBatch => {
+    const cur = stateRef.current;
+    const max = cur.batches.reduce((m, x) => Math.max(m, Number(x.code.replace(/\D/g, '')) || 0), 0);
+    const created: QrBatch = { ...b, code: `NK-${String(max + 1).padStart(3, '0')}` };
+    setState((s) => {
+      const entry: AuditLogEntry = {
+        id: `AUD-${String(s.audit.length + 1).padStart(3, '0')}`,
+        timestamp: new Date().toLocaleString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+        actor: s.session?.name ?? 'Admin',
+        role: 'Admin',
+        action: 'Membuat batch QR',
+        target: created.code,
+        visibilityNote: `Menaut ke ${b.linkedRecordIds.join(', ') || 'tanpa rekaman'}`,
+      };
+      return { ...s, batches: [...s.batches, created], audit: [entry, ...s.audit] };
+    });
+    return created;
   }, []);
   const signOut = useCallback(() => setState((s) => ({ ...s, session: null })), []);
   const finishOnboarding = useCallback(() => setState((s) => ({ ...s, onboarded: true })), []);
@@ -165,8 +249,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const reached = JOURNEY_LEVELS.filter((l) => state.xp >= l.minXp);
     const level = reached[reached.length - 1] ?? JOURNEY_LEVELS[0];
     const nextLevel = JOURNEY_LEVELS.find((l) => l.minXp > state.xp);
-    return { ...state, level, nextLevel, toast, showToast, completeQuest, checkIn, completeModule, completeLab, signIn, signOut, finishOnboarding, reset };
-  }, [state, toast, showToast, completeQuest, checkIn, completeModule, completeLab, signIn, signOut, finishOnboarding, reset]);
+    return { ...state, level, nextLevel, toast, showToast, completeQuest, checkIn, completeModule, completeLab, signIn, reviewRecord, addBatch, signOut, finishOnboarding, reset };
+  }, [state, toast, showToast, completeQuest, checkIn, completeModule, completeLab, signIn, reviewRecord, addBatch, signOut, finishOnboarding, reset]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 };
