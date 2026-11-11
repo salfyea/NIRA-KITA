@@ -6,22 +6,23 @@ import { Toast } from './ui';
 import { Logo } from '../art/Logo';
 import { TourOverlay } from '../tour/TourOverlay';
 import { useTour } from '../tour/TourContext';
-import { TOUR } from '../data/tour';
+import { getTour } from '../data/tour';
+import { LangToggle, t } from '../i18n';
 
-const TABS = [
-  { to: '/learn', label: 'Perjalanan', Icon: Route, end: true },
-  { to: '/learn/peta', label: 'Peta', Icon: MapIcon },
-  { to: '/learn/koleksi', label: 'Koleksi', Icon: Layers },
-  { to: '/learn/profil', label: 'Profil', Icon: User },
+const getTabs = () => [
+  { to: '/learn', label: t('Perjalanan', 'Journey'), Icon: Route, end: true },
+  { to: '/learn/peta', label: t('Peta', 'Map'), Icon: MapIcon },
+  { to: '/learn/koleksi', label: t('Koleksi', 'Collection'), Icon: Layers },
+  { to: '/learn/profil', label: t('Profil', 'Profile'), Icon: User },
 ];
 
 const TabBar: React.FC = () => (
   <nav
-    aria-label="Navigasi utama"
+    aria-label={t('Navigasi utama', 'Main navigation')}
     className="absolute inset-x-0 bottom-0 z-30 border-t border-bamboo bg-coconut/95 px-2 pb-[max(10px,env(safe-area-inset-bottom))] pt-2 backdrop-blur-md"
   >
     <ul className="grid grid-cols-4">
-      {TABS.map(({ to, label, Icon, end }) => (
+      {getTabs().map(({ to, label, Icon, end }) => (
         <li key={to}>
           <NavLink
             to={to}
@@ -48,34 +49,35 @@ const TabBar: React.FC = () => (
   </nav>
 );
 
-const ROLES = [
-  { label: 'Pelajar', desc: 'Perjalanan, peta, koleksi', Icon: BookOpen, active: true },
-  { label: 'Pengunjung QR', desc: 'Paspor warisan dari QR (placeholder)', Icon: QrCode, active: false },
-  { label: 'Mentor', desc: 'Unggah dan validasi (kode undangan)', Icon: UserCheck, active: false },
-  { label: 'Kurator', desc: 'Persetujuan budaya', Icon: ShieldCheck, active: false },
-  { label: 'Admin', desc: 'Program dan batch QR', Icon: Users, active: false },
+const getRoles = () => [
+  { label: t('Pelajar', 'Learner'), desc: t('Perjalanan, peta, koleksi', 'Journey, map, collection'), Icon: BookOpen, active: true },
+  { label: t('Pengunjung QR', 'QR visitor'), desc: t('Paspor warisan dari QR', 'Heritage passport from QR'), Icon: QrCode, active: false },
+  { label: 'Mentor', desc: t('Unggah dan validasi (kode undangan)', 'Upload and validate (invite code)'), Icon: UserCheck, active: false },
+  { label: t('Kurator', 'Curator'), desc: t('Persetujuan budaya', 'Cultural approval'), Icon: ShieldCheck, active: false },
+  { label: 'Admin', desc: t('Program dan batch QR', 'Programme and QR batches'), Icon: Users, active: false },
 ];
 
 /** Panel kiri di desktop: konteks ekosistem lima peran supaya juri tidak melihat satu aplikasi saja. */
 const SidePanel: React.FC = () => {
   const { reset } = useStore();
   const tour = useTour();
+  const TOUR = getTour();
   return (
     <aside className="hidden max-w-sm flex-col justify-center gap-6 pr-10 lg:flex">
       <div>
-        <p className="text-xs font-bold uppercase tracking-[0.2em] text-caramel-dark">Prototipe konsep</p>
+        <p className="text-xs font-bold uppercase tracking-[0.2em] text-caramel-dark">{t('Prototipe konsep', 'Concept prototype')}</p>
         <Logo className="mt-3" size={72} />
+        <LangToggle className="mt-3" />
         <p className="mt-3 text-base leading-relaxed text-ink-soft">
-          Jejak pengetahuan, warisan masa depan. Platform belajar dan pelestarian pengetahuan gula kelapa Cilongok,
-          dengan persetujuan komunitas di setiap langkah.
+          {t('Jejak pengetahuan, warisan masa depan. Platform belajar dan pelestarian pengetahuan gula kelapa Cilongok, dengan persetujuan komunitas di setiap langkah.', 'Trail of knowledge, heritage for the future. A learning and preservation platform for the coconut sugar knowledge of Cilongok, with community consent at every step.')}
         </p>
       </div>
       <div className="rounded-2xl border border-caramel/40 bg-coconut p-4">
-        <p className="text-xs font-bold uppercase tracking-[0.16em] text-caramel-dark">Tur untuk juri · ±4 menit</p>
+        <p className="text-xs font-bold uppercase tracking-[0.16em] text-caramel-dark">{t('Tur untuk juri · ±4 menit', 'Judges\' tour · ~4 minutes')}</p>
         {tour.active ? (
           <ol className="mt-2 space-y-1">
-            {TOUR.map((t, i) => (
-              <li key={t.id}>
+            {TOUR.map((st, i) => (
+              <li key={st.id}>
                 <button
                   type="button"
                   onClick={() => tour.go(i)}
@@ -84,25 +86,25 @@ const SidePanel: React.FC = () => {
                   }`}
                 >
                   <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${i === tour.step ? 'bg-coconut text-forest' : 'bg-bamboo/60 text-deep-forest'}`}>{i + 1}</span>
-                  {t.short}
+                  {st.short}
                 </button>
               </li>
             ))}
           </ol>
         ) : (
           <>
-            <p className="mt-1 text-sm leading-relaxed text-ink-soft">{TOUR.length} layar yang menunjukkan klaim di proposal, satu per satu, dengan panduan singkat.</p>
+            <p className="mt-1 text-sm leading-relaxed text-ink-soft">{t(`${TOUR.length} layar yang menunjukkan klaim di proposal, satu per satu, dengan panduan singkat.`, `${TOUR.length} screens that show the proposal's claims one by one, with a short guide.`)}</p>
             <button type="button" onClick={() => tour.start(0)} className="mt-3 min-h-[48px] rounded-full bg-forest px-6 text-base font-semibold text-coconut">
-              Mulai tur
+              {t('Mulai tur', 'Start the tour')}
             </button>
           </>
         )}
       </div>
       {!tour.active && (
       <div>
-        <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-ink-soft">Lima peran dalam satu ekosistem</p>
+        <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-ink-soft">{t('Lima peran dalam satu ekosistem', 'Five roles in one ecosystem')}</p>
         <ul className="space-y-1.5">
-          {ROLES.map(({ label, desc, Icon, active }) => (
+          {getRoles().map(({ label, desc, Icon, active }) => (
             <li
               key={label}
               className={`flex items-center gap-3 rounded-xl border px-3 py-2 ${
@@ -116,21 +118,21 @@ const SidePanel: React.FC = () => {
                 <span className="block text-sm font-semibold text-deep-forest">{label}</span>
                 <span className="block text-xs text-ink-soft">{desc}</span>
               </span>
-              <span className="text-[11px] font-semibold text-ink-soft">{active ? 'Sedang dilihat' : 'Segera'}</span>
+              <span className="text-[11px] font-semibold text-ink-soft">{active ? t('Sedang dilihat', 'Viewing') : t('Segera', 'Soon')}</span>
             </li>
           ))}
         </ul>
       </div>
       )}
       <p className="text-xs leading-relaxed text-ink-soft">
-        Data ilustratif. Seluruh pembelajaran berbasis darat.
+        {t('Data ilustratif. Seluruh pembelajaran berbasis darat.', 'Illustrative data. All learning is ground-based.')}
       </p>
       <button
         type="button"
         onClick={reset}
         className="min-h-[44px] w-fit rounded-lg border border-bamboo px-4 py-2 text-sm font-semibold text-ink-soft hover:bg-coconut"
       >
-        Setel ulang demo
+        {t('Setel ulang demo', 'Reset demo')}
       </button>
     </aside>
   );

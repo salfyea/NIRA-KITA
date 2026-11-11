@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { TOUR } from '../data/tour';
+import { getTour } from '../data/tour';
 import { useStore } from '../store';
 
 const KEY = 'niraKita.tour.v1';
@@ -49,6 +49,7 @@ export const TourProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const go = React.useCallback(
     (n: number) => {
+      const TOUR = getTour();
       const step = Math.max(0, Math.min(TOUR.length - 1, n));
       // Layar staf butuh peran yang sesuai; tur menyiapkannya supaya juri tidak perlu kode undangan.
       const need = TOUR[step].role;
@@ -73,7 +74,7 @@ export const TourProvider: React.FC<{ children: React.ReactNode }> = ({ children
       ...s,
       start,
       go,
-      next: () => (s.step + 1 >= TOUR.length ? setS({ active: false, step: 0, open: true }) : go(s.step + 1)),
+      next: () => (s.step + 1 >= getTour().length ? setS({ active: false, step: 0, open: true }) : go(s.step + 1)),
       prev: () => go(s.step - 1),
       stop: () => setS((v) => ({ ...v, active: false })),
       setOpen: (open) => setS((v) => ({ ...v, open })),

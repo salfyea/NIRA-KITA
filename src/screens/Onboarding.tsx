@@ -4,29 +4,31 @@ import { ArrowRight } from 'lucide-react';
 import { Scene, SceneKind } from '../art/Scene';
 import { Nira, NiraMood } from '../art/Nira';
 import { useStore } from '../store';
+import { LangToggle, t } from '../i18n';
 
-const SLIDES: { kind: SceneKind; mood: NiraMood; title: string; text: string }[] = [
+const getSlides = (): { kind: SceneKind; mood: NiraMood; title: string; text: string }[] => [
   {
     kind: 'penderes',
     mood: 'wave',
-    title: 'Fajar di kebun kelapa',
-    text: 'Di Cilongok, Banyumas, penderes menyadap nira saat fajar. Dari tetes bening itulah gula kelapa lahir.',
+    title: t('Fajar di kebun kelapa', 'Dawn in the coconut grove'),
+    text: t('Di Cilongok, Banyumas, penderes menyadap nira saat fajar. Dari tetes bening itulah gula kelapa lahir.', 'In Cilongok, Banyumas, tappers collect sap at dawn. From those clear drops, coconut sugar is born.'),
   },
   {
     kind: 'memudar',
     mood: 'think',
-    title: 'Pengetahuan mulai memudar',
-    text: 'Alat, istilah, dan cara lama tidak selalu tertulis. Kalau tak diceritakan, perlahan ia hilang.',
+    title: t('Pengetahuan mulai memudar', 'Knowledge is starting to fade'),
+    text: t('Alat, istilah, dan cara lama tidak selalu tertulis. Kalau tak diceritakan, perlahan ia hilang.', 'Tools, terms, and old ways are not always written down. If they are not told, they slowly disappear.'),
   },
   {
     kind: 'bersama',
     mood: 'cheer',
-    title: 'Kita jaga bareng',
-    text: 'Pelajar, perajin, dan kurator belajar dan mencatat bersama, dengan izin dan nama narasumber dihormati.',
+    title: t('Kita jaga bareng', 'We keep it together'),
+    text: t('Pelajar, perajin, dan kurator belajar dan mencatat bersama, dengan izin dan nama narasumber dihormati.', 'Learners, artisans, and curators learn and record together, with the permission and names of sources respected.'),
   },
 ];
 
 export const Onboarding: React.FC = () => {
+  const SLIDES = getSlides();
   const [i, setI] = React.useState(0);
   const { finishOnboarding } = useStore();
   const navigate = useNavigate();
@@ -42,12 +44,13 @@ export const Onboarding: React.FC = () => {
     <div className="flex h-full min-h-[600px] flex-col bg-cream">
       <div className="relative h-[52%] min-h-[280px] overflow-hidden rounded-b-[36px]">
         <Scene key={slide.kind} kind={slide.kind} className="absolute inset-0 h-full w-full" />
+        <LangToggle className="absolute left-4 top-4 z-10" />
         <button
           type="button"
           onClick={done}
           className="absolute right-4 top-4 min-h-[44px] rounded-full bg-coconut/90 px-4 text-sm font-semibold text-deep-forest"
         >
-          Lewati
+          {t('Lewati', 'Skip')}
         </button>
         <div className="absolute -bottom-2 left-5">
           <Nira mood={slide.mood} size={84} />
@@ -81,7 +84,7 @@ export const Onboarding: React.FC = () => {
             onClick={() => (last ? done() : setI(i + 1))}
             className="flex min-h-[48px] items-center gap-2 rounded-full bg-forest px-6 text-base font-semibold text-coconut"
           >
-            {last ? 'Mulai' : 'Lanjut'} <ArrowRight className="h-4 w-4" />
+            {last ? t('Mulai', 'Start') : t('Lanjut', 'Next')} <ArrowRight className="h-4 w-4" />
           </button>
         </div>
       </div>

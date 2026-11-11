@@ -4,6 +4,7 @@ import { Award, Lock, LogOut, RotateCcw, UserCheck } from 'lucide-react';
 import { Nira } from '../art/Nira';
 import { Ornate, ProgressBar } from '../components/ui';
 import { useStore } from '../store';
+import { LangToggle, t } from '../i18n';
 
 export const Profil: React.FC = () => {
   const { session, level, nextLevel, xp, badges, reset, signOut, showToast } = useStore();
@@ -17,19 +18,19 @@ export const Profil: React.FC = () => {
           <Nira mood="happy" size={78} float={false} className="mb-1" />
         </div>
         <h1 className="mt-3 text-[28px] leading-tight text-deep-forest">{session?.name}</h1>
-        <p className="text-sm font-semibold text-ink-soft">Pelajar · Level {level.level} {level.indonesianName}</p>
+        <p className="text-sm font-semibold text-ink-soft">{t('Pelajar', 'Learner')} · Level {level.level} {level.indonesianName}</p>
       </div>
 
       <Ornate className="mt-4 p-4">
         <div className="flex items-baseline justify-between">
           <p className="text-sm font-semibold text-deep-forest">{xp} XP</p>
-          <p className="text-xs text-ink-soft">{nextLevel ? `${nextLevel.minXp - xp} XP menuju ${nextLevel.indonesianName}` : 'Level tertinggi'}</p>
+          <p className="text-xs text-ink-soft">{nextLevel ? t(`${nextLevel.minXp - xp} XP menuju ${nextLevel.indonesianName}`, `${nextLevel.minXp - xp} XP to ${nextLevel.indonesianName}`) : t('Level tertinggi', 'Top level')}</p>
         </div>
         <ProgressBar value={toNext} className="mt-2" />
         <p className="mt-2 text-xs leading-relaxed text-ink-soft">{level.description}</p>
       </Ornate>
 
-      <h2 className="mt-6 text-[22px] text-deep-forest">Lencana</h2>
+      <h2 className="mt-6 text-[22px] text-deep-forest">{t('Lencana', 'Badges')}</h2>
       <div className="mt-3 grid grid-cols-2 gap-3">
         {badges.map((b) => {
           const mentor = b.validationType !== 'Penyelesaian Digital';
@@ -49,32 +50,33 @@ export const Profil: React.FC = () => {
               <p className="mt-2 text-sm font-semibold leading-snug text-deep-forest">{b.indonesianTitle}</p>
               <p className="mt-0.5 text-xs text-ink-soft">
                 {b.unlocked
-                  ? `Diraih ${b.dateAchieved ?? ''}`
+                  ? `${t('Diraih', 'Earned')} ${b.dateAchieved === 'Hari ini' ? t('Hari ini', 'today') : b.dateAchieved ?? ''}`
                   : mentor
-                    ? 'Tervalidasi mentor: terbuka setelah mentor manusia memvalidasi.'
-                    : 'Belum diraih'}
+                    ? t('Tervalidasi mentor: terbuka setelah mentor manusia memvalidasi.', 'Mentor-validated: unlocks after a human mentor validates.')
+                    : t('Belum diraih', 'Not earned yet')}
               </p>
             </div>
           );
         })}
       </div>
 
-      <h2 className="mt-6 text-[22px] text-deep-forest">Tentang aplikasi</h2>
+      <h2 className="mt-6 text-[22px] text-deep-forest">{t('Tentang aplikasi', 'About the app')}</h2>
       <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-        NIRA KITA adalah prototipe konsep untuk belajar dan melestarikan pengetahuan gula kelapa Cilongok, Banyumas. Data bersifat ilustratif,
-        peta hanyalah simulasi tingkat desa, dan seluruh pembelajaran berbasis darat.
+        {t('NIRA KITA adalah prototipe konsep untuk belajar dan melestarikan pengetahuan gula kelapa Cilongok, Banyumas. Data bersifat ilustratif, peta hanyalah simulasi tingkat desa, dan seluruh pembelajaran berbasis darat.', 'NIRA KITA is a concept prototype for learning and preserving the coconut sugar knowledge of Cilongok, Banyumas. Data is illustrative, the map is only a village-level simulation, and all learning is ground-based.')}
       </p>
 
+      <h2 className="mt-6 text-[22px] text-deep-forest">{t('Bahasa', 'Language')}</h2>
+      <LangToggle className="mt-2" tone="dark" />
       <div className="mt-6 grid gap-2">
         <button
           type="button"
           onClick={() => {
             reset();
-            showToast('Progres demo disetel ulang.');
+            showToast(t('Progres demo disetel ulang.', 'Demo progress has been reset.'));
           }}
           className="flex min-h-[48px] items-center justify-center gap-2 rounded-full border-2 border-bamboo text-base font-semibold text-deep-forest"
         >
-          <RotateCcw className="h-4 w-4" /> Setel ulang demo
+          <RotateCcw className="h-4 w-4" /> {t('Setel ulang demo', 'Reset demo')}
         </button>
         <button
           type="button"
@@ -84,7 +86,7 @@ export const Profil: React.FC = () => {
           }}
           className="flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-[#9E4F37] text-base font-semibold text-coconut"
         >
-          <LogOut className="h-4 w-4" /> Keluar
+          <LogOut className="h-4 w-4" /> {t('Keluar', 'Sign out')}
         </button>
       </div>
     </div>

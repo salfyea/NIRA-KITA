@@ -3,7 +3,8 @@ import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Camera, ClipboardCheck, Film, Hand, Play } from 'lucide-react';
 import { Nira } from '../art/Nira';
 import { Ornate } from '../components/ui';
-import { GERAKAN } from '../data/gerakan';
+import { getGerakan } from '../data/gerakan';
+import { t } from '../i18n';
 import { HAND_CONNECTIONS, loadHandLandmarker } from '../lib/hand';
 import { useStore } from '../store';
 
@@ -12,24 +13,25 @@ const BAB_PRAKTIK = '/learn/bab/kerajinan-tradisional-transfer-pengetahuan?kartu
 /** Arsip Gerakan: rekaman gerak perajin. Pengetahuan yang ada di tangan lebih sulit ditulis daripada istilah. */
 export const Arsip: React.FC = () => {
   const navigate = useNavigate();
+  const GERAKAN = getGerakan();
   return (
     <div className="px-5 pb-8 pt-4">
       <Link to="/learn" className="inline-flex min-h-[44px] items-center gap-1 text-sm font-semibold text-deep-forest">
-        <ArrowLeft className="h-4 w-4" /> Perjalanan
+        <ArrowLeft className="h-4 w-4" /> {t('Perjalanan', 'Journey')}
       </Link>
       <div className="relative overflow-hidden rounded-3xl">
-        <img src="/media/dapur.jpg" alt="Dapur tradisional: wajan berisi nira mendidih di atas tungku batu" className="h-48 w-full object-cover" />
+        <img src="/media/dapur.jpg" alt={t('Dapur tradisional: wajan berisi nira mendidih di atas tungku batu', 'A traditional kitchen: a wok of boiling sap on a stone stove')} className="h-48 w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-deep-forest/90 via-deep-forest/30 to-transparent" />
         <div className="absolute inset-x-0 bottom-0 p-4">
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#E7C79A]">Arsip Gerakan</p>
-          <h1 className="font-serif text-[26px] leading-tight text-coconut">Pengetahuan yang ada di tangan perajin</h1>
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#E7C79A]">{t('Arsip Gerakan', 'Movement Archive')}</p>
+          <h1 className="font-serif text-[26px] leading-tight text-coconut">{t('Pengetahuan yang ada di tangan perajin', 'Knowledge held in the artisans\' hands')}</h1>
         </div>
       </div>
       <p className="mt-3 text-base leading-relaxed text-charcoal">
-        Banyak keahlian tidak tertulis: cara memegang, ritme mengaduk, kapan menuang. Arsip ini merekamnya sebagai gerak, supaya bisa dipelajari generasi berikutnya.
+        {t('Banyak keahlian tidak tertulis: cara memegang, ritme mengaduk, kapan menuang. Arsip ini merekamnya sebagai gerak, supaya bisa dipelajari generasi berikutnya.', 'Much of the skill is unwritten: how to hold, the rhythm of stirring, when to pour. This archive records it as movement so the next generation can learn it.')}
       </p>
       <p className="mt-2 flex gap-2 rounded-xl bg-bamboo/40 p-3 text-sm leading-relaxed text-deep-forest">
-        <ClipboardCheck className="mt-0.5 h-4 w-4 shrink-0" /> Rekaman lapangan tim NIRA KITA. Anotasi mentor dan persetujuan kurator masih menunggu.
+        <ClipboardCheck className="mt-0.5 h-4 w-4 shrink-0" /> {t('Rekaman lapangan tim NIRA KITA. Anotasi mentor dan persetujuan kurator masih menunggu.', 'Field recordings by the NIRA KITA team. Mentor annotations and curator approval are still pending.')}
       </p>
 
       <ul className="mt-4 space-y-3">
@@ -49,7 +51,7 @@ export const Arsip: React.FC = () => {
                 <span className="block text-lg leading-snug text-deep-forest">{g.title}</span>
                 {g.practice && (
                   <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-forest/10 px-2 py-0.5 text-[11px] font-bold text-forest">
-                    <Hand className="h-3 w-3" /> Bisa dilatih
+                    <Hand className="h-3 w-3" /> {t('Bisa dilatih', 'Can be practised')}
                   </span>
                 )}
               </span>
@@ -64,7 +66,7 @@ export const Arsip: React.FC = () => {
 export const ArsipDetail: React.FC = () => {
   const { id } = useParams();
   const { annotations } = useStore();
-  const g = GERAKAN.find((x) => x.id === id);
+  const g = getGerakan().find((x) => x.id === id);
   const note = g ? annotations[g.id] : undefined;
   const videoRef = React.useRef<HTMLVideoElement>(null);
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
@@ -133,7 +135,7 @@ export const ArsipDetail: React.FC = () => {
   return (
     <div className="px-5 pb-8 pt-4">
       <Link to="/learn/arsip" className="inline-flex min-h-[44px] items-center gap-1 text-sm font-semibold text-deep-forest">
-        <ArrowLeft className="h-4 w-4" /> Arsip Gerakan
+        <ArrowLeft className="h-4 w-4" /> {t('Arsip Gerakan', 'Movement Archive')}
       </Link>
       <p className="text-xs font-bold uppercase tracking-[0.16em] text-caramel-dark">{g.step}</p>
       <h1 className="text-[26px] leading-tight text-deep-forest">{g.title}</h1>
@@ -149,46 +151,46 @@ export const ArsipDetail: React.FC = () => {
         onClick={() => setSkeleton((v) => !v)}
         className={`mt-3 flex min-h-[52px] w-full items-center justify-center gap-2 rounded-full text-base font-semibold ${skeleton ? 'bg-forest text-coconut' : 'border-2 border-forest text-forest'}`}
       >
-        <Camera className="h-5 w-5" /> {skeleton ? 'Kerangka tangan aktif' : 'Tampilkan kerangka tangan'}
+        <Camera className="h-5 w-5" /> {skeleton ? t('Kerangka tangan aktif', 'Hand skeleton on') : t('Tampilkan kerangka tangan', 'Show hand skeleton')}
       </button>
       {skeleton && (
         <p role="status" className="mt-2 text-sm font-semibold text-ink-soft">
-          {state === 'loading' && 'Memuat model pelacak (diproses di perangkatmu)...'}
-          {state === 'searching' && 'Mencari tangan pada klip. Jika tangan tidak utuh atau tertutup uap, kerangka tidak muncul.'}
-          {state === 'found' && 'Tangan terdeteksi. Kerangka digambar langsung di perangkatmu; video tidak dikirim ke mana pun.'}
-          {state === 'error' && 'Model pelacak tidak bisa dimuat.'}
+          {state === 'loading' && t('Memuat model pelacak (diproses di perangkatmu)...', 'Loading the tracking model (processed on your device)...')}
+          {state === 'searching' && t('Mencari tangan pada klip. Jika tangan tidak utuh atau tertutup uap, kerangka tidak muncul.', 'Looking for a hand in the clip. If the hand is partial or hidden by steam, no skeleton appears.')}
+          {state === 'found' && t('Tangan terdeteksi. Kerangka digambar langsung di perangkatmu; video tidak dikirim ke mana pun.', 'Hand detected. The skeleton is drawn live on your device; the video is not sent anywhere.')}
+          {state === 'error' && t('Model pelacak tidak bisa dimuat.', 'The tracking model could not be loaded.')}
         </p>
       )}
 
       <h2 className="mt-5 flex items-center gap-2 text-xl text-deep-forest">
-        <Film className="h-5 w-5 text-caramel-dark" /> Yang terlihat
+        <Film className="h-5 w-5 text-caramel-dark" /> {t('Yang terlihat', 'What you see')}
       </h2>
       <p className="mt-1 text-base leading-relaxed text-charcoal">{g.see}</p>
-      <h2 className="mt-4 text-xl text-deep-forest">Mengapa penting</h2>
+      <h2 className="mt-4 text-xl text-deep-forest">{t('Mengapa penting', 'Why it matters')}</h2>
       <p className="mt-1 text-base leading-relaxed text-charcoal">{g.why}</p>
 
       <Ornate className="mt-4 p-4">
-        <p className="text-xs font-bold uppercase tracking-[0.16em] text-ink-soft">Catatan mentor</p>
+        <p className="text-xs font-bold uppercase tracking-[0.16em] text-ink-soft">{t('Catatan mentor', 'Mentor notes')}</p>
         {note ? (
           <>
             <p className="mt-1 text-base leading-relaxed text-charcoal">"{note.text}"</p>
             <p className={`mt-1 text-xs font-bold ${note.approved ? 'text-forest' : 'text-caramel-dark'}`}>
-              {note.author} · {note.approved ? 'Disetujui kurator' : 'Menunggu persetujuan kurator'}
+              {note.author} · {note.approved ? t('Disetujui kurator', 'Approved by the curator') : t('Menunggu persetujuan kurator', 'Awaiting curator approval')}
             </p>
           </>
         ) : (
-          <p className="mt-1 text-sm leading-relaxed text-ink-soft">Belum ada anotasi. Mentor akan menandai teknik pada klip ini, lalu kurator menyetujui sebelum tampil sebagai materi.</p>
+          <p className="mt-1 text-sm leading-relaxed text-ink-soft">{t('Belum ada anotasi. Mentor akan menandai teknik pada klip ini, lalu kurator menyetujui sebelum tampil sebagai materi.', 'No annotation yet. A mentor will mark the technique on this clip, and the curator approves it before it appears as learning material.')}</p>
         )}
       </Ornate>
 
       {g.practice && (
         <Link to={BAB_PRAKTIK} className="mt-4 flex min-h-[56px] items-center justify-center gap-2 rounded-full bg-caramel-dark text-lg font-semibold text-coconut">
-          <Hand className="h-5 w-5" /> Latih gerakan ini
+          <Hand className="h-5 w-5" /> {t('Latih gerakan ini', 'Practise this movement')}
         </Link>
       )}
       <div className="mt-6 flex items-center gap-3 text-sm text-ink-soft">
         <Nira mood="happy" size={44} float={false} />
-        Rekaman lapangan tim NIRA KITA.
+        {t('Rekaman lapangan tim NIRA KITA.', 'Field recording by the NIRA KITA team.')}
       </div>
     </div>
   );

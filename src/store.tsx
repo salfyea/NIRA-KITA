@@ -18,6 +18,8 @@ import {
   JOURNEY_LEVELS,
 } from './data/initialData';
 import { QR_BATCHES, QrBatch } from './data/batches';
+import { BADGE_EN, LEVEL_EN, MOD_EN, QUEST_EN, REC_EN } from './data/en';
+import { useLang } from './i18n';
 
 const STORAGE_KEY = 'niraKita.learner.v2';
 
@@ -150,6 +152,7 @@ export interface ValidateInput {
 const Ctx = createContext<Store | null>(null);
 
 export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const lang = useLang();
   const [state, setState] = useState<PersistedState>(load);
   const [toast, setToast] = useState<string | null>(null);
   const stateRef = React.useRef(state);
@@ -338,8 +341,24 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const reached = JOURNEY_LEVELS.filter((l) => state.xp >= l.minXp);
     const level = reached[reached.length - 1] ?? JOURNEY_LEVELS[0];
     const nextLevel = JOURNEY_LEVELS.find((l) => l.minXp > state.xp);
-    return { ...state, level, nextLevel, toast, showToast, completeQuest, checkIn, completeModule, completeLab, signIn, reviewRecord, addBatch, addRecord, validateSubmission, saveAnnotation, approveAnnotation, signOut, finishOnboarding, reset };
-  }, [state, toast, showToast, completeQuest, checkIn, completeModule, completeLab, signIn, reviewRecord, addBatch, addRecord, validateSubmission, saveAnnotation, approveAnnotation, signOut, finishOnboarding, reset]);
+    const en = lang === 'en';
+    const lvl = (l?: (typeof JOURNEY_LEVELS)[number]) => (l && en && LEVEL_EN[l.level] ? { ...l, indonesianName: LEVEL_EN[l.level].name, description: LEVEL_EN[l.level].description } : l);
+    const loc = en
+      ? {
+          records: state.records.map((r) => (REC_EN[r.id] ? { ...r, ...REC_EN[r.id] } : r)),
+          modules: state.modules.map((m) => {
+            const e = MOD_EN[m.id];
+            return e ? { ...m, ...e, title: e.title ?? m.title, lessons: m.lessons.map((l) => ({ ...l, title: e.lessons?.[l.id] ?? l.title })) } : m;
+          }),
+          quests: state.quests.map((q) => {
+            const e = QUEST_EN[q.id];
+            return e ? { ...q, ...e, steps: q.steps.map((st) => ({ ...st, ...(e.steps?.[st.id] ?? {}) })) } : q;
+          }),
+          badges: state.badges.map((b) => (BADGE_EN[b.id] ? { ...b, ...BADGE_EN[b.id] } : b)),
+        }
+      : { records: state.records, modules: state.modules, quests: state.quests, badges: state.badges };
+    return { ...state, ...loc, level: lvl(level) as typeof level, nextLevel: lvl(nextLevel), toast, showToast, completeQuest, checkIn, completeModule, completeLab, signIn, reviewRecord, addBatch, addRecord, validateSubmission, saveAnnotation, approveAnnotation, signOut, finishOnboarding, reset };
+  }, [state, lang, toast, showToast, completeQuest, checkIn, completeModule, completeLab, signIn, reviewRecord, addBatch, addRecord, validateSubmission, saveAnnotation, approveAnnotation, signOut, finishOnboarding, reset]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 };

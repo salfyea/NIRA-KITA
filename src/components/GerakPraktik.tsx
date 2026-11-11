@@ -1,13 +1,15 @@
 import React from 'react';
 import { Camera, CameraOff, Check, Hand, Lock, ShieldCheck, Square, ThumbsUp } from 'lucide-react';
 import { Nira } from '../art/Nira';
-import { PRAKTIK, Task } from '../data/praktik';
+import { getPraktik, Task } from '../data/praktik';
+import { t } from '../i18n';
 import { classifyPose, HAND_CONNECTIONS, loadHandLandmarker, PourTracker, rollDeg, StirTracker } from '../lib/hand';
 import type { Pose } from '../lib/hand';
 
 const HOLD_MS = 1100;
 
-const POSE_LABEL: Record<string, string> = { fist: 'Genggam', open: 'Telapak terbuka', pinch: 'Jepit', point: 'Telunjuk', thumbsUp: 'Jempol ke atas' };
+const poseLabel = (p: string): string | undefined =>
+  ({ fist: t('Genggam', 'Fist'), open: t('Telapak terbuka', 'Open palm'), pinch: t('Jepit', 'Pinch'), point: t('Telunjuk', 'Point'), thumbsUp: t('Jempol ke atas', 'Thumbs up') } as Record<string, string>)[p];
 
 type Phase = 'intro' | 'loading' | 'play' | 'error' | 'done';
 
@@ -16,7 +18,7 @@ type Phase = 'intro' | 'loading' | 'play' | 'error' | 'done';
  * atau dijalankan dengan ketukan bila kamera tidak dipakai. Bukan penilaian teknik.
  */
 export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, total: number) => void }> = ({ slug, onDone }) => {
-  const cfg = PRAKTIK[slug];
+  const cfg = getPraktik(slug);
   const tasks = cfg?.tasks ?? [];
   const [phase, setPhase] = React.useState<Phase>('intro');
   const [tapMode, setTapMode] = React.useState(false);
@@ -85,7 +87,7 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
     setPhase('loading');
     setError('');
     try {
-      if (!navigator.mediaDevices?.getUserMedia) throw new Error('Peramban ini tidak mendukung kamera.');
+      if (!navigator.mediaDevices?.getUserMedia) throw new Error(t('Peramban ini tidak mendukung kamera.', 'This browser does not support the camera.'));
       const [lm, stream] = await Promise.all([
         loadHandLandmarker(),
         navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }, audio: false }),
@@ -191,7 +193,7 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
     } catch (e) {
       stopCamera();
       const msg = e instanceof Error ? e.message : String(e);
-      setError(/denied|NotAllowed|Permission/i.test(msg) ? 'Izin kamera ditolak. Kamu bisa mengizinkannya di pengaturan peramban, atau lanjut tanpa kamera.' : `Kamera atau model tidak bisa dimuat. ${msg}`);
+      setError(/denied|NotAllowed|Permission/i.test(msg) ? t('Izin kamera ditolak. Kamu bisa mengizinkannya di pengaturan peramban, atau lanjut tanpa kamera.', 'Camera permission was denied. You can allow it in the browser settings, or continue without the camera.') : `${t('Kamera atau model tidak bisa dimuat.', 'The camera or model could not be loaded.')} ${msg}`);
       setPhase('error');
     }
   };
@@ -215,7 +217,7 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
   if (!cfg || !task) return null;
 
   const hintText = task.kind === 'judge' ? task.scenario : task.hint;
-  const wantLabel = task.kind === 'pose' ? POSE_LABEL[task.pose] : task.kind === 'stir' ? `${task.laps} putaran melingkar` : task.kind === 'pour' ? `Miring dan tegak ${task.times} kali` : 'Jempol ke atas (aman) atau telapak terbuka (bahaya)';
+  const wantLabel = task.kind === 'pose' ? poseLabel(task.pose) : task.kind === 'stir' ? t(`${task.laps} putaran melingkar`, `${task.laps} circular rounds`) : task.kind === 'pour' ? t(`Miring dan tegak ${task.times} kali`, `Tilt and straighten ${task.times} times`) : t('Jempol ke atas (aman) atau telapak terbuka (bahaya)', 'Thumbs up (safe) or open palm (unsafe)');
 
   return (
     <div>
@@ -225,9 +227,9 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
           <video ref={videoRef} playsInline muted className="block w-full -scale-x-100" />
           <canvas ref={canvasRef} className="absolute inset-0 h-full w-full -scale-x-100" />
           <div className="absolute left-2 top-2 flex items-center gap-1.5 rounded-full bg-deep-forest/85 px-3 py-1.5 text-xs font-bold text-coconut">
-            <span className="h-2 w-2 animate-pulse rounded-full bg-[#E0523A]" /> Kamera aktif · diproses di perangkat
+            <span className="h-2 w-2 animate-pulse rounded-full bg-[#E0523A]" /> {t('Kamera aktif · diproses di perangkat', 'Camera on · processed on the device')}
           </div>
-          {!handFound && <div className="absolute inset-x-3 bottom-3 rounded-xl bg-coconut/90 px-3 py-2 text-center text-sm font-semibold text-deep-forest">Tunjukkan satu tanganmu ke kamera</div>}
+          {!handFound && <div className="absolute inset-x-3 bottom-3 rounded-xl bg-coconut/90 px-3 py-2 text-center text-sm font-semibold text-deep-forest">{t('Tunjukkan satu tanganmu ke kamera', 'Show one hand to the camera')}</div>}
         </div>
       </div>
 
@@ -239,31 +241,31 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
             <li className="flex gap-3 rounded-2xl bg-coconut p-3 text-sm leading-relaxed text-charcoal">
               <Lock className="mt-0.5 h-5 w-5 shrink-0 text-forest" />
               <span>
-                <b>Tetap di perangkatmu.</b> Pelacakan berjalan di peramban. Tidak ada video yang dikirim atau disimpan.
+                <b>{t('Tetap di perangkatmu.', 'Stays on your device.')}</b> {t('Pelacakan berjalan di peramban. Tidak ada video yang dikirim atau disimpan.', 'Tracking runs in the browser. No video is sent or stored.')}
               </span>
             </li>
             <li className="flex gap-3 rounded-2xl bg-coconut p-3 text-sm leading-relaxed text-charcoal">
               <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-forest" />
               <span>
-                <b>Alat bantu belajar, bukan penilai.</b> Teknik sesungguhnya divalidasi mentor manusia.
+                <b>{t('Alat bantu belajar, bukan penilai.', 'A learning aid, not a grader.')}</b> {t('Teknik sesungguhnya divalidasi mentor manusia.', 'Real technique is validated by a human mentor.')}
               </span>
             </li>
           </ul>
           <button type="button" onClick={startCamera} className="mt-3 flex min-h-[56px] w-full items-center justify-center gap-2 rounded-full bg-forest text-lg font-semibold text-coconut">
-            <Camera className="h-5 w-5" /> Nyalakan kamera
+            <Camera className="h-5 w-5" /> {t('Nyalakan kamera', 'Turn on camera')}
           </button>
           <button type="button" onClick={startTap} className="mt-1 min-h-[52px] w-full rounded-full text-base font-semibold text-ink-soft">
-            Tanpa kamera (jawab dengan ketukan)
+            {t('Tanpa kamera (jawab dengan ketukan)', 'No camera (answer by tapping)')}
           </button>
-          <p className="text-xs text-ink-soft">Model pelacak (±7,8 MB) dimuat sekali.</p>
+          <p className="text-xs text-ink-soft">{t('Model pelacak (±7,8 MB) dimuat sekali.', 'The tracking model (~7.8 MB) loads once.')}</p>
         </div>
       )}
 
       {phase === 'loading' && (
         <div className="py-6 text-center" role="status">
           <Nira mood="think" size={84} className="mx-auto" />
-          <p className="mt-2 text-base font-semibold text-deep-forest">Menyiapkan kamera dan model...</p>
-          <p className="text-sm text-ink-soft">Izinkan kamera saat diminta.</p>
+          <p className="mt-2 text-base font-semibold text-deep-forest">{t('Menyiapkan kamera dan model...', 'Preparing the camera and model...')}</p>
+          <p className="text-sm text-ink-soft">{t('Izinkan kamera saat diminta.', 'Allow the camera when asked.')}</p>
         </div>
       )}
 
@@ -272,10 +274,10 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
           <CameraOff className="mx-auto h-9 w-9 text-[#9E4F37]" />
           <p role="alert" className="mt-2 text-base leading-relaxed text-charcoal">{error}</p>
           <button type="button" onClick={startCamera} className="mt-3 min-h-[52px] w-full rounded-full bg-forest text-base font-semibold text-coconut">
-            Coba lagi
+            {t('Coba lagi', 'Try again')}
           </button>
           <button type="button" onClick={startTap} className="mt-1 min-h-[52px] w-full rounded-full border-2 border-bamboo text-base font-semibold text-deep-forest">
-            Lanjut tanpa kamera
+            {t('Lanjut tanpa kamera', 'Continue without camera')}
           </button>
         </div>
       )}
@@ -284,7 +286,7 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
         <div className="mt-3 rounded-2xl bg-coconut p-4">
           <div className="flex items-center justify-between">
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-caramel-dark">
-              Gerakan {Math.min(idx + 1, tasks.length)} dari {tasks.length}
+              {t('Gerakan', 'Movement')} {Math.min(idx + 1, tasks.length)} {t('dari', 'of')} {tasks.length}
             </p>
             <div className="flex gap-1" aria-hidden>
               {tasks.map((_, i) => (
@@ -302,27 +304,27 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
               </p>
               {!tapMode && (
                 <>
-                  <div className="mt-3 h-3 overflow-hidden rounded-full bg-bamboo/60" role="progressbar" aria-valuenow={Math.round(progress * 100)} aria-valuemin={0} aria-valuemax={100} aria-label="Kemajuan gerakan">
+                  <div className="mt-3 h-3 overflow-hidden rounded-full bg-bamboo/60" role="progressbar" aria-valuenow={Math.round(progress * 100)} aria-valuemin={0} aria-valuemax={100} aria-label={t('Kemajuan gerakan', 'Movement progress')}>
                     <div className="h-full rounded-full bg-forest" style={{ width: `${progress * 100}%` }} />
                   </div>
                   <p role="status" className="mt-2 min-h-[24px] text-sm font-semibold text-ink-soft">
-                    {!handFound ? 'Belum ada tangan terlihat.' : progress > 0 ? 'Bagus, lanjutkan...' : `Terdeteksi: ${POSE_LABEL[seen] ?? 'tangan'}`}
+                    {!handFound ? t('Belum ada tangan terlihat.', 'No hand visible yet.') : progress > 0 ? t('Bagus, lanjutkan...', 'Good, keep going...') : `${t('Terdeteksi', 'Detected')}: ${poseLabel(seen) ?? t('tangan', 'hand')}`}
                   </p>
                 </>
               )}
               {tapMode && task.kind === 'judge' && (
                 <div className="mt-3 grid grid-cols-2 gap-2">
                   <button type="button" onClick={() => completeTask(task.answer === 'aman')} className="flex min-h-[56px] items-center justify-center gap-2 rounded-full bg-forest text-base font-semibold text-coconut">
-                    <ThumbsUp className="h-5 w-5" /> Aman / boleh
+                    <ThumbsUp className="h-5 w-5" /> {t('Aman / boleh', 'Safe / allowed')}
                   </button>
                   <button type="button" onClick={() => completeTask(task.answer === 'bahaya')} className="flex min-h-[56px] items-center justify-center gap-2 rounded-full bg-[#9E4F37] text-base font-semibold text-coconut">
-                    <Hand className="h-5 w-5" /> Bahaya / tidak
+                    <Hand className="h-5 w-5" /> {t('Bahaya / tidak', 'Unsafe / not allowed')}
                   </button>
                 </div>
               )}
               {tapMode && task.kind !== 'judge' && (
                 <button type="button" onClick={() => completeTask(null)} className="mt-3 min-h-[56px] w-full rounded-full bg-forest text-base font-semibold text-coconut">
-                  Sudah kucoba
+                  {t('Sudah kucoba', 'I tried it')}
                 </button>
               )}
             </>
@@ -330,12 +332,12 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
             <div className="mt-2">
               {verdict !== null && (
                 <p className={`flex items-center gap-1.5 text-lg font-bold ${verdict ? 'text-forest' : 'text-[#9E4F37]'}`}>
-                  {verdict ? <Check className="h-5 w-5" /> : <Square className="h-4 w-4" />} {verdict ? 'Tepat!' : 'Belum tepat'}
+                  {verdict ? <Check className="h-5 w-5" /> : <Square className="h-4 w-4" />} {verdict ? t('Tepat!', 'Correct!') : t('Belum tepat', 'Not quite')}
                 </p>
               )}
               {verdict === null && (
                 <p className="flex items-center gap-1.5 text-lg font-bold text-forest">
-                  <Check className="h-5 w-5" /> Gerakan berhasil
+                  <Check className="h-5 w-5" /> {t('Gerakan berhasil', 'Movement done')}
                 </p>
               )}
               <div className="ornate mt-2 p-3">
@@ -343,18 +345,18 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
                 <span className="corner tr" />
                 <span className="corner bl" />
                 <span className="corner br" />
-                <p className="text-xs font-bold uppercase tracking-wider text-forest">Mengapa</p>
+                <p className="text-xs font-bold uppercase tracking-wider text-forest">{t('Mengapa', 'Why')}</p>
                 <p className="mt-1 text-base leading-relaxed text-charcoal">{task.why}</p>
               </div>
               <button type="button" onClick={next} className="mt-3 min-h-[52px] w-full rounded-full bg-forest text-base font-semibold text-coconut">
-                {idx + 1 >= tasks.length ? 'Selesai' : 'Gerakan berikutnya'}
+                {idx + 1 >= tasks.length ? t('Selesai', 'Finish') : t('Gerakan berikutnya', 'Next movement')}
               </button>
             </div>
           )}
 
           {!tapMode && (
             <button type="button" onClick={stopAll} className="mt-2 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-full text-sm font-semibold text-ink-soft">
-              <Square className="h-3.5 w-3.5" /> Matikan kamera
+              <Square className="h-3.5 w-3.5" /> {t('Matikan kamera', 'Turn off camera')}
             </button>
           )}
         </div>
@@ -363,10 +365,10 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
       {phase === 'done' && (
         <div className="py-2 text-center">
           <Nira mood="cheer" size={96} className="mx-auto" />
-          <p className="mt-2 text-xl font-semibold text-deep-forest">Praktik gerak selesai</p>
-          <p className="mt-1 text-sm text-ink-soft">Kamera sudah dimatikan. Teknik sesungguhnya tetap divalidasi oleh mentor.</p>
+          <p className="mt-2 text-xl font-semibold text-deep-forest">{t('Praktik gerak selesai', 'Movement practice complete')}</p>
+          <p className="mt-1 text-sm text-ink-soft">{t('Kamera sudah dimatikan. Teknik sesungguhnya tetap divalidasi oleh mentor.', 'The camera is off. Real technique is still validated by a mentor.')}</p>
           <button type="button" onClick={() => setPhase('intro')} className="mt-2 inline-flex min-h-[44px] items-center rounded-full border-2 border-bamboo px-5 text-sm font-semibold text-deep-forest">
-            Ulangi
+            {t('Ulangi', 'Repeat')}
           </button>
         </div>
       )}
