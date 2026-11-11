@@ -1,15 +1,14 @@
 import React from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
-import { Compass, Map as MapIcon, Home, IdCard, BookOpen, ShieldCheck, QrCode, UserCheck, Users } from 'lucide-react';
+import { Layers, Map as MapIcon, Route, User, BookOpen, ShieldCheck, QrCode, UserCheck, Users } from 'lucide-react';
 import { useStore } from '../store';
 import { Toast } from './ui';
 
 const TABS = [
-  { to: '/learn', label: 'Perjalanan', Icon: Home, end: true },
-  { to: '/learn/belajar', label: 'Belajar', Icon: BookOpen },
-  { to: '/learn/jelajah', label: 'Jelajahi', Icon: Compass },
+  { to: '/learn', label: 'Perjalanan', Icon: Route, end: true },
   { to: '/learn/peta', label: 'Peta', Icon: MapIcon },
-  { to: '/learn/paspor', label: 'Paspor', Icon: IdCard },
+  { to: '/learn/koleksi', label: 'Koleksi', Icon: Layers },
+  { to: '/learn/profil', label: 'Profil', Icon: User },
 ];
 
 /** Rute yang menampilkan layar penuh tanpa tab bawah (peta dan detail). */
@@ -20,7 +19,7 @@ const TabBar: React.FC = () => (
     aria-label="Navigasi utama"
     className="absolute inset-x-0 bottom-0 z-30 border-t border-bamboo bg-coconut/95 px-2 pb-[max(10px,env(safe-area-inset-bottom))] pt-2 backdrop-blur-md"
   >
-    <ul className="grid grid-cols-5">
+    <ul className="grid grid-cols-4">
       {TABS.map(({ to, label, Icon, end }) => (
         <li key={to}>
           <NavLink
