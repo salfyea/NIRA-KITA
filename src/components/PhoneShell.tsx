@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
-import { Compass, FlaskConical, Home, IdCard, BookOpen, ShieldCheck, QrCode, UserCheck, Users } from 'lucide-react';
+import { Compass, Map as MapIcon, Home, IdCard, BookOpen, ShieldCheck, QrCode, UserCheck, Users } from 'lucide-react';
 import { useStore } from '../store';
 import { Toast } from './ui';
 
@@ -8,12 +8,12 @@ const TABS = [
   { to: '/learn', label: 'Perjalanan', Icon: Home, end: true },
   { to: '/learn/belajar', label: 'Belajar', Icon: BookOpen },
   { to: '/learn/jelajah', label: 'Jelajahi', Icon: Compass },
-  { to: '/learn/lab', label: 'Lab', Icon: FlaskConical },
+  { to: '/learn/peta', label: 'Peta', Icon: MapIcon },
   { to: '/learn/paspor', label: 'Paspor', Icon: IdCard },
 ];
 
 /** Rute yang menampilkan layar penuh tanpa tab bawah (peta dan detail). */
-const isImmersive = (path: string) => path === '/learn/peta';
+const isImmersive = (_path: string) => false;
 
 const TabBar: React.FC = () => (
   <nav
@@ -124,7 +124,7 @@ export const PhoneShell: React.FC = () => {
       >
         <Toast message={toast} />
         <div ref={scrollRef} className={`no-scrollbar relative flex-1 overflow-y-auto ${showTabs ? 'pb-24' : ''}`}>
-          <div key={pathname} className={`screen-enter ${showTabs ? '' : 'h-full'}`}>
+          <div key={pathname} className={`screen-enter ${showTabs && pathname !== '/learn/peta' ? '' : 'h-full'}`}>
             <Outlet />
           </div>
         </div>
