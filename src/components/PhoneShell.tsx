@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Layers, Map as MapIcon, Route, User, BookOpen, ShieldCheck, QrCode, UserCheck, Users } from 'lucide-react';
 import { useStore } from '../store';
 import { Toast } from './ui';
@@ -49,19 +49,34 @@ const TabBar: React.FC = () => (
   </nav>
 );
 
-const getRoles = () => [
-  { label: t('Pelajar', 'Learner'), desc: t('Perjalanan, peta, koleksi', 'Journey, map, collection'), Icon: BookOpen, active: true },
-  { label: t('Pengunjung QR', 'QR visitor'), desc: t('Paspor warisan dari QR', 'Heritage passport from QR'), Icon: QrCode, active: false },
-  { label: 'Mentor', desc: t('Unggah dan validasi (kode undangan)', 'Upload and validate (invite code)'), Icon: UserCheck, active: false },
-  { label: t('Kurator', 'Curator'), desc: t('Persetujuan budaya', 'Cultural approval'), Icon: ShieldCheck, active: false },
-  { label: 'Admin', desc: t('Program dan batch QR', 'Programme and QR batches'), Icon: Users, active: false },
+type RoleKey = 'learner' | 'visitor' | 'mentor' | 'curator' | 'admin';
+const getRoles = (): { key: RoleKey; label: string; desc: string; Icon: typeof BookOpen; path: string }[] => [
+  { key: 'learner', label: t('Pelajar', 'Learner'), desc: t('Perjalanan, peta, koleksi, praktik gerak', 'Journey, map, collection, movement practice'), Icon: BookOpen, path: '/learn' },
+  { key: 'visitor', label: t('Pengunjung QR', 'QR visitor'), desc: t('Paspor warisan dan game dari kemasan', 'Heritage passport and game from the package'), Icon: QrCode, path: '/p/NK-001' },
+  { key: 'mentor', label: 'Mentor', desc: t('Unggah dengan izin, validasi pelajar, anotasi', 'Consented upload, learner validation, annotation'), Icon: UserCheck, path: '/mentor' },
+  { key: 'curator', label: t('Kurator', 'Curator'), desc: t('Persetujuan budaya dan visibilitas', 'Cultural approval and visibility'), Icon: ShieldCheck, path: '/kurator' },
+  { key: 'admin', label: 'Admin', desc: t('Capaian pilot, batch QR, audit', 'Pilot progress, QR batches, audit'), Icon: Users, path: '/admin' },
 ];
+
+const roleOfPath = (p: string): RoleKey | null =>
+  p.startsWith('/learn') ? 'learner' : p.startsWith('/p/') ? 'visitor' : p.startsWith('/mentor') ? 'mentor' : p.startsWith('/kurator') ? 'curator' : p.startsWith('/admin') ? 'admin' : null;
 
 /** Panel kiri di desktop: konteks ekosistem lima peran supaya juri tidak melihat satu aplikasi saja. */
 const SidePanel: React.FC = () => {
-  const { reset } = useStore();
+  const { reset, session, signIn } = useStore();
   const tour = useTour();
   const TOUR = getTour();
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const current = roleOfPath(pathname);
+  const open = (r: RoleKey, path: string) => {
+    // Tiap peran dibuka sebagai akun demo, tanpa kode undangan.
+    if (r === 'mentor') signIn('Pak Parmadi (mentor demo)', 'mentor');
+    else if (r === 'curator') signIn('Kurator Budaya (demo)', 'curator');
+    else if (r === 'admin') signIn('Admin Program (demo)', 'admin');
+    else if (r === 'learner' && !session) signIn('Tamu Demo', 'learner');
+    navigate(path);
+  };
   return (
     <aside className="hidden max-w-sm flex-col justify-center gap-6 pr-10 lg:flex">
       <div>
@@ -104,23 +119,30 @@ const SidePanel: React.FC = () => {
       <div>
         <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-ink-soft">{t('Lima peran dalam satu ekosistem', 'Five roles in one ecosystem')}</p>
         <ul className="space-y-1.5">
-          {getRoles().map(({ label, desc, Icon, active }) => (
-            <li
-              key={label}
-              className={`flex items-center gap-3 rounded-xl border px-3 py-2 ${
-                active ? 'border-forest/30 bg-coconut' : 'border-bamboo/60 bg-transparent opacity-75'
-              }`}
-            >
-              <span className={`flex h-8 w-8 items-center justify-center rounded-lg ${active ? 'bg-forest text-coconut' : 'bg-bamboo/50 text-ink-soft'}`}>
-                <Icon className="h-4 w-4" />
-              </span>
-              <span className="flex-1">
-                <span className="block text-sm font-semibold text-deep-forest">{label}</span>
-                <span className="block text-xs text-ink-soft">{desc}</span>
-              </span>
-              <span className="text-[11px] font-semibold text-ink-soft">{active ? t('Sedang dilihat', 'Viewing') : t('Segera', 'Soon')}</span>
-            </li>
-          ))}
+          {getRoles().map(({ key, label, desc, Icon, path }) => {
+            const active = current === key;
+            return (
+              <li key={key}>
+                <button
+                  type="button"
+                  onClick={() => open(key, path)}
+                  aria-current={active ? 'page' : undefined}
+                  className={`flex min-h-[56px] w-full items-center gap-3 rounded-xl border px-3 py-2 text-left transition-colors ${
+                    active ? 'border-forest/40 bg-coconut shadow-sm' : 'border-bamboo/70 bg-transparent hover:bg-coconut'
+                  }`}
+                >
+                  <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${active ? 'bg-forest text-coconut' : 'bg-bamboo/50 text-deep-forest'}`}>
+                    <Icon className="h-4 w-4" />
+                  </span>
+                  <span className="flex-1">
+                    <span className="block text-sm font-semibold text-deep-forest">{label}</span>
+                    <span className="block text-xs text-ink-soft">{desc}</span>
+                  </span>
+                  <span className={`shrink-0 text-[11px] font-semibold ${active ? 'text-forest' : 'text-caramel-dark'}`}>{active ? t('Sedang dilihat', 'Viewing') : t('Buka', 'Open')}</span>
+                </button>
+              </li>
+            );
+          })}
         </ul>
       </div>
       )}
