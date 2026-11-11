@@ -5,6 +5,10 @@ import { Perjalanan } from './screens/Perjalanan';
 import { Bab } from './screens/Bab';
 import { Koleksi, KoleksiDetail } from './screens/Koleksi';
 import { Profil } from './screens/Profil';
+import { Lab } from './screens/Lab';
+import { Gerak } from './screens/Gerak';
+import { Kurator, KuratorDetail, RequireStaff } from './screens/Kurator';
+import { Admin } from './screens/Admin';
 import { QuestDetail } from './screens/Misi';
 import { Peta } from './screens/Peta';
 import { Splash } from './screens/Splash';
@@ -13,6 +17,7 @@ import { Masuk } from './screens/Masuk';
 import { KodeUndangan } from './screens/KodeUndangan';
 import { PasporPublik } from './screens/PasporPublik';
 import { useStore } from './store';
+import { TurStart } from './tour/TourContext';
 
 /** Penjaga: semua rute /learn/* butuh sesi, kalau tidak diarahkan ke /masuk. */
 const RequireSession: React.FC = () => {
@@ -28,6 +33,10 @@ export const App: React.FC = () => (
       <Route path="/masuk" element={<Masuk />} />
       <Route path="/kode-undangan" element={<KodeUndangan />} />
       <Route path="/p/:code" element={<PasporPublik />} />
+      <Route path="/tur" element={<TurStart />} />
+      <Route path="/kurator" element={<RequireStaff><Kurator /></RequireStaff>} />
+      <Route path="/kurator/:id" element={<RequireStaff><KuratorDetail /></RequireStaff>} />
+      <Route path="/admin" element={<RequireStaff><Admin /></RequireStaff>} />
       <Route element={<RequireSession />}>
         <Route path="/learn" element={<Perjalanan />} />
         <Route path="/learn/bab/:slug" element={<Bab />} />
@@ -36,6 +45,8 @@ export const App: React.FC = () => (
         <Route path="/learn/koleksi" element={<Koleksi />} />
         <Route path="/learn/koleksi/:id" element={<KoleksiDetail />} />
         <Route path="/learn/profil" element={<Profil />} />
+        <Route path="/learn/lab" element={<Lab />} />
+        <Route path="/learn/gerak" element={<Gerak />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Route>
