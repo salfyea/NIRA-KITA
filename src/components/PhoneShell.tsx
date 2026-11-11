@@ -109,6 +109,7 @@ export const PhoneShell: React.FC = () => {
   const { toast } = useStore();
   const { pathname } = useLocation();
   const immersive = isImmersive(pathname);
+  const showTabs = pathname.startsWith('/learn') && !immersive;
   const scrollRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
@@ -122,12 +123,12 @@ export const PhoneShell: React.FC = () => {
         className="relative flex h-dvh w-full flex-col overflow-hidden bg-cream md:h-[min(844px,calc(100dvh-48px))] md:w-[390px] md:rounded-[46px] md:border-[10px] md:border-night md:shadow-[0_40px_80px_-30px_rgba(16,38,30,0.6)]"
       >
         <Toast message={toast} />
-        <div ref={scrollRef} className={`no-scrollbar relative flex-1 overflow-y-auto ${immersive ? '' : 'pb-24'}`}>
-          <div key={pathname} className={`screen-enter ${immersive ? 'h-full' : ''}`}>
+        <div ref={scrollRef} className={`no-scrollbar relative flex-1 overflow-y-auto ${showTabs ? 'pb-24' : ''}`}>
+          <div key={pathname} className={`screen-enter ${showTabs ? '' : 'h-full'}`}>
             <Outlet />
           </div>
         </div>
-        {!immersive && <TabBar />}
+        {showTabs && <TabBar />}
       </div>
     </div>
   );
