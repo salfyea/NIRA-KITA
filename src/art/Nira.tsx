@@ -14,7 +14,7 @@ export const Nira: React.FC<{ size?: number; mood?: NiraMood; className?: string
 }) => {
   const id = useId().replace(/:/g, '');
   const up = mood === 'cheer';
-  const arm = '#5DAF4A';
+  const arm = '#98BC80';
   return (
     <svg
       width={size}
@@ -26,9 +26,9 @@ export const Nira: React.FC<{ size?: number; mood?: NiraMood; className?: string
     >
       <defs>
         <radialGradient id={`b${id}`} cx="0.38" cy="0.3" r="0.85">
-          <stop offset="0" stopColor="#D6F08E" />
-          <stop offset="0.45" stopColor="#8FD05E" />
-          <stop offset="1" stopColor="#4C9B45" />
+          <stop offset="0" stopColor="#E3EFC8" />
+          <stop offset="0.45" stopColor="#B6CF8E" />
+          <stop offset="1" stopColor="#7BA36A" />
         </radialGradient>
         <linearGradient id={`l${id}`} x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" stopColor="#6CBF6B" />
@@ -44,8 +44,8 @@ export const Nira: React.FC<{ size?: number; mood?: NiraMood; className?: string
       <ellipse cx="70" cy="163" rx="36" ry="5" fill="#18382C" opacity="0.18" />
 
       {/* kaki */}
-      <ellipse cx="52" cy="158" rx="12" ry="6.5" fill="#3F8A3C" />
-      <ellipse cx="88" cy="158" rx="12" ry="6.5" fill="#3F8A3C" />
+      <ellipse cx="52" cy="158" rx="12" ry="6.5" fill="#5F8A55" />
+      <ellipse cx="88" cy="158" rx="12" ry="6.5" fill="#5F8A55" />
 
       {/* tangan (di belakang badan) */}
       {mood === 'wave' ? (
@@ -71,7 +71,7 @@ export const Nira: React.FC<{ size?: number; mood?: NiraMood; className?: string
         fill={`url(#b${id})`}
       />
       {/* alur sabut kelapa */}
-      <g fill="none" stroke="#3F8A3C" strokeWidth="2.4" strokeLinecap="round" opacity="0.35">
+      <g fill="none" stroke="#5F8A55" strokeWidth="2.4" strokeLinecap="round" opacity="0.35">
         <path d="M70 48 C58 70 54 92 56 112" />
         <path d="M70 48 C82 70 86 92 84 112" />
         <path d="M44 56 C30 80 26 104 32 126" />
@@ -82,8 +82,8 @@ export const Nira: React.FC<{ size?: number; mood?: NiraMood; className?: string
       <circle cx="52" cy="58" r="3.6" fill="#FFFFFF" opacity="0.75" />
 
       {/* bukaan atas: daging kelapa dan setetes nira */}
-      <ellipse cx="70" cy="42" rx="25" ry="9" fill="#EAF3C4" />
-      <ellipse cx="70" cy="42" rx="25" ry="9" fill="none" stroke="#5DAF4A" strokeWidth="3" />
+      <ellipse cx="70" cy="42" rx="25" ry="9" fill="#F6F7DE" />
+      <ellipse cx="70" cy="42" rx="25" ry="9" fill="none" stroke="#8DB179" strokeWidth="3" />
       <ellipse cx="70" cy="43" rx="17" ry="5.5" fill={`url(#n${id})`} />
       <ellipse cx="64" cy="41.5" rx="5" ry="1.6" fill="#FFF3D6" opacity="0.85" />
 
