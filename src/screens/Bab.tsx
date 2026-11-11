@@ -5,20 +5,8 @@ import { Scene, SceneKind, SLUG_SCENE } from '../art/Scene';
 import { Nira } from '../art/Nira';
 import { ApprovalChip } from '../components/ui';
 import { CHAPTER_XP, QUIZ_BY_SLUG } from '../data/quiz';
-import { HeritageRecord } from '../types/jejakNira';
+import { attribution } from '../data/attribution';
 import { isLearnerVisible, useStore } from '../store';
-
-const attribution = (r: HeritageRecord) => {
-  if (r.attributionPreference === 'Anonim') return 'Narasumber komunitas (anonim)';
-  if (r.attributionPreference === 'Tampilkan Inisial Komunitas') {
-    const ini = r.contributorName
-      .split(' ')
-      .map((w) => w[0])
-      .join('');
-    return `${ini}, ${r.contributorRole}`;
-  }
-  return `${r.contributorName}, ${r.contributorRole}`;
-};
 
 const CardShell: React.FC<{ kind: SceneKind; children: React.ReactNode; scene?: React.ReactNode }> = ({ kind, children, scene }) => (
   <section className="no-scrollbar h-full w-full shrink-0 snap-center overflow-y-auto">

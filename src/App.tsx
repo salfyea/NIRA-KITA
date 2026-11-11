@@ -3,6 +3,8 @@ import { Navigate, Outlet, Route, Routes } from 'react-router-dom';
 import { PhoneShell } from './components/PhoneShell';
 import { Perjalanan } from './screens/Perjalanan';
 import { Bab } from './screens/Bab';
+import { Koleksi, KoleksiDetail } from './screens/Koleksi';
+import { Profil } from './screens/Profil';
 import { Belajar, ModuleDetail, QuestDetail } from './screens/Belajar';
 import { Jelajahi, RecordDetail } from './screens/Jelajahi';
 import { Lab } from './screens/Lab';
@@ -42,6 +44,9 @@ export const App: React.FC = () => (
       <Route path="/learn/lab" element={<Lab />} />
       <Route path="/learn/paspor" element={<Paspor />} />
       <Route path="/learn/peta" element={<Peta />} />
+      <Route path="/learn/koleksi" element={<Koleksi />} />
+      <Route path="/learn/koleksi/:id" element={<KoleksiDetail />} />
+      <Route path="/learn/profil" element={<Profil />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Route>
