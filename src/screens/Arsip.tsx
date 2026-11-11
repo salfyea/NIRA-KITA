@@ -5,6 +5,7 @@ import { Nira } from '../art/Nira';
 import { Ornate } from '../components/ui';
 import { GERAKAN } from '../data/gerakan';
 import { HAND_CONNECTIONS, loadHandLandmarker } from '../lib/hand';
+import { useStore } from '../store';
 
 const BAB_PRAKTIK = '/learn/bab/kerajinan-tradisional-transfer-pengetahuan?kartu=praktik';
 
@@ -62,7 +63,9 @@ export const Arsip: React.FC = () => {
 
 export const ArsipDetail: React.FC = () => {
   const { id } = useParams();
+  const { annotations } = useStore();
   const g = GERAKAN.find((x) => x.id === id);
+  const note = g ? annotations[g.id] : undefined;
   const videoRef = React.useRef<HTMLVideoElement>(null);
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
   const raf = React.useRef(0);
@@ -166,7 +169,16 @@ export const ArsipDetail: React.FC = () => {
 
       <Ornate className="mt-4 p-4">
         <p className="text-xs font-bold uppercase tracking-[0.16em] text-ink-soft">Catatan mentor</p>
-        <p className="mt-1 text-sm leading-relaxed text-ink-soft">Belum ada anotasi. Mentor akan menandai teknik pada klip ini, lalu kurator menyetujui sebelum tampil sebagai materi.</p>
+        {note ? (
+          <>
+            <p className="mt-1 text-base leading-relaxed text-charcoal">"{note.text}"</p>
+            <p className={`mt-1 text-xs font-bold ${note.approved ? 'text-forest' : 'text-caramel-dark'}`}>
+              {note.author} · {note.approved ? 'Disetujui kurator' : 'Menunggu persetujuan kurator'}
+            </p>
+          </>
+        ) : (
+          <p className="mt-1 text-sm leading-relaxed text-ink-soft">Belum ada anotasi. Mentor akan menandai teknik pada klip ini, lalu kurator menyetujui sebelum tampil sebagai materi.</p>
+        )}
       </Ornate>
 
       {g.practice && (

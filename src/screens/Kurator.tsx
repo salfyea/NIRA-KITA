@@ -1,13 +1,13 @@
 import React from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Check, Eye, Lock, LogOut, QrCode, ShieldCheck, Users, X } from 'lucide-react';
+import { ArrowLeft, Check, Eye, Lock, LogOut, Mic, QrCode, ShieldCheck, Users, X } from 'lucide-react';
 import { Ornate } from '../components/ui';
 import { attribution } from '../data/attribution';
 import { CuratorChecklist, HeritageRecord, VisibilityScope } from '../types/jejakNira';
 import { useStore } from '../store';
 
 /** Bilah atas area staf: berpindah antara Kurator dan Admin, plus keluar. */
-export const StaffBar: React.FC<{ current: 'kurator' | 'admin' }> = ({ current }) => {
+export const StaffBar: React.FC<{ current: 'mentor' | 'kurator' | 'admin' }> = ({ current }) => {
   const { session, signOut } = useStore();
   const navigate = useNavigate();
   return (
@@ -28,8 +28,9 @@ export const StaffBar: React.FC<{ current: 'kurator' | 'admin' }> = ({ current }
           <LogOut className="h-4 w-4" /> Keluar
         </button>
       </div>
-      <nav className="mt-2 grid grid-cols-2 rounded-full border border-bamboo bg-coconut p-1" aria-label="Area staf">
+      <nav className="mt-2 grid grid-cols-3 rounded-full border border-bamboo bg-coconut p-1" aria-label="Area staf">
         {([
+          ['mentor', '/mentor', 'Mentor', Mic],
           ['kurator', '/kurator', 'Kurator', ShieldCheck],
           ['admin', '/admin', 'Admin', Users],
         ] as const).map(([k, to, label, Icon]) => (
@@ -69,8 +70,9 @@ const scopeLabel = (v: VisibilityScope) => (v === 'public' ? 'Publik (halaman QR
 /* ============================== Antrean ============================== */
 
 export const Kurator: React.FC = () => {
-  const { records } = useStore();
+  const { records, annotations, approveAnnotation, showToast } = useStore();
   const navigate = useNavigate();
+  const pendingNotes = Object.entries(annotations).filter(([, a]) => !a.approved);
   const [f, setF] = React.useState<'tunggu' | 'setuju' | 'semua'>('tunggu');
   const pending = records.filter((r) => r.reviewStatus === 'In Review' || r.reviewStatus === 'Revision Requested');
   const approved = records.filter((r) => r.reviewStatus === 'Approved');
@@ -94,6 +96,21 @@ export const Kurator: React.FC = () => {
             </button>
           ))}
         </div>
+        {pendingNotes.length > 0 && (
+          <div className="mt-3 rounded-2xl border border-caramel/40 bg-coconut p-3">
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-caramel-dark">Anotasi mentor menunggu ({pendingNotes.length})</p>
+            {pendingNotes.map(([clip, a]) => (
+              <div key={clip} className="mt-2 border-t border-bamboo/60 pt-2">
+                <p className="text-sm font-semibold text-deep-forest">Klip: {clip}</p>
+                <p className="text-sm leading-relaxed text-charcoal">"{a.text}"</p>
+                <p className="text-xs text-ink-soft">Oleh {a.author}</p>
+                <button type="button" onClick={() => { approveAnnotation(clip); showToast('Anotasi disetujui dan tampil di Arsip Gerakan.'); }} className="mt-2 min-h-[44px] rounded-full bg-forest px-5 text-sm font-semibold text-coconut">
+                  Setujui anotasi
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
         <ul className="mt-3 space-y-3">
           {list.map((r) => (
             <li key={r.id}>

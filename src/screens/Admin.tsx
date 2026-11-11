@@ -41,7 +41,8 @@ const Kpi: React.FC<{ label: string; value: number; target: number; note: string
 );
 
 export const Admin: React.FC = () => {
-  const { records, batches, audit, addBatch, showToast } = useStore();
+  const { records, batches, audit, submissions, addBatch, showToast } = useStore();
+  const validated = submissions.filter((x) => x.status === 'Tervalidasi Mentor').length;
   const [tab, setTab] = React.useState<'ringkasan' | 'batch' | 'audit'>('ringkasan');
   const [product, setProduct] = React.useState('Gula Kelapa Cetak');
   const [village, setVillage] = React.useState(VILLAGES[0]);
@@ -85,7 +86,7 @@ export const Admin: React.FC = () => {
         {tab === 'ringkasan' && (
           <div className="mt-4 space-y-3">
             <Kpi label="Rekaman warisan tervalidasi" value={approved} target={15} live note="Target pilot 12 minggu: minimal 15 rekaman yang disetujui kurator." />
-            <Kpi label="Pelajar mencapai milestone mentor" value={0} target={6} note="Milestone divalidasi manusia (mentor) di lapangan. Belum ada validasi sungguhan, jadi 0." />
+            <Kpi label="Pelajar mencapai milestone mentor" value={validated} target={6} live note="Hanya validasi mentor manusia yang dihitung. Angka ini berasal dari alur Mentor di aplikasi; pilot lapangan belum berjalan." />
             <Kpi label="Pelajar dalam pilot" value={10} target={10} note="Angka rencana (usia 18 sampai 29). Data ilustratif." />
             <Kpi label="Mentor penderes" value={2} target={2} note="Angka rencana. Data ilustratif." />
             <p className="rounded-xl bg-bamboo/40 p-3 text-xs leading-relaxed text-deep-forest">

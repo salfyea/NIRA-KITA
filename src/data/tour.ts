@@ -11,7 +11,7 @@ export interface TourStep {
   tryIt: string;
   mood: NiraMood;
   /** Peran staf yang diperlukan layar ini (otomatis disiapkan oleh tur). */
-  role?: 'curator' | 'admin';
+  role?: 'mentor' | 'curator' | 'admin';
 }
 
 export const TOUR: TourStep[] = [
@@ -94,6 +94,17 @@ export const TOUR: TourStep[] = [
     proves: 'Heritage Archive di bawah kendali komunitas',
     tryIt: 'Buka satu kartu atau tab Glosarium.',
     mood: 'cheer',
+  },
+  {
+    id: 'mentor',
+    route: '/mentor',
+    short: 'Mentor membawa pengetahuan',
+    title: 'Tata kelola: mentor',
+    see: 'Mentor mengunggah rekaman dengan persetujuan narasumber, menandai teknik pada klip, dan memvalidasi pelajar. Rekaman baru otomatis Privat.',
+    proves: 'Izin direkam sejak awal, validasi dilakukan manusia',
+    tryIt: 'Buka tab Validasi dan validasi akun demo, lalu lihat lencana di Profil.',
+    mood: 'wave',
+    role: 'mentor',
   },
   {
     id: 'curator',

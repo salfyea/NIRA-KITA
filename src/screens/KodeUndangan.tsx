@@ -21,9 +21,11 @@ export const KodeUndangan: React.FC = () => {
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     const r = ROLES[code.trim().toUpperCase()];
-    if (r === 'Kurator' || r === 'Admin') {
-      signIn(r === 'Kurator' ? 'Kurator Budaya (demo)' : 'Admin Program (demo)', r === 'Kurator' ? 'curator' : 'admin');
-      navigate(r === 'Kurator' ? '/kurator' : '/admin', { replace: true });
+    if (r === 'Mentor' || r === 'Kurator' || r === 'Admin') {
+      const map = { Mentor: ['Pak Parmadi (mentor demo)', 'mentor', '/mentor'], Kurator: ['Kurator Budaya (demo)', 'curator', '/kurator'], Admin: ['Admin Program (demo)', 'admin', '/admin'] } as const;
+      const [nm, role, to] = map[r];
+      signIn(nm, role);
+      navigate(to, { replace: true });
       return;
     }
     setRole(r ?? null);

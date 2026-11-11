@@ -9,6 +9,7 @@ import { Lab } from './screens/Lab';
 import { Arsip, ArsipDetail } from './screens/Arsip';
 import { Kurator, KuratorDetail, RequireStaff } from './screens/Kurator';
 import { Admin } from './screens/Admin';
+import { Mentor } from './screens/Mentor';
 import { QuestDetail } from './screens/Misi';
 import { Peta } from './screens/Peta';
 import { Splash } from './screens/Splash';
@@ -37,6 +38,7 @@ export const App: React.FC = () => (
       <Route path="/kurator" element={<RequireStaff><Kurator /></RequireStaff>} />
       <Route path="/kurator/:id" element={<RequireStaff><KuratorDetail /></RequireStaff>} />
       <Route path="/admin" element={<RequireStaff><Admin /></RequireStaff>} />
+      <Route path="/mentor" element={<RequireStaff><Mentor /></RequireStaff>} />
       <Route element={<RequireSession />}>
         <Route path="/learn" element={<Perjalanan />} />
         <Route path="/learn/bab/:slug" element={<Bab />} />

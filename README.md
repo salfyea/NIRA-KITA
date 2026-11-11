@@ -17,7 +17,8 @@ Stack: Vite + React 19 + TypeScript + Tailwind 4 + react-router-dom v7 + lucide-
 | `/learn/arsip`, `/learn/arsip/:id` | **Arsip Gerakan**: klip lapangan perajin, tombol kerangka tangan (MediaPipe di perangkat), tautan ke latihan |
 | `/learn/bab/:slug` (kartu Praktik gerak) | Praktik gerak per modul: menuang, menjepit, mengaduk, dan menilai situasi aman/bahaya atau boleh/tidak dengan jempol dan telapak |
 | `/learn/lab` | **Lab Pengetahuan**: Lab Dapur (eksperimen bebas) dan Peta Istilah (mencocokkan istilah dan fungsi), +40 XP sekali per eksperimen |
-| `/kode-undangan` | Kode `KURATOR-2026` membuka `/kurator`, `ADMIN-2026` membuka `/admin`, `MENTOR-2026` masih placeholder |
+| `/kode-undangan` | Kode `KURATOR-2026` membuka `/kurator`, `ADMIN-2026` membuka `/admin`, `MENTOR-2026` membuka `/mentor` |
+| `/mentor` | **Mentor** (`MENTOR-2026`): unggah rekaman dengan izin narasumber, validasi pelajar (satu-satunya yang membuka lencana mentor), anotasi klip |
 | `/kurator`, `/kurator/:id` | **Kurator**: antrean tinjauan, izin kontributor, checklist 6 poin, visibilitas (Privat, Pelajar, Publik QR), keputusan tercatat di audit |
 | `/admin` | **Admin**: capaian pilot (KPI), pembuat batch QR (kode QR nyata, unduh PNG), catatan audit |
 | `/tur` | Tur 9 langkah untuk juri (akun demo otomatis) |
