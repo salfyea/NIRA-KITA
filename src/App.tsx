@@ -1,7 +1,8 @@
 import React from 'react';
 import { Navigate, Outlet, Route, Routes } from 'react-router-dom';
 import { PhoneShell } from './components/PhoneShell';
-import { Beranda } from './screens/Beranda';
+import { Perjalanan } from './screens/Perjalanan';
+import { Bab } from './screens/Bab';
 import { Belajar, ModuleDetail, QuestDetail } from './screens/Belajar';
 import { Jelajahi, RecordDetail } from './screens/Jelajahi';
 import { Lab } from './screens/Lab';
@@ -31,7 +32,8 @@ export const App: React.FC = () => (
       <Route path="/kode-undangan" element={<KodeUndangan />} />
       <Route path="/p/:code" element={<PasporPublik />} />
       <Route element={<RequireSession />}>
-      <Route path="/learn" element={<Beranda />} />
+      <Route path="/learn" element={<Perjalanan />} />
+      <Route path="/learn/bab/:slug" element={<Bab />} />
       <Route path="/learn/belajar" element={<Belajar />} />
       <Route path="/learn/belajar/:slug" element={<ModuleDetail />} />
       <Route path="/learn/misi/:id" element={<QuestDetail />} />

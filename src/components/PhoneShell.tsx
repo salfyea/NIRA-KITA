@@ -5,7 +5,7 @@ import { useStore } from '../store';
 import { Toast } from './ui';
 
 const TABS = [
-  { to: '/learn', label: 'Beranda', Icon: Home, end: true },
+  { to: '/learn', label: 'Perjalanan', Icon: Home, end: true },
   { to: '/learn/belajar', label: 'Belajar', Icon: BookOpen },
   { to: '/learn/jelajah', label: 'Jelajahi', Icon: Compass },
   { to: '/learn/lab', label: 'Lab', Icon: FlaskConical },
@@ -109,7 +109,7 @@ export const PhoneShell: React.FC = () => {
   const { toast } = useStore();
   const { pathname } = useLocation();
   const immersive = isImmersive(pathname);
-  const showTabs = pathname.startsWith('/learn') && !immersive;
+  const showTabs = pathname.startsWith('/learn') && !immersive && !pathname.startsWith('/learn/bab');
   const scrollRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
@@ -129,6 +129,7 @@ export const PhoneShell: React.FC = () => {
           </div>
         </div>
         {showTabs && <TabBar />}
+        <div id="phone-overlay" className="pointer-events-none absolute inset-0 z-50" />
       </div>
     </div>
   );

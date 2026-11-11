@@ -62,6 +62,7 @@ interface Store extends PersistedState {
   toggleLesson: (moduleSlug: string, lessonId: string) => void;
   completeQuest: (questId: string) => void;
   checkIn: (recordId: string) => void;
+  completeModule: (moduleSlug: string, recordIds: string[], xp: number) => void;
   signIn: (name: string) => void;
   signOut: () => void;
   finishOnboarding: () => void;
@@ -131,6 +132,25 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setState((s) => (s.collected.includes(recordId) ? s : { ...s, collected: [...s.collected, recordId], xp: s.xp + 20 }));
   }, []);
 
+  /** Selesaikan bab: semua pelajaran modul ditandai selesai, kartu warisan terkait terkumpul, XP sekali saja. */
+  const completeModule = useCallback((moduleSlug: string, recordIds: string[], xp: number) => {
+    setState((s) => {
+      const mod = s.modules.find((m) => m.slug === moduleSlug);
+      if (!mod) return s;
+      const already = mod.completionPercent === 100;
+      return {
+        ...s,
+        xp: already ? s.xp : s.xp + xp,
+        collected: Array.from(new Set([...s.collected, ...recordIds])),
+        modules: s.modules.map((m) =>
+          m.slug === moduleSlug
+            ? { ...m, completionPercent: 100, lessons: m.lessons.map((l) => ({ ...l, completed: true })) }
+            : m,
+        ),
+      };
+    });
+  }, []);
+
   /** Simulasi: hanya nama tampilan yang disimpan, kata sandi tidak pernah disimpan. */
   const signIn = useCallback((name: string) => {
     setState((s) => ({ ...s, session: { name: name.trim() || 'Sahabat Nira', role: 'learner' } }));
@@ -147,8 +167,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const reached = JOURNEY_LEVELS.filter((l) => state.xp >= l.minXp);
     const level = reached[reached.length - 1] ?? JOURNEY_LEVELS[0];
     const nextLevel = JOURNEY_LEVELS.find((l) => l.minXp > state.xp);
-    return { ...state, level, nextLevel, toast, showToast, toggleBookmark, toggleLesson, completeQuest, checkIn, signIn, signOut, finishOnboarding, reset };
-  }, [state, toast, showToast, toggleBookmark, toggleLesson, completeQuest, checkIn, signIn, signOut, finishOnboarding, reset]);
+    return { ...state, level, nextLevel, toast, showToast, toggleBookmark, toggleLesson, completeQuest, checkIn, completeModule, signIn, signOut, finishOnboarding, reset };
+  }, [state, toast, showToast, toggleBookmark, toggleLesson, completeQuest, checkIn, completeModule, signIn, signOut, finishOnboarding, reset]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 };

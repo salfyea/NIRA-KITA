@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { ShieldCheck, Lock, Eye, Users } from 'lucide-react';
 import { HeritageRecord } from '../types/jejakNira';
 
@@ -142,3 +143,36 @@ export const Toast: React.FC<{ message: string | null }> = ({ message }) =>
       {message}
     </div>
   ) : null;
+
+/** Bottom sheet yang tampil di dalam bingkai ponsel (portal ke #phone-overlay). */
+export const Sheet: React.FC<{ open: boolean; onClose: () => void; title: string; children: React.ReactNode }> = ({
+  open,
+  onClose,
+  title,
+  children,
+}) => {
+  const [host, setHost] = React.useState<HTMLElement | null>(null);
+  React.useEffect(() => setHost(document.getElementById('phone-overlay')), []);
+  React.useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open, onClose]);
+  if (!open || !host) return null;
+  return createPortal(
+    <div className="pointer-events-auto absolute inset-0 flex items-end bg-night/50" onClick={onClose}>
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+        onClick={(e) => e.stopPropagation()}
+        className="sheet-enter max-h-[85%] w-full overflow-y-auto rounded-t-[28px] bg-cream pb-6 shadow-2xl"
+      >
+        <div className="mx-auto mt-2 h-1.5 w-10 rounded-full bg-bamboo" />
+        {children}
+      </div>
+    </div>,
+    host,
+  );
+};

@@ -10,6 +10,13 @@ export type SceneKind =
   | 'keselamatan'
   | 'keberlanjutan';
 
+export const SLUG_SCENE: Record<string, SceneKind> = {
+  'identitas-budaya-warisan-lokal': 'identitas',
+  'kerajinan-tradisional-transfer-pengetahuan': 'kerajinan',
+  'keselamatan-kerja-manajemen-risiko': 'keselamatan',
+  'keberlanjutan-mata-pencaharian-kewirausahaan': 'keberlanjutan',
+};
+
 /**
  * Ilustrasi adegan bergaya buku cerita hangat. Satu komponen, satu bahasa visual:
  * langit bergradien, tiga lapis bukit, kabut, cahaya matahari, dan detail kecil.
