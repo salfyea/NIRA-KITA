@@ -58,8 +58,6 @@ interface Store extends PersistedState {
   nextLevel?: (typeof JOURNEY_LEVELS)[number];
   toast: string | null;
   showToast: (msg: string) => void;
-  toggleBookmark: (recordId: string) => void;
-  toggleLesson: (moduleSlug: string, lessonId: string) => void;
   completeQuest: (questId: string) => void;
   checkIn: (recordId: string) => void;
   completeModule: (moduleSlug: string, recordIds: string[], xp: number) => void;
@@ -90,25 +88,6 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, [toast]);
 
   const showToast = useCallback((msg: string) => setToast(msg), []);
-
-  const toggleBookmark = useCallback((recordId: string) => {
-    setState((s) => ({
-      ...s,
-      records: s.records.map((r) => (r.id === recordId ? { ...r, bookmarked: !r.bookmarked } : r)),
-    }));
-  }, []);
-
-  const toggleLesson = useCallback((moduleSlug: string, lessonId: string) => {
-    setState((s) => ({
-      ...s,
-      modules: s.modules.map((m) => {
-        if (m.slug !== moduleSlug) return m;
-        const lessons = m.lessons.map((l) => (l.id === lessonId ? { ...l, completed: !l.completed } : l));
-        const done = lessons.filter((l) => l.completed).length;
-        return { ...m, lessons, completionPercent: Math.round((done / lessons.length) * 100) };
-      }),
-    }));
-  }, []);
 
   const completeQuest = useCallback((questId: string) => {
     setState((s) => {
@@ -167,8 +146,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const reached = JOURNEY_LEVELS.filter((l) => state.xp >= l.minXp);
     const level = reached[reached.length - 1] ?? JOURNEY_LEVELS[0];
     const nextLevel = JOURNEY_LEVELS.find((l) => l.minXp > state.xp);
-    return { ...state, level, nextLevel, toast, showToast, toggleBookmark, toggleLesson, completeQuest, checkIn, completeModule, signIn, signOut, finishOnboarding, reset };
-  }, [state, toast, showToast, toggleBookmark, toggleLesson, completeQuest, checkIn, completeModule, signIn, signOut, finishOnboarding, reset]);
+    return { ...state, level, nextLevel, toast, showToast, completeQuest, checkIn, completeModule, signIn, signOut, finishOnboarding, reset };
+  }, [state, toast, showToast, completeQuest, checkIn, completeModule, signIn, signOut, finishOnboarding, reset]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 };
