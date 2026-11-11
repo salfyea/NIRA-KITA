@@ -10,6 +10,7 @@ import { MasakGula } from '../game/MasakGula';
 import { attribution } from '../data/attribution';
 import { useStore } from '../store';
 import { loadVisitor, saveVisitor } from '../lib/visitor';
+import { LangToggle, t } from '../i18n';
 import { HeritageRecord } from '../types/jejakNira';
 
 /** Hanya rekaman yang disetujui, berizin publik, dan diizinkan tampil di halaman QR. */
@@ -37,12 +38,12 @@ export const PasporPublik: React.FC = () => {
     return (
       <div className="flex min-h-full flex-col items-center bg-cream px-6 pt-16 text-center">
         <Nira mood="think" size={110} className="mx-auto" />
-        <h1 className="mt-4 text-2xl text-deep-forest">Kode kemasan tidak dikenali</h1>
-        <p className="mt-2 text-sm text-ink-soft">Periksa lagi QR-nya, atau coba contoh di bawah.</p>
+        <h1 className="mt-4 text-2xl text-deep-forest">{t('Kode kemasan tidak dikenali', 'Package code not recognised')}</h1>
+        <p className="mt-2 text-sm text-ink-soft">{t('Periksa lagi QR-nya, atau coba contoh di bawah.', 'Check the QR again, or try the examples below.')}</p>
         <div className="mt-4 grid w-full gap-2">
           {batches.slice(0, 3).map((b) => (
             <Link key={b.code} to={`/p/${b.code}`} className="flex min-h-[48px] items-center justify-center rounded-full bg-forest text-base font-semibold text-coconut">
-              Contoh kemasan {b.code}
+              {t('Contoh kemasan', 'Sample package')} {b.code}
             </Link>
           ))}
         </div>
@@ -72,15 +73,16 @@ export const PasporPublik: React.FC = () => {
       <header className="relative">
         <div className="relative h-[300px] overflow-hidden rounded-b-[36px]">
           <Scene kind="kerajinan" className="absolute inset-0 h-full w-full" />
-          <div className="absolute right-3 top-3 rounded-full bg-coconut/90 px-3 py-1.5 text-xs font-bold text-deep-forest">Paspor Warisan · {batch.code}</div>
+          <div className="absolute right-3 top-3 rounded-full bg-coconut/90 px-3 py-1.5 text-xs font-bold text-deep-forest">{t('Paspor Warisan', 'Heritage Passport')} · {batch.code}</div>
+          <LangToggle className="absolute left-3 top-3" />
           <div className="absolute -bottom-3 right-4">
             <Nira mood="wave" size={96} />
           </div>
         </div>
         <div className="px-6 pt-5">
-          <h1 className="text-[30px] leading-tight text-deep-forest">Gula kelapa di tanganmu punya cerita</h1>
+          <h1 className="text-[30px] leading-tight text-deep-forest">{t('Gula kelapa di tanganmu punya cerita', 'The coconut sugar in your hands has a story')}</h1>
           <p className="mt-2 text-base leading-relaxed text-ink-soft">
-            Dari kebun kelapa Cilongok, lewat tungku kayu perajin, sampai ke kemasanmu. Kenalan sambil main, tidak perlu unduh apa pun.
+            {t('Dari kebun kelapa Cilongok, lewat tungku kayu perajin, sampai ke kemasanmu. Kenalan sambil main, tidak perlu unduh apa pun.', 'From the coconut groves of Cilongok, over the artisans\' wood stoves, to your package. Get to know it by playing, no download needed.')}
           </p>
         </div>
       </header>
@@ -88,7 +90,7 @@ export const PasporPublik: React.FC = () => {
       {/* pilih cara kenalan */}
       <section className="mt-5 px-6" aria-labelledby="pilih">
         <h2 id="pilih" className="text-[22px] text-deep-forest">
-          Mau kenalan lewat apa?
+          {t('Mau kenalan lewat apa?', 'How would you like to get to know it?')}
         </h2>
         <button
           type="button"
@@ -99,12 +101,12 @@ export const PasporPublik: React.FC = () => {
           <span className="absolute inset-0 bg-gradient-to-r from-deep-forest via-deep-forest/90 to-deep-forest/10" />
           <span className="relative block max-w-[62%] p-4">
             <span className="inline-flex items-center gap-1 rounded-full bg-caramel px-2.5 py-1 text-xs font-bold text-deep-forest">
-              <Sparkles className="h-3.5 w-3.5" /> Paling seru
+              <Sparkles className="h-3.5 w-3.5" /> {t('Paling seru', 'Most fun')}
             </span>
-            <span className="mt-2 block font-serif text-2xl leading-tight text-coconut">Masak bareng Nira</span>
-            <span className="mt-1 block text-sm text-coconut">Game ±3 menit. Menangkan kartu warisan.</span>
+            <span className="mt-2 block font-serif text-2xl leading-tight text-coconut">{t('Masak bareng Nira', 'Cook with Nira')}</span>
+            <span className="mt-1 block text-sm text-coconut">{t('Game ±3 menit. Menangkan kartu warisan.', 'A ~3-minute game. Win a heritage card.')}</span>
             <span className="mt-3 inline-flex min-h-[44px] items-center gap-2 rounded-full bg-coconut px-4 text-sm font-bold text-deep-forest">
-              <Gamepad2 className="h-4 w-4" /> Main sekarang
+              <Gamepad2 className="h-4 w-4" /> {t('Main sekarang', 'Play now')}
             </span>
           </span>
           <span className="pointer-events-none absolute -bottom-1 right-1">
@@ -113,8 +115,8 @@ export const PasporPublik: React.FC = () => {
         </button>
         <div className="mt-3 grid grid-cols-2 gap-3">
           {[
-            { id: 'asal', Icon: MapPin, t: 'Lihat asal-usulnya', d: '10 detik', kind: 'asal' as const },
-            { id: 'kisah', Icon: BookOpen, t: 'Dengar kisahnya', d: '1 menit', kind: 'kisah' as const },
+            { id: 'asal', Icon: MapPin, t: t('Lihat asal-usulnya', 'See where it comes from'), d: t('10 detik', '10 seconds'), kind: 'asal' as const },
+            { id: 'kisah', Icon: BookOpen, t: t('Dengar kisahnya', 'Hear the story'), d: t('1 menit', '1 minute'), kind: 'kisah' as const },
           ].map(({ id, Icon, t, d, kind }) => (
             <button
               key={id}
@@ -136,42 +138,42 @@ export const PasporPublik: React.FC = () => {
 
       {/* 2. dibuat di mana */}
       <section id="asal" className="mt-8 scroll-mt-4 px-6">
-        <h2 className="text-[22px] text-deep-forest">Dibuat di mana?</h2>
+        <h2 className="text-[22px] text-deep-forest">{t('Dibuat di mana?', 'Where is it made?')}</h2>
         <Ornate className="mt-3 overflow-hidden p-0">
           <Scene kind="identitas" className="block h-32 w-full" />
           <div className="space-y-1 p-4">
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-caramel-dark">{batch.productName}</p>
-            <p className="text-xl text-deep-forest">Desa {batch.village}, Cilongok, Banyumas</p>
-            <p className="text-sm text-ink-soft">Batch {batch.code} · {batch.period}</p>
-            <p className="pt-1 text-xs text-ink-soft">Lokasi tingkat desa. Data ilustratif.</p>
+            <p className="text-xl text-deep-forest">{t('Desa', 'Village')} {batch.village}, Cilongok, Banyumas</p>
+            <p className="text-sm text-ink-soft">{t('Batch', 'Batch')} {batch.code} · {batch.period}</p>
+            <p className="pt-1 text-xs text-ink-soft">{t('Lokasi tingkat desa. Data ilustratif.', 'Village-level location. Illustrative data.')}</p>
           </div>
         </Ornate>
       </section>
 
       {/* 3. kisah */}
       <section id="kisah" className="mt-8 scroll-mt-4 px-6">
-        <h2 className="text-[22px] text-deep-forest">Kisah di balik kemasan</h2>
+        <h2 className="text-[22px] text-deep-forest">{t('Kisah di balik kemasan', 'The story behind the package')}</h2>
         {story ? (
           <KisahPerajin record={story} />
         ) : (
-          <p className="mt-3 text-sm text-ink-soft">Kisah untuk kemasan ini masih menunggu persetujuan kurator dan perajin.</p>
+          <p className="mt-3 text-sm text-ink-soft">{t('Kisah untuk kemasan ini masih menunggu persetujuan kurator dan perajin.', 'The story for this package is still waiting for curator and artisan approval.')}</p>
         )}
       </section>
 
       {/* 4. game */}
       <section id="game" className="mt-8 scroll-mt-4 px-6">
-        <h2 className="text-[22px] text-deep-forest">Masak bareng Nira</h2>
+        <h2 className="text-[22px] text-deep-forest">{t('Masak bareng Nira', 'Cook with Nira')}</h2>
         <Ornate className="mt-3 p-4">
           {result ? (
             <div className="text-center" role="status">
               <Nira mood="cheer" size={100} className="mx-auto" />
-              <div className="mt-1 flex justify-center gap-1" aria-label={`${result.stars} dari 3 bintang`}>
+              <div className="mt-1 flex justify-center gap-1" aria-label={t(`${result.stars} dari 3 bintang`, `${result.stars} of 3 stars`)}>
                 {[1, 2, 3].map((n) => (
                   <Star key={n} className={`h-8 w-8 ${n <= result.stars ? 'fill-caramel text-caramel' : 'text-bamboo'}`} />
                 ))}
               </div>
               <p className="mt-1 text-lg font-semibold text-deep-forest">
-                {result.stars === 3 ? 'Gulamu manis sempurna!' : result.stars === 2 ? 'Hampir sempurna!' : 'Awal yang baik, coba lagi ya'}
+                {result.stars === 3 ? t('Gulamu manis sempurna!', 'Your sugar is perfectly sweet!') : result.stars === 2 ? t('Hampir sempurna!', 'Almost perfect!') : t('Awal yang baik, coba lagi ya', 'A good start, try again')}
               </p>
               {story && (
                 <div className="ornate mt-3 p-3 text-left">
@@ -179,9 +181,9 @@ export const PasporPublik: React.FC = () => {
                   <span className="corner tr" />
                   <span className="corner bl" />
                   <span className="corner br" />
-                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-caramel-dark">Kartu warisan terbuka</p>
+                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-caramel-dark">{t('Kartu warisan terbuka', 'Heritage card unlocked')}</p>
                   <p className="mt-1 text-sm font-semibold text-deep-forest">{story.title}</p>
-                  <p className="mt-0.5 text-xs text-ink-soft">Tersimpan di perangkat ini. {visitor.cards.length} kartu terkumpul.</p>
+                  <p className="mt-0.5 text-xs text-ink-soft">{t('Tersimpan di perangkat ini.', 'Saved on this device.')} {visitor.cards.length} {t('kartu terkumpul.', 'card(s) collected.')}</p>
                 </div>
               )}
               <button
@@ -192,7 +194,7 @@ export const PasporPublik: React.FC = () => {
                 }}
                 className="mt-3 min-h-[52px] w-full rounded-full border-2 border-caramel-dark text-base font-semibold text-caramel-dark"
               >
-                Main lagi
+                {t('Main lagi', 'Play again')}
               </button>
             </div>
           ) : (
@@ -204,16 +206,16 @@ export const PasporPublik: React.FC = () => {
       {/* 5. ajakan lembut */}
       <section className="mt-8 px-6">
         <div className="rounded-3xl bg-forest p-5 text-coconut">
-          <h2 className="text-[22px]">Mau belajar lebih dalam?</h2>
+          <h2 className="text-[22px]">{t('Mau belajar lebih dalam?', 'Want to learn more?')}</h2>
           <p className="mt-1 text-sm leading-relaxed text-coconut">
-            NIRA KITA punya perjalanan belajar, peta desa, dan koleksi kartu warisan. Gratis dan boleh dilewati.
+            {t('NIRA KITA punya perjalanan belajar, peta desa, dan koleksi kartu warisan. Gratis dan boleh dilewati.', 'NIRA KITA has a learning journey, a village map, and a collection of heritage cards. Free, and you can skip it.')}
           </p>
           <Link to="/masuk" className="mt-3 flex min-h-[52px] items-center justify-center rounded-full bg-caramel-dark text-base font-semibold text-coconut">
-            Buka NIRA KITA
+            {t('Buka NIRA KITA', 'Open NIRA KITA')}
           </Link>
         </div>
         <p className="mt-4 text-center text-xs leading-relaxed text-ink-soft">
-          Tidak ada pelacakan lokasi. Kisah perajin hanya tampil atas izin dan persetujuan kurator.
+          {t('Tidak ada pelacakan lokasi. Kisah perajin hanya tampil atas izin dan persetujuan kurator.', 'No location tracking. Artisans\' stories appear only with their permission and curator approval.')}
         </p>
       </section>
     </div>

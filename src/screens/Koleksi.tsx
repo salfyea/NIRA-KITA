@@ -8,6 +8,7 @@ import { attribution } from '../data/attribution';
 import { HeritageRecord } from '../types/jejakNira';
 import { isLearnerVisible, useStore } from '../store';
 import { t } from '../i18n';
+import { locLabel } from '../data/display';
 
 const sceneOf = (r: HeritageRecord) => SLUG_SCENE[r.relatedModuleSlug] ?? 'identitas';
 
@@ -131,7 +132,7 @@ export const KoleksiDetail: React.FC = () => {
             </span>
           </p>
           <p className="text-xs text-ink-soft">
-            {r.location}
+            {locLabel(r.location)}
             {r.isIllustrativePlaceholder && t(' · data ilustratif', ' · illustrative data')}
           </p>
         </Ornate>

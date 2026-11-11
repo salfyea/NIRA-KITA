@@ -43,6 +43,8 @@ const subscribe = (f: () => void) => {
   };
 };
 
+export const isEn = (): boolean => lang === 'en';
+
 /** Teks dua bahasa. Dipakai di mana saja, termasuk fungsi non-komponen. */
 export const t = (id: string, en: string): string => (lang === 'en' ? en : id);
 

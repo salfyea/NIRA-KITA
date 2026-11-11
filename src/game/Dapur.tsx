@@ -1,4 +1,5 @@
 import React from 'react';
+import { t } from '../i18n';
 
 /** Interpolasi warna hex untuk perubahan warna nira saat dimasak. */
 const hex = (h: string) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
@@ -95,7 +96,7 @@ export const Dapur: React.FC<DapurProps> = ({
   const rx = 40 + 38 * level;
   const ry = 3 + 10 * level;
   return (
-    <svg viewBox="0 0 360 250" className={className} role="img" aria-label="Dapur tradisional: tungku kayu, wajan, dan alat pembuat gula kelapa">
+    <svg viewBox="0 0 360 250" className={className} role="img" aria-label={t('Dapur tradisional: tungku kayu, wajan, dan alat pembuat gula kelapa', 'A traditional kitchen: a wood stove, wok, and coconut sugar tools')}>
       <defs>
         <linearGradient id="dp-wall" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="#F3DDB4" />
@@ -187,13 +188,13 @@ export const Dapur: React.FC<DapurProps> = ({
               <ellipse cx="-3" cy="-7" rx="5" ry="3" fill="#FFFFFF" opacity="0.7" />
             </g>
           )}
-          <circle r="22" fill="transparent" style={{ cursor: 'pointer' }} onClick={() => onDebris?.(d.id)} aria-label={`Buang ${d.kind}`} role="button" />
+          <circle r="22" fill="transparent" style={{ cursor: 'pointer' }} onClick={() => onDebris?.(d.id)} aria-label={`${t('Buang', 'Remove')} ${d.kind}`} role="button" />
         </g>
       ))}
 
       {/* pongkor menuang nira */}
       {pour !== undefined && cloth && (
-        <g style={onPongkor ? { cursor: 'pointer' } : undefined} onClick={onPongkor} role={onPongkor ? 'button' : undefined} aria-label={onPongkor ? (pour ? 'Berhenti menuang nira' : 'Tuang nira dari pongkor') : undefined}>
+        <g style={onPongkor ? { cursor: 'pointer' } : undefined} onClick={onPongkor} role={onPongkor ? 'button' : undefined} aria-label={onPongkor ? (pour ? t('Berhenti menuang nira', 'Stop pouring sap') : t('Tuang nira dari pongkor', 'Pour sap from the pongkor')) : undefined}>
           {onPongkor && !pour && <circle cx="268" cy="58" r="44" fill="none" stroke="#B87943" strokeWidth="3" className="marker-ring" style={{ transformOrigin: '268px 58px' }} />}
           {onPongkor && <circle cx="268" cy="58" r="46" fill="transparent" />}
           <g transform="translate(262 52) rotate(-55)">
@@ -217,7 +218,7 @@ export const Dapur: React.FC<DapurProps> = ({
         <g style={{ pointerEvents: 'none' }}>
           <rect x="236" y="104" width="112" height="26" rx="13" fill="#8F5A2C" />
           <text x="292" y="122" textAnchor="middle" fontSize="14" fontWeight="700" fill="#FFFDF8" fontFamily="Inter, sans-serif">
-            Ketuk pongkor
+            {t('Ketuk pongkor', 'Tap the pongkor')}
           </text>
         </g>
       )}

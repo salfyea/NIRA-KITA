@@ -1,4 +1,5 @@
 import React, { useId } from 'react';
+import { t } from '../i18n';
 
 export type SceneKind =
   | 'splash'
@@ -462,7 +463,7 @@ export const Scene: React.FC<{ kind: SceneKind; className?: string; label?: stri
       viewBox="0 0 390 300"
       preserveAspectRatio="xMidYMid slice"
       role="img"
-      aria-label={label ?? `Ilustrasi adegan ${kind}`}
+      aria-label={label ?? t(`Ilustrasi adegan ${kind}`, `Scene illustration: ${kind}`)}
       className={className}
     >
       {defs}

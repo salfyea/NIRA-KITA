@@ -36,6 +36,9 @@ Stack: Vite + React 19 + TypeScript + Tailwind 4 + react-router-dom v7 + lucide-
 - `src/store.tsx`: state lokal (localStorage, try/catch), termasuk `session` dan `onboarded`.
 - `src/data/`: data awal, kuis mini, helper atribusi.
 
+## Dua bahasa (ID/EN)
+`src/i18n.tsx`: `t('teks Indonesia', 'English text')`, toggle ID/EN (tersimpan di perangkat), dan subtree dimuat ulang saat bahasa berganti. Data awal diterjemahkan lewat `src/data/en.ts`, konten game/tur/praktik lewat fungsi `get...()` di `src/data/`. Terjemahan dibuat dengan bantuan AI dan perlu ditinjau kurator atau penutur asli; istilah budaya (pongkor, laru, bathok, jubung) dipertahankan dengan penjelasan.
+
 ## Keputusan desain (yang ambigu, dipilih paling sederhana)
 - Node bab: selesai = 100%; aktif = bab pertama yang belum selesai; terkunci = bab setelah yang aktif dan berprogres 0%. Bab lain terbuka.
 - Penanda peta dipetakan ke rekaman menurut lokasi aslinya, dan hanya rekaman yang lolos `isLearnerVisible`.
