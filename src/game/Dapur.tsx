@@ -48,6 +48,8 @@ export interface DapurProps {
   onDebris?: (id: number) => void;
   onFoam?: (id: number) => void;
   onHotspot?: (id: string) => void;
+  /** Ketuk pongkor untuk menuang (dan berhenti). */
+  onPongkor?: () => void;
   tilted?: boolean;
   /** Tampilkan pongkor berdiri dan kain saring terlipat (layar pengenalan). */
   tools?: boolean;
@@ -84,6 +86,7 @@ export const Dapur: React.FC<DapurProps> = ({
   onDebris,
   onFoam,
   onHotspot,
+  onPongkor,
   tilted = false,
   tools = false,
   className = '',
@@ -190,7 +193,9 @@ export const Dapur: React.FC<DapurProps> = ({
 
       {/* pongkor menuang nira */}
       {pour !== undefined && cloth && (
-        <g>
+        <g style={onPongkor ? { cursor: 'pointer' } : undefined} onClick={onPongkor} role={onPongkor ? 'button' : undefined} aria-label={onPongkor ? (pour ? 'Berhenti menuang nira' : 'Tuang nira dari pongkor') : undefined}>
+          {onPongkor && !pour && <circle cx="268" cy="58" r="44" fill="none" stroke="#B87943" strokeWidth="3" className="marker-ring" style={{ transformOrigin: '268px 58px' }} />}
+          {onPongkor && <circle cx="268" cy="58" r="46" fill="transparent" />}
           <g transform="translate(262 52) rotate(-55)">
             <rect x="-11" y="-6" width="22" height="64" rx="6" fill="#D9B16B" />
             <rect x="-11" y="-6" width="7" height="64" rx="3.5" fill="#F0D190" opacity="0.7" />
@@ -205,6 +210,15 @@ export const Dapur: React.FC<DapurProps> = ({
               <circle cx="219" cy="108" r="2" fill="#EBBB5B" />
             </g>
           )}
+        </g>
+      )}
+
+      {onPongkor && pour === false && (
+        <g style={{ pointerEvents: 'none' }}>
+          <rect x="236" y="104" width="112" height="26" rx="13" fill="#8F5A2C" />
+          <text x="292" y="122" textAnchor="middle" fontSize="14" fontWeight="700" fill="#FFFDF8" fontFamily="Inter, sans-serif">
+            Ketuk pongkor
+          </text>
         </g>
       )}
 

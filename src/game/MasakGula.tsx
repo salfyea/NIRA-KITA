@@ -20,7 +20,7 @@ const STEPS: { id: StepId; title: string; hint: string; howto: string[]; timer?:
     title: 'Saring nira',
     hint: 'Tuang nira ke kain saring. Ketuk kotoran yang tersangkut supaya tidak ikut masuk wajan.',
     howto: [
-      'Tekan tombol Tuang nira. Nira mengalir dari pongkor ke kain saring di atas wajan.',
+      'Ketuk pongkor bambu (atau tombol Tuang nira). Nira mengalir dari pongkor ke kain saring di atas wajan.',
       'Sambil menuang, kotoran seperti semut, bunga kelapa, dan lebah akan tersangkut di kain. Ketuk kotoran itu untuk membuangnya.',
       'Bersihkan sebanyak mungkin sebelum wajan penuh. Makin bersih, makin tinggi skormu.',
     ],
@@ -266,7 +266,7 @@ const Saring: React.FC<{ onDone: (score: number) => void }> = ({ onDone }) => {
     <div>
       <TimerBar left={left} total={SARING_TIME} />
       <Stage>
-        <Dapur cloth pour={pouring} level={level} cook={0.02} heat={20} debris={debris} onDebris={kick} className="block w-full" />
+        <Dapur cloth pour={pouring} level={level} cook={0.02} heat={20} debris={debris} onDebris={kick} onPongkor={() => setPouring((v) => !v)} className="block w-full" />
       </Stage>
       <p role="status" className="mt-2 min-h-[44px] text-center text-sm font-semibold text-deep-forest">
         {debris.length > 0
@@ -275,7 +275,7 @@ const Saring: React.FC<{ onDone: (score: number) => void }> = ({ onDone }) => {
             ? 'Nira mengalir... awasi kainnya.'
             : level > 0
               ? 'Tekan lanjut menuang.'
-              : 'Tekan tombol untuk mulai menuang nira.'}{' '}
+              : 'Ketuk pongkor bambu atau tekan tombol untuk mulai menuang nira.'}{' '}
         Wajan terisi {Math.round(level * 100)}%.
       </p>
       <button type="button" onClick={() => setPouring((p) => !p)} className="mt-1 min-h-[56px] w-full rounded-full bg-forest text-lg font-semibold text-coconut">
