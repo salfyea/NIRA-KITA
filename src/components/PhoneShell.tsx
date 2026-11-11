@@ -93,7 +93,7 @@ const SidePanel: React.FC = () => {
       <button
         type="button"
         onClick={reset}
-        className="w-fit rounded-lg border border-bamboo px-3 py-1.5 text-xs font-semibold text-ink-soft hover:bg-coconut"
+        className="min-h-[44px] w-fit rounded-lg border border-bamboo px-4 py-2 text-sm font-semibold text-ink-soft hover:bg-coconut"
       >
         Setel ulang demo
       </button>
@@ -118,7 +118,7 @@ export const PhoneShell: React.FC = () => {
         className="relative flex h-dvh w-full flex-col overflow-hidden bg-cream md:h-[min(844px,calc(100dvh-48px))] md:w-[390px] md:rounded-[46px] md:border-[10px] md:border-night md:shadow-[0_40px_80px_-30px_rgba(16,38,30,0.6)]"
       >
         <Toast message={toast} />
-        <div ref={scrollRef} className={`no-scrollbar relative flex-1 overflow-y-auto ${showTabs ? 'pb-24' : ''}`}>
+        <div ref={scrollRef} className={`no-scrollbar relative flex-1 overflow-y-auto ${showTabs ? (pathname === '/learn/peta' ? 'pb-[72px]' : 'pb-24') : ''}`}>
           <div key={pathname} className={`screen-enter ${showTabs && pathname !== '/learn/peta' ? '' : 'h-full'}`}>
             <Outlet />
           </div>

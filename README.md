@@ -49,3 +49,9 @@ Vercel (preset Vite). `vercel.json` berisi rewrite SPA. Push ke `main` = produks
 ## Belum ada
 Tampilan Mentor, Kurator, Admin; halaman QR publik penuh; ilustrasi/foto asli (sebagian data masih menyimpan tautan Unsplash
 yang tidak ditampilkan); izin foto narasumber perlu dikonfirmasi.
+
+## Pemeriksaan layar (QA)
+    npm run build && npx vite preview --port 4173      # terminal 1
+    npm run qa -- http://127.0.0.1:4173 qa-out         # terminal 2
+Mengambil tangkapan 390x844 dan desktop untuk semua rute, lalu melaporkan luapan horizontal, target sentuh < 40px, dan galat konsol.
+Memakai Chrome yang terpasang lewat `playwright-core` (tanpa unduhan peramban). Folder `qa-out` diabaikan git.
