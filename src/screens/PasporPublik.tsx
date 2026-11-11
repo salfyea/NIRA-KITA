@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { BookOpen, Gamepad2, MapPin, Quote, Star } from 'lucide-react';
+import { BookOpen, Gamepad2, MapPin, Quote, Sparkles, Star } from 'lucide-react';
 import { Nira } from '../art/Nira';
 import { Scene, SLUG_SCENE } from '../art/Scene';
 import { ApprovalChip, Ornate } from '../components/ui';
@@ -81,24 +81,44 @@ export const PasporPublik: React.FC = () => {
         <h2 id="pilih" className="text-[22px] text-deep-forest">
           Mau kenalan lewat apa?
         </h2>
-        <div className="mt-3 grid gap-2">
+        <button
+          type="button"
+          onClick={() => scrollTo('game')}
+          className="relative mt-3 block min-h-[150px] w-full overflow-hidden rounded-3xl text-left shadow-[0_10px_24px_-12px_rgba(24,56,44,0.6)]"
+        >
+          <Scene kind="bersama" className="absolute inset-0 h-full w-full" />
+          <span className="absolute inset-0 bg-gradient-to-r from-deep-forest via-deep-forest/90 to-deep-forest/10" />
+          <span className="relative block max-w-[62%] p-4">
+            <span className="inline-flex items-center gap-1 rounded-full bg-caramel px-2.5 py-1 text-xs font-bold text-deep-forest">
+              <Sparkles className="h-3.5 w-3.5" /> Paling seru
+            </span>
+            <span className="mt-2 block font-serif text-2xl leading-tight text-coconut">Masak bareng Nira</span>
+            <span className="mt-1 block text-sm text-coconut">Game ±90 detik. Menangkan kartu warisan.</span>
+            <span className="mt-3 inline-flex min-h-[44px] items-center gap-2 rounded-full bg-coconut px-4 text-sm font-bold text-deep-forest">
+              <Gamepad2 className="h-4 w-4" /> Main sekarang
+            </span>
+          </span>
+          <span className="pointer-events-none absolute -bottom-1 right-1">
+            <Nira mood="cheer" size={78} />
+          </span>
+        </button>
+        <div className="mt-3 grid grid-cols-2 gap-3">
           {[
-            { id: 'asal', Icon: MapPin, t: 'Lihat asal-usulnya', d: '10 detik' },
-            { id: 'kisah', Icon: BookOpen, t: 'Dengar kisahnya', d: '1 menit' },
-            { id: 'game', Icon: Gamepad2, t: 'Masak bareng Nira', d: 'Game, ±90 detik' },
-          ].map(({ id, Icon, t, d }) => (
+            { id: 'asal', Icon: MapPin, t: 'Lihat asal-usulnya', d: '10 detik', kind: 'identitas' as const },
+            { id: 'kisah', Icon: BookOpen, t: 'Dengar kisahnya', d: '1 menit', kind: 'penderes' as const },
+          ].map(({ id, Icon, t, d, kind }) => (
             <button
               key={id}
               type="button"
               onClick={() => scrollTo(id)}
-              className="flex min-h-[56px] items-center gap-3 rounded-2xl border border-bamboo bg-coconut px-4 text-left"
+              className="overflow-hidden rounded-2xl border border-bamboo bg-coconut text-left shadow-[0_6px_16px_-10px_rgba(24,56,44,0.5)]"
             >
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-caramel/15 text-caramel-dark">
-                <Icon className="h-5 w-5" />
-              </span>
-              <span className="flex-1">
-                <span className="block text-base font-semibold text-deep-forest">{t}</span>
-                <span className="block text-xs text-ink-soft">{d}</span>
+              <Scene kind={kind} className="block h-20 w-full" />
+              <span className="block p-3">
+                <span className="flex items-center gap-1.5 text-base font-semibold leading-tight text-deep-forest">
+                  <Icon className="h-4 w-4 shrink-0 text-caramel-dark" /> {t}
+                </span>
+                <span className="mt-1 block text-xs font-semibold text-ink-soft">{d}</span>
               </span>
             </button>
           ))}
