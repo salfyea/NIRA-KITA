@@ -7,9 +7,11 @@ import { Jelajahi, RecordDetail } from './screens/Jelajahi';
 import { Lab } from './screens/Lab';
 import { Paspor } from './screens/Paspor';
 import { Peta } from './screens/Peta';
+import { ArtGallery } from './art/ArtGallery';
 
 export const App: React.FC = () => (
   <Routes>
+    <Route path="/galeri-art" element={<ArtGallery />} />
     <Route element={<PhoneShell />}>
       <Route path="/learn" element={<Beranda />} />
       <Route path="/learn/belajar" element={<Belajar />} />
