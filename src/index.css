@@ -1,0 +1,132 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap');
+@import 'tailwindcss';
+
+/* Satu sumber kebenaran untuk warna. Pakai utilitas: bg-forest, text-deep-forest, border-bamboo, dst. */
+@theme {
+  --font-serif: 'DM Serif Display', Georgia, serif;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-display: 'Manrope', 'Inter', system-ui, sans-serif;
+
+  --color-forest: #234b3a;
+  --color-deep-forest: #18382c;
+  --color-caramel: #b87943;
+  --color-caramel-dark: #8f5a2c;
+  --color-cream: #f7f3e9;
+  --color-coconut: #fffdf8;
+  --color-bamboo: #dccdb2;
+  --color-terracotta: #b9674c;
+  --color-charcoal: #292d29;
+  --color-ink-soft: #565c55; /* teks sekunder, kontras >= 4.5:1 di atas cream */
+  --color-sage: #a9b7a0;
+  --color-night: #10261e;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    font-family: var(--font-sans);
+    background-color: var(--color-cream);
+    color: var(--color-charcoal);
+    margin: 0;
+    min-height: 100dvh;
+  }
+  h1, h2, h3, .font-editorial {
+    font-family: var(--font-serif);
+    font-weight: 400;
+  }
+  .font-stat {
+    font-family: var(--font-display);
+  }
+  button {
+    cursor: pointer;
+    transition: transform 0.15s ease, background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  }
+  button:not(:disabled):active {
+    transform: scale(0.97);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-caramel);
+    outline-offset: 2px;
+  }
+}
+
+/* Latar kertas hangat dengan titik halus */
+.paper {
+  background-color: var(--color-cream);
+  background-image: radial-gradient(rgba(35, 75, 58, 0.05) 1px, transparent 0);
+  background-size: 18px 18px;
+}
+
+/* Kartu berornamen: sudut berlian kecil, satu bahasa visual untuk semua kartu */
+.ornate {
+  position: relative;
+  background: var(--color-coconut);
+  border: 1px solid var(--color-bamboo);
+  border-radius: 18px;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.7) inset, 0 6px 16px -10px rgba(24, 56, 44, 0.35);
+}
+.ornate > .corner {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  background: var(--color-caramel);
+  transform: rotate(45deg);
+  border-radius: 1px;
+  pointer-events: none;
+}
+.ornate > .corner.tl { top: -4px; left: -4px; }
+.ornate > .corner.tr { top: -4px; right: -4px; }
+.ornate > .corner.bl { bottom: -4px; left: -4px; }
+.ornate > .corner.br { bottom: -4px; right: -4px; }
+
+/* Gerak */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes sheet-up {
+  from { transform: translateY(100%); }
+  to { transform: none; }
+}
+@keyframes float-y {
+  0%, 100% { transform: translateY(0) rotate(-1.5deg); }
+  50% { transform: translateY(-6px) rotate(1.5deg); }
+}
+@keyframes pulse-ring {
+  0% { transform: scale(0.6); opacity: 0.8; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+@keyframes drift {
+  from { transform: translateX(-4%); }
+  to { transform: translateX(4%); }
+}
+@keyframes bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+.screen-enter > * {
+  animation: fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.screen-enter > *:nth-child(2) { animation-delay: 0.05s; }
+.screen-enter > *:nth-child(3) { animation-delay: 0.1s; }
+.screen-enter > *:nth-child(4) { animation-delay: 0.15s; }
+.screen-enter > *:nth-child(n + 5) { animation-delay: 0.2s; }
+.sheet-enter { animation: sheet-up 0.32s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.mascot-float { animation: float-y 4s ease-in-out infinite; }
+.mist-drift { animation: drift 14s ease-in-out infinite alternate; }
+.marker-bob { animation: bob 2.6s ease-in-out infinite; }
+.marker-ring { animation: pulse-ring 2.2s ease-out infinite; }
+
+/* Scroll di dalam ponsel tanpa bilah scroll yang mengganggu */
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
