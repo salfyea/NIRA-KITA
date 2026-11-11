@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { BookOpen, Gamepad2, MapPin, Quote, Sparkles, Star } from 'lucide-react';
 import { Nira } from '../art/Nira';
 import { Scene, SLUG_SCENE } from '../art/Scene';
+import { Vignette } from '../art/Vignette';
 import { ApprovalChip, Ornate } from '../components/ui';
 import { MasakGula } from '../game/MasakGula';
 import { attribution } from '../data/attribution';
@@ -104,8 +105,8 @@ export const PasporPublik: React.FC = () => {
         </button>
         <div className="mt-3 grid grid-cols-2 gap-3">
           {[
-            { id: 'asal', Icon: MapPin, t: 'Lihat asal-usulnya', d: '10 detik', kind: 'identitas' as const },
-            { id: 'kisah', Icon: BookOpen, t: 'Dengar kisahnya', d: '1 menit', kind: 'penderes' as const },
+            { id: 'asal', Icon: MapPin, t: 'Lihat asal-usulnya', d: '10 detik', kind: 'asal' as const },
+            { id: 'kisah', Icon: BookOpen, t: 'Dengar kisahnya', d: '1 menit', kind: 'kisah' as const },
           ].map(({ id, Icon, t, d, kind }) => (
             <button
               key={id}
@@ -113,7 +114,7 @@ export const PasporPublik: React.FC = () => {
               onClick={() => scrollTo(id)}
               className="overflow-hidden rounded-2xl border border-bamboo bg-coconut text-left shadow-[0_6px_16px_-10px_rgba(24,56,44,0.5)]"
             >
-              <Scene kind={kind} className="block h-20 w-full" />
+              <Vignette kind={kind} className="block h-20 w-full" />
               <span className="block p-3">
                 <span className="flex items-center gap-1.5 text-base font-semibold leading-tight text-deep-forest">
                   <Icon className="h-4 w-4 shrink-0 text-caramel-dark" /> {t}
