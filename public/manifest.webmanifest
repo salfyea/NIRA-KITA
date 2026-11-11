@@ -1,0 +1,23 @@
+{
+  "name": "NIRA KITA: Sahabat belajar warisan",
+  "short_name": "NIRA KITA",
+  "description": "Belajar dan melestarikan pengetahuan gula kelapa Cilongok, Banyumas. Learn and preserve the coconut sugar knowledge of Cilongok.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F7F3E9",
+  "theme_color": "#234B3A",
+  "lang": "id",
+  "categories": ["education", "culture"],
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Perjalanan belajar", "short_name": "Belajar", "url": "/learn" },
+    { "name": "Tur juri", "short_name": "Tur", "url": "/tur" }
+  ]
+}

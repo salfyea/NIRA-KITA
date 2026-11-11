@@ -8,6 +8,7 @@ import { TourOverlay } from '../tour/TourOverlay';
 import { useTour } from '../tour/TourContext';
 import { getTour } from '../data/tour';
 import { LangToggle, t } from '../i18n';
+import { OfflinePill } from '../lib/pwa';
 
 const getTabs = () => [
   { to: '/learn', label: t('Perjalanan', 'Journey'), Icon: Route, end: true },
@@ -178,6 +179,7 @@ export const PhoneShell: React.FC = () => {
       >
         <Toast message={toast} />
         <TourOverlay />
+        <OfflinePill />
         <div ref={scrollRef} className={`no-scrollbar relative flex-1 overflow-y-auto ${showTabs ? (pathname === '/learn/peta' ? 'pb-[72px]' : 'pb-24') : ''}`}>
           <div key={pathname} className={`screen-enter ${showTabs && pathname !== '/learn/peta' ? '' : 'h-full'}`}>
             <Outlet />
