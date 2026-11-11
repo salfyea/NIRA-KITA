@@ -1,11 +1,16 @@
 import React from 'react';
-import { Flame, Hand, Sparkles, Wind } from 'lucide-react';
+import { Clock, Flame, Hand, ShieldAlert, Sparkles, Thermometer, Wind } from 'lucide-react';
 import { Nira, NiraMood } from '../art/Nira';
+import { Dapur, Debris, Foam } from './Dapur';
 
 /**
- * Simulasi sederhana "Masak Gula Kelapa Bareng Nira": empat langkah dapur, semuanya di darat.
- * Bukan panduan memasak. Setiap langkah ditutup satu fakta singkat dari materi NIRA KITA.
+ * "Dapur Gula": simulasi pembuatan gula kelapa cetak dalam satu adegan dapur.
+ * Isi diambil dari jurnal dan liputan (lihat docs/proses-gula-kelapa.md) dan masih menunggu validasi komunitas.
+ * Semua kegiatan di darat; ini simulasi, bukan panduan memasak.
  */
+
+const clamp = (n: number, a = 0, b = 100) => Math.max(a, Math.min(b, n));
+const rand = (a: number, b: number) => a + Math.random() * (b - a);
 
 type StepId = 'saring' | 'masak' | 'aduk' | 'cetak';
 
@@ -13,85 +18,216 @@ const STEPS: { id: StepId; title: string; hint: string; fact: string }[] = [
   {
     id: 'saring',
     title: 'Saring nira',
-    hint: 'Ketuk Saring berulang kali sampai nira jernih.',
-    fact: 'Nira segar disaring dulu sebelum dimasak. Wadah dan alat yang bersih membantu nira tetap segar.',
+    hint: 'Tuang nira ke kain saring. Ketuk kotoran yang tersangkut supaya tidak ikut masuk wajan.',
+    fact: 'Nira ditampung di pongkor bambu yang diberi laru alami (kapur dan cangkang manggis) agar tidak cepat asam, lalu disaring dengan kain bersih untuk membuang bunga kelapa, lebah, dan semut. Penderes mengingatkan: nira jangan dibiarkan lama sebelum dimasak.',
   },
   {
     id: 'masak',
-    title: 'Jaga api tungku',
-    hint: 'Jaga api di zona hijau selama 12 detik. Kipasi kalau dingin, kecilkan kalau terlalu panas.',
-    fact: 'Perajin membaca kematangan nira dari perubahan buih dan aroma karamel di atas tungku kayu.',
+    title: 'Masak di tungku',
+    hint: 'Jaga api di zona yang sesuai dan ketuk buih untuk dibuang. Waktu dipadatkan dari ±4 jam jadi detik.',
+    fact: 'Api dibesarkan di awal supaya air cepat menguap, dan buih serta kotoran halus dibuang. Pemasakan berakhir sekitar 105–110 °C (sumber lain menyebut sampai 120 °C). Warna makin cokelat dan buih berkurang. Untuk 25–30 liter nira, prosesnya sekitar 4–5 jam.',
   },
   {
     id: 'aduk',
     title: 'Aduk sabar',
     hint: 'Ketuk Aduk saat penanda tepat di zona karamel. Lima kali.',
-    fact: 'Pengadukan adalah teknik tersendiri yang dipelajari dari perajin senior. Ritmenya butuh kesabaran.',
+    fact: 'Pekatan terus diaduk selama dimasak. Sebuah studi menyebut pengadukan manual yang tidak konsisten sebagai salah satu masalah mutu, jadi ritme yang sabar itu keahlian.',
   },
   {
     id: 'cetak',
-    title: 'Cetak gula',
-    hint: 'Ketuk setiap cetakan dua kali sampai terisi penuh.',
-    fact: 'Gula dicetak lalu didinginkan secara alami sampai mengeras.',
+    title: 'Tuang ke cetakan',
+    hint: 'Pekatan perlu turun suhunya. Ketuk Tuang saat termometer di zona hijau, sekitar 70 °C.',
+    fact: 'Saat suhu pekatan turun sekitar 70 °C, gula segera dituang ke cetakan, umumnya setengah tempurung kelapa (bathok), lalu dibiarkan dingin dan mengeras.',
   },
 ];
 
-const clamp = (n: number, a = 0, b = 100) => Math.max(a, Math.min(b, n));
+const TOOLS: Record<string, { name: string; text: string }> = {
+  pongkor: {
+    name: 'Pongkor dan laru',
+    text: 'Pongkor adalah wadah bambu penampung nira. Penderes di Cilongok memberinya laru alami dari kapur dan cangkang manggis supaya nira tidak cepat berubah asam.',
+  },
+  kain: {
+    name: 'Kain saring',
+    text: 'Nira disaring dengan kain bersih untuk membuang kotoran seperti bunga kelapa, lebah, dan semut, lalu langsung ditampung di wajan.',
+  },
+  wajan: {
+    name: 'Wajan dan tungku',
+    text: 'Nira dimasak di wajan besar di atas tungku kayu. Untuk 25–30 liter nira dibutuhkan sekitar 4–5 jam, dengan api yang diatur.',
+  },
+  jubung: {
+    name: 'Jubung',
+    text: 'Anyaman bambu yang dipakai sebagian perajin untuk mengurangi buih saat pemasakan. Tidak semua perajin memakainya.',
+  },
+  bathok: {
+    name: 'Cetakan bathok',
+    text: 'Gula kental dituang ke cetakan dari setengah tempurung kelapa (bathok), lalu didinginkan sampai mengeras.',
+  },
+};
+
+const FACT_MOOD: Record<StepId, NiraMood> = { saring: 'happy', masak: 'think', aduk: 'wave', cetak: 'cheer' };
+
+const Stage: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <div className="mt-3 overflow-hidden rounded-2xl border border-bamboo bg-[#E9D2A6]">{children}</div>
+);
+
+/* ---------- pengenalan alat ---------- */
+const Kenali: React.FC<{ onDone: () => void }> = ({ onDone }) => {
+  const [seen, setSeen] = React.useState<string[]>([]);
+  const [cur, setCur] = React.useState<string | null>(null);
+  const spots = [
+    { id: 'jubung', x: 58, y: 58 },
+    { id: 'pongkor', x: 300, y: 150 },
+    { id: 'kain', x: 52, y: 168 },
+    { id: 'wajan', x: 180, y: 118 },
+    { id: 'bathok', x: 244, y: 222 },
+  ];
+  const open = (id: string) => {
+    setCur(id);
+    setSeen((s) => (s.includes(id) ? s : [...s, id]));
+  };
+  const info = cur ? TOOLS[cur] : null;
+  return (
+    <div>
+      <p className="mt-1 text-sm leading-relaxed text-ink-soft">Ketuk tanda <b>?</b> untuk mengenali alat di dapur. Kenali minimal 3.</p>
+      <Stage>
+        <Dapur
+          tools
+          level={0.8}
+          cook={0.2}
+          heat={30}
+          moulds={[0, 0, 0, 0, 0]}
+          hotspots={spots.map((s) => ({ ...s, seen: seen.includes(s.id) }))}
+          onHotspot={open}
+          className="block w-full"
+        />
+      </Stage>
+      <div className="mt-3 min-h-[96px] rounded-2xl bg-coconut p-3" role="status">
+        {info ? (
+          <>
+            <p className="text-base font-semibold text-deep-forest">{info.name}</p>
+            <p className="mt-1 text-sm leading-relaxed text-charcoal">{info.text}</p>
+          </>
+        ) : (
+          <p className="text-sm text-ink-soft">Belum ada alat yang dipilih.</p>
+        )}
+      </div>
+      <button
+        type="button"
+        disabled={seen.length < 3}
+        onClick={onDone}
+        className="mt-3 min-h-[56px] w-full rounded-full bg-forest text-lg font-semibold text-coconut disabled:bg-sage disabled:text-deep-forest"
+      >
+        {seen.length < 3 ? `Kenali ${3 - seen.length} alat lagi` : 'Mulai memasak'}
+      </button>
+    </div>
+  );
+};
 
 /* ---------- langkah 1: saring ---------- */
 const Saring: React.FC<{ onDone: (score: number) => void }> = ({ onDone }) => {
-  const [taps, setTaps] = React.useState(0);
-  const start = React.useRef(Date.now());
-  const need = 8;
-  const tap = () => {
-    const n = taps + 1;
-    setTaps(n);
-    if (n >= need) {
-      const secs = (Date.now() - start.current) / 1000;
-      onDone(Math.round(clamp(100 - 4 * Math.max(0, secs - 8), 60)));
-    }
+  const [level, setLevel] = React.useState(0);
+  const [pouring, setPouring] = React.useState(false);
+  const [debris, setDebris] = React.useState<Debris[]>([]);
+  const removed = React.useRef(0);
+  const total = React.useRef(0);
+  const lv = React.useRef(0);
+  const nextSpawn = React.useRef(0.1);
+  const idc = React.useRef(0);
+  const done = React.useRef(false);
+
+  React.useEffect(() => {
+    if (!pouring) return;
+    const id = setInterval(() => {
+      lv.current = Math.min(1, lv.current + 0.013);
+      if (lv.current >= nextSpawn.current && total.current < 6) {
+        nextSpawn.current += 0.16;
+        const n = total.current < 4 ? 1 : 2;
+        const add: Debris[] = Array.from({ length: n }).map(() => {
+          idc.current += 1;
+          total.current += 1;
+          return { id: idc.current, x: rand(130, 232), y: rand(135, 143), kind: (['semut', 'bunga', 'lebah'] as const)[Math.floor(Math.random() * 3)] };
+        });
+        setDebris((d) => [...d, ...add]);
+      }
+      setLevel(lv.current);
+      if (lv.current >= 1 && !done.current) {
+        done.current = true;
+        clearInterval(id);
+        setPouring(false);
+        const t = Math.max(1, total.current);
+        onDone(Math.round((removed.current / t) * 100));
+      }
+    }, 50);
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pouring]);
+
+  const kick = (id: number) => {
+    removed.current += 1;
+    setDebris((d) => d.filter((x) => x.id !== id));
   };
-  const level = (taps / need) * 100;
   return (
-    <div className="text-center">
-      <svg viewBox="0 0 160 120" className="mx-auto h-36" aria-hidden>
-        <rect x="52" y="10" width="56" height="30" rx="6" fill="#D9B16B" />
-        <path d="M44 44 H116 L100 70 H60Z" fill="#E9D7B4" stroke="#9A6B34" strokeWidth="3" />
-        <rect x="58" y="76" width="44" height="40" rx="8" fill="#FFFDF8" stroke="#DCCDB2" strokeWidth="3" />
-        <rect x="61" y={113 - (level / 100) * 34} width="38" height={(level / 100) * 34} rx="4" fill="#E7AE68" />
-        <circle cx="80" cy="72" r="3" fill="#E7AE68" />
-      </svg>
-      <p className="mt-1 text-sm font-semibold text-ink-soft">
-        {taps} / {need}
+    <div>
+      <Stage>
+        <Dapur cloth pour={pouring} level={level} cook={0.02} heat={20} debris={debris} onDebris={kick} className="block w-full" />
+      </Stage>
+      <p role="status" className="mt-2 min-h-[24px] text-center text-sm font-semibold text-deep-forest">
+        {debris.length > 0 ? `${debris.length} kotoran tersangkut, ketuk untuk membuang!` : `Nira di wajan: ${Math.round(level * 100)}%`}
       </p>
-      <button type="button" onClick={tap} className="mt-3 min-h-[56px] w-full rounded-full bg-forest text-lg font-semibold text-coconut">
-        Saring!
+      <button
+        type="button"
+        onClick={() => setPouring((p) => !p)}
+        className="mt-1 min-h-[56px] w-full rounded-full bg-forest text-lg font-semibold text-coconut"
+      >
+        {pouring ? 'Berhenti sebentar' : level > 0 ? 'Lanjut menuang' : 'Tuang nira'}
       </button>
     </div>
   );
 };
 
 /* ---------- langkah 2: masak ---------- */
+const DURATION = 24; // detik permainan, mewakili ±4,5 jam
 const Masak: React.FC<{ onDone: (score: number) => void }> = ({ onDone }) => {
-  const [temp, setTemp] = React.useState(35);
-  const [secs, setSecs] = React.useState(12);
-  const inZone = React.useRef(0);
+  const [heat, setHeat] = React.useState(55);
+  const [p, setP] = React.useState(0);
+  const [foam, setFoam] = React.useState<(Foam & { born: number })[]>([]);
+  const heatRef = React.useRef(55);
   const ticks = React.useRef(0);
-  const tempRef = React.useRef(35);
+  const inZone = React.useRef(0);
+  const spawned = React.useRef(0);
+  const skimmed = React.useRef(0);
+  const nextFoam = React.useRef(6);
+  const idc = React.useRef(0);
   const done = React.useRef(false);
-  const ZONE: [number, number] = [45, 65];
+
+  const zoneAt = (prog: number): [number, number, string] =>
+    prog < 0.3 ? [62, 88, 'Api besar di awal supaya air cepat menguap'] : prog < 0.75 ? [45, 72, 'Api sedang, buih terus dibuang'] : [35, 60, 'Api kecil, nira makin pekat dan cokelat'];
 
   React.useEffect(() => {
     const id = setInterval(() => {
-      tempRef.current = clamp(tempRef.current + (Math.random() - 0.35) * 5);
       ticks.current += 1;
-      if (tempRef.current >= ZONE[0] && tempRef.current <= ZONE[1]) inZone.current += 1;
-      setTemp(tempRef.current);
-      setSecs(Math.max(0, 12 - Math.floor(ticks.current / 10)));
-      if (ticks.current >= 120 && !done.current) {
+      const prog = ticks.current / (DURATION * 10);
+      heatRef.current = clamp(heatRef.current + (Math.random() - 0.55) * 2.4);
+      const [lo, hi] = zoneAt(prog);
+      if (heatRef.current >= lo && heatRef.current <= hi) inZone.current += 1;
+      setHeat(heatRef.current);
+      setP(Math.min(1, prog));
+
+      if (ticks.current >= nextFoam.current && prog < 0.92) {
+        nextFoam.current += prog < 0.4 ? 14 : prog < 0.7 ? 20 : 30;
+        idc.current += 1;
+        spawned.current += 1;
+        const f = { id: idc.current, x: rand(130, 232), y: rand(141, 147), r: rand(8, 12), born: ticks.current };
+        setFoam((a) => [...a.filter((x) => ticks.current - x.born < 55), f]);
+      }
+      setFoam((a) => a.filter((x) => ticks.current - x.born < 55));
+
+      if (ticks.current >= DURATION * 10 && !done.current) {
         done.current = true;
         clearInterval(id);
-        onDone(Math.round((inZone.current / ticks.current) * 100));
+        const zoneScore = (inZone.current / ticks.current) * 100;
+        const foamScore = spawned.current ? (skimmed.current / spawned.current) * 100 : 100;
+        onDone(Math.round(zoneScore * 0.65 + foamScore * 0.35));
       }
     }, 100);
     return () => clearInterval(id);
@@ -99,37 +235,42 @@ const Masak: React.FC<{ onDone: (score: number) => void }> = ({ onDone }) => {
   }, []);
 
   const bump = (d: number) => {
-    tempRef.current = clamp(tempRef.current + d);
-    setTemp(tempRef.current);
+    heatRef.current = clamp(heatRef.current + d);
+    setHeat(heatRef.current);
   };
-  const state = temp < ZONE[0] ? 'Nira masih dingin, kipasi apinya' : temp > ZONE[1] ? 'Terlalu panas! Kecilkan api' : 'Buih naik, aroma karamel mulai tercium';
-  const ok = temp >= ZONE[0] && temp <= ZONE[1];
+  const skim = (id: number) => {
+    skimmed.current += 1;
+    setFoam((a) => a.filter((x) => x.id !== id));
+  };
+  const [lo, hi, label] = zoneAt(p);
+  const ok = heat >= lo && heat <= hi;
+  const temp = Math.round(32 + p * 76);
+  const hours = (p * 4.5).toFixed(1).replace('.', ',');
   return (
-    <div className="text-center">
-      <div className="relative mx-auto mt-1 h-40 w-full max-w-[260px]">
-        <div className="absolute inset-y-0 left-0 w-8 overflow-hidden rounded-full border-2 border-bamboo bg-coconut">
-          <div className="absolute inset-x-0 bg-forest/25" style={{ bottom: `${ZONE[0]}%`, height: `${ZONE[1] - ZONE[0]}%` }} />
-          <div className="absolute inset-x-0 h-1.5 bg-caramel-dark" style={{ bottom: `calc(${temp}% - 3px)` }} />
-        </div>
-        <svg viewBox="0 0 160 130" className="absolute inset-y-0 left-12 right-0 h-full w-[calc(100%-3rem)]" aria-hidden>
-          <path d="M20 128 C20 98 36 90 80 90 C124 90 140 98 140 128Z" fill="#A9693A" />
-          <path d="M14 90 C20 66 140 66 146 90 C128 98 32 98 14 90Z" fill="#3B3F3A" />
-          <ellipse cx="80" cy="82" rx="58" ry="9" fill="#B8742E" />
-          <g transform={`translate(80 118) scale(${0.5 + temp / 90})`}>
-            <path d="M0 0 C-14 0 -14 -18 0 -34 C14 -18 14 0 0 0Z" fill={temp > ZONE[1] ? '#E0523A' : '#F29A3B'} />
-            <path d="M0 0 C-6 0 -6 -10 0 -18 C6 -10 6 0 0 0Z" fill="#FFD27A" />
-          </g>
-          <g fill="#FFFDF8" opacity={ok ? 0.95 : 0.4}>
-            <circle cx="58" cy="76" r="6" />
-            <circle cx="82" cy="72" r="7" />
-            <circle cx="104" cy="77" r="5" />
-          </g>
-        </svg>
+    <div>
+      <Stage>
+        <Dapur level={1 - p * 0.35} cook={p} heat={heat} foam={foam} onFoam={skim} className="block w-full" />
+        {/* foam hit targets laid over via SVG already; fallback tappable list below for assistive tech */}
+      </Stage>
+      <div className="mt-2 grid grid-cols-3 gap-2 text-center text-xs font-semibold text-ink-soft">
+        <span className="flex items-center justify-center gap-1 rounded-xl bg-coconut py-2">
+          <Clock className="h-3.5 w-3.5" /> Jam ke-{hours}
+        </span>
+        <span className="flex items-center justify-center gap-1 rounded-xl bg-coconut py-2">
+          <Thermometer className="h-3.5 w-3.5" /> {temp} °C
+        </span>
+        <span className="flex items-center justify-center gap-1 rounded-xl bg-coconut py-2">
+          <Flame className="h-3.5 w-3.5" /> Api {Math.round(heat)}
+        </span>
       </div>
-      <p role="status" className={`mt-2 min-h-[44px] text-sm font-semibold ${ok ? 'text-forest' : 'text-terracotta'}`}>
-        {state} · {secs} dtk
+      <div className="relative mt-2 h-4 overflow-hidden rounded-full border border-bamboo bg-coconut" aria-hidden>
+        <div className="absolute inset-y-0 bg-forest/30" style={{ left: `${lo}%`, width: `${hi - lo}%` }} />
+        <div className="absolute inset-y-0 w-1.5 bg-caramel-dark" style={{ left: `calc(${heat}% - 3px)` }} />
+      </div>
+      <p role="status" className={`mt-1 min-h-[40px] text-sm font-semibold ${ok ? 'text-forest' : 'text-terracotta'}`}>
+        {ok ? label : heat < lo ? 'Api kurang besar, kipasi!' : 'Terlalu panas, kecilkan api!'}
       </p>
-      <div className="mt-1 grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 gap-2">
         <button type="button" onClick={() => bump(10)} className="flex min-h-[56px] items-center justify-center gap-2 rounded-full bg-caramel-dark text-base font-semibold text-coconut">
           <Wind className="h-5 w-5" /> Kipasi
         </button>
@@ -144,31 +285,37 @@ const Masak: React.FC<{ onDone: (score: number) => void }> = ({ onDone }) => {
 /* ---------- langkah 3: aduk ---------- */
 const Aduk: React.FC<{ onDone: (score: number) => void }> = ({ onDone }) => {
   const [pos, setPos] = React.useState(0);
+  const [angle, setAngle] = React.useState(0);
   const [round, setRound] = React.useState(0);
   const [last, setLast] = React.useState<string | null>(null);
   const posRef = React.useRef(0);
   const dir = React.useRef(1);
+  const ang = React.useRef(0);
+  const speed = React.useRef(5);
   const scores = React.useRef<number[]>([]);
   const ZONE: [number, number] = [40, 62];
   const rounds = 5;
 
   React.useEffect(() => {
     const id = setInterval(() => {
-      posRef.current += dir.current * 2.6;
+      posRef.current += dir.current * 2.4;
       if (posRef.current >= 100 || posRef.current <= 0) {
         dir.current *= -1;
         posRef.current = clamp(posRef.current);
       }
+      ang.current = (ang.current + speed.current) % 360;
       setPos(posRef.current);
+      setAngle(ang.current);
     }, 30);
     return () => clearInterval(id);
   }, []);
 
   const tap = () => {
-    const p = posRef.current;
-    const dist = p < ZONE[0] ? ZONE[0] - p : p > ZONE[1] ? p - ZONE[1] : 0;
+    const x = posRef.current;
+    const dist = x < ZONE[0] ? ZONE[0] - x : x > ZONE[1] ? x - ZONE[1] : 0;
     const s = dist === 0 ? 100 : dist < 14 ? 60 : 20;
     scores.current.push(s);
+    speed.current = s === 100 ? 9 : s === 60 ? 6 : 3;
     setLast(s === 100 ? 'Pas!' : s === 60 ? 'Hampir' : 'Meleset');
     const n = round + 1;
     setRound(n);
@@ -176,15 +323,18 @@ const Aduk: React.FC<{ onDone: (score: number) => void }> = ({ onDone }) => {
   };
 
   return (
-    <div className="text-center">
-      <div className="relative mx-auto mt-4 h-10 w-full rounded-full border-2 border-bamboo bg-coconut">
+    <div>
+      <Stage>
+        <Dapur level={0.62} cook={0.82} heat={45} paddle={angle} className="block w-full" />
+      </Stage>
+      <div className="relative mt-3 h-10 w-full rounded-full border-2 border-bamboo bg-coconut" aria-hidden>
         <div className="absolute inset-y-0 rounded-full bg-caramel/35" style={{ left: `${ZONE[0]}%`, width: `${ZONE[1] - ZONE[0]}%` }} />
         <div className="absolute top-1/2 h-8 w-8 -translate-x-1/2 -translate-y-1/2 rounded-full bg-caramel-dark shadow" style={{ left: `${pos}%` }} />
       </div>
-      <p role="status" className="mt-3 min-h-[28px] text-base font-semibold text-deep-forest">
+      <p role="status" className="mt-2 min-h-[28px] text-center text-base font-semibold text-deep-forest">
         {last ?? 'Siap?'} · {round} / {rounds}
       </p>
-      <button type="button" onClick={tap} className="mt-2 flex min-h-[56px] w-full items-center justify-center gap-2 rounded-full bg-forest text-lg font-semibold text-coconut">
+      <button type="button" onClick={tap} className="mt-1 flex min-h-[56px] w-full items-center justify-center gap-2 rounded-full bg-forest text-lg font-semibold text-coconut">
         <Hand className="h-5 w-5" /> Aduk!
       </button>
     </div>
@@ -193,36 +343,91 @@ const Aduk: React.FC<{ onDone: (score: number) => void }> = ({ onDone }) => {
 
 /* ---------- langkah 4: cetak ---------- */
 const Cetak: React.FC<{ onDone: (score: number) => void }> = ({ onDone }) => {
-  const [fill, setFill] = React.useState([0, 0, 0, 0]);
-  const tap = (i: number) => {
-    const next = fill.map((f, n) => (n === i ? Math.min(2, f + 1) : f));
-    setFill(next);
-    if (next.every((f) => f >= 2)) onDone(100);
+  const [temp, setTemp] = React.useState(108);
+  const [moulds, setMoulds] = React.useState([0, 0, 0, 0, 0]);
+  const [phase, setPhase] = React.useState<'wait' | 'pour'>('wait');
+  const [msg, setMsg] = React.useState('Pekatan masih sangat panas. Tunggu sampai termometer turun.');
+  const t = React.useRef(108);
+  const score = React.useRef(0);
+  const ZONE: [number, number] = [64, 76];
+
+  const startPour = React.useCallback((sc: number) => {
+    score.current = sc;
+    setPhase('pour');
+    let i = 0;
+    const id = setInterval(() => {
+      i += 1;
+      setMoulds((m) => m.map((v, k) => (k === i - 1 ? 1 : v)));
+      if (i >= 5) {
+        clearInterval(id);
+        setTimeout(() => onDone(score.current), 500);
+      }
+    }, 450);
+  }, [onDone]);
+
+  React.useEffect(() => {
+    if (phase !== 'wait') return;
+    const id = setInterval(() => {
+      t.current = Math.max(50, t.current - 0.5);
+      setTemp(Math.round(t.current));
+      if (t.current <= 50) {
+        clearInterval(id);
+        setMsg('Sudah terlalu dingin, pekatan mulai mengeras. Tuang secepatnya!');
+        startPour(30);
+      }
+    }, 110);
+    return () => clearInterval(id);
+  }, [phase, startPour]);
+
+  const pour = () => {
+    const x = t.current;
+    if (x > 85) {
+      setMsg('Terlalu panas! Dalam keadaan nyata, ini berbahaya dan gulanya sulit mengeras.');
+      startPour(30);
+    } else if (x >= ZONE[0] && x <= ZONE[1]) {
+      setMsg('Tepat! Gula dituang saat suhunya sekitar 70 °C.');
+      startPour(100);
+    } else {
+      setMsg(x > ZONE[1] ? 'Agak terlalu cepat, tapi masih bisa.' : 'Agak terlambat, pekatan mulai kental.');
+      startPour(65);
+    }
   };
+  const inZone = temp >= ZONE[0] && temp <= ZONE[1];
   return (
-    <div className="text-center">
-      <div className="mt-3 grid grid-cols-4 gap-2 rounded-2xl bg-[#9A6B34] p-3">
-        {fill.map((f, i) => (
-          <button
-            key={i}
-            type="button"
-            onClick={() => tap(i)}
-            aria-label={`Cetakan ${i + 1}, terisi ${f} dari 2`}
-            className="relative h-16 overflow-hidden rounded-xl border-2 border-[#7A4A20] bg-[#7A4A20]"
-          >
-            <span className="absolute inset-x-0 bottom-0 bg-[#E7AE68] transition-all" style={{ height: `${(f / 2) * 100}%` }} />
-          </button>
-        ))}
+    <div>
+      <Stage>
+        <Dapur level={0.45} cook={0.92} heat={8} moulds={moulds} tilted={phase === 'pour'} className="block w-full" />
+      </Stage>
+      <div className="relative mt-3 h-4 overflow-hidden rounded-full border border-bamboo bg-coconut" aria-hidden>
+        <div className="absolute inset-y-0 bg-forest/30" style={{ left: `${((ZONE[0] - 50) / 60) * 100}%`, width: `${((ZONE[1] - ZONE[0]) / 60) * 100}%` }} />
+        <div className="absolute inset-y-0 w-1.5 bg-caramel-dark" style={{ left: `calc(${((temp - 50) / 60) * 100}% - 3px)` }} />
       </div>
-      <p className="mt-3 text-sm font-semibold text-ink-soft">{fill.filter((f) => f >= 2).length} / 4 cetakan penuh</p>
+      <p className="mt-1 flex items-center justify-center gap-1.5 text-base font-semibold text-deep-forest">
+        <Thermometer className="h-4 w-4" /> {temp} °C {inZone && phase === 'wait' ? '· siap dituang!' : ''}
+      </p>
+      <p role="status" className="min-h-[44px] text-center text-sm text-ink-soft">
+        {phase === 'pour'
+          ? msg
+          : temp > 85
+            ? 'Pekatan masih sangat panas. Tunggu sampai termometer turun.'
+            : inZone
+              ? 'Sekarang! Tuang selagi suhunya pas.'
+              : 'Hampir terlambat, pekatan mulai mengental.'}
+      </p>
+      <button
+        type="button"
+        disabled={phase === 'pour'}
+        onClick={pour}
+        className="mt-1 min-h-[56px] w-full rounded-full bg-caramel-dark text-lg font-semibold text-coconut disabled:bg-sage disabled:text-deep-forest"
+      >
+        {phase === 'pour' ? 'Menuang...' : 'Tuang ke cetakan'}
+      </button>
     </div>
   );
 };
 
-const FACT_MOOD: Record<StepId, NiraMood> = { saring: 'happy', masak: 'think', aduk: 'wave', cetak: 'cheer' };
-
 export const MasakGula: React.FC<{ onFinish: (stars: 1 | 2 | 3, avg: number) => void }> = ({ onFinish }) => {
-  const [step, setStep] = React.useState(-1); // -1 = layar mulai
+  const [step, setStep] = React.useState(-2); // -2 = layar mulai, -1 = kenali alat
   const [fact, setFact] = React.useState(false);
   const scores = React.useRef<number[]>([]);
 
@@ -238,20 +443,26 @@ export const MasakGula: React.FC<{ onFinish: (stars: 1 | 2 | 3, avg: number) => 
     } else setStep(step + 1);
   };
 
-  if (step === -1) {
+  if (step === -2) {
     return (
       <div className="text-center">
         <Nira mood="cheer" size={96} className="mx-auto" />
         <p className="mt-2 text-base leading-relaxed text-charcoal">
-          Bantu Nira memasak gula kelapa di dapur, lewat 4 langkah singkat. Semuanya dari darat, tanpa memanjat.
+          Masuk ke dapur perajin dan buat gula kelapa cetak dari nira, langkah demi langkah, sesuai cara tradisional di Banyumas.
         </p>
-        <button type="button" onClick={() => setStep(0)} className="mt-4 min-h-[56px] w-full rounded-full bg-caramel-dark text-lg font-semibold text-coconut">
-          Mulai masak
+        <p className="mt-3 flex items-start gap-2 rounded-xl bg-bamboo/40 p-3 text-left text-sm text-deep-forest">
+          <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0" />
+          Wajan dan gula yang dimasak sangat panas. Ini simulasi untuk belajar, jangan ditiru tanpa pendampingan perajin.
+        </p>
+        <button type="button" onClick={() => setStep(-1)} className="mt-4 min-h-[56px] w-full rounded-full bg-caramel-dark text-lg font-semibold text-coconut">
+          Masuk dapur
         </button>
-        <p className="mt-2 text-xs text-ink-soft">Simulasi sederhana, bukan panduan memasak.</p>
+        <p className="mt-2 text-xs text-ink-soft">Isi proses berasal dari jurnal dan liputan, masih menunggu validasi komunitas.</p>
       </div>
     );
   }
+
+  if (step === -1) return <Kenali onDone={() => setStep(0)} />;
 
   const s = STEPS[step];
   return (
@@ -276,6 +487,7 @@ export const MasakGula: React.FC<{ onFinish: (stars: 1 | 2 | 3, avg: number) => 
               <Sparkles className="h-3.5 w-3.5" /> Tahukah kamu
             </p>
             <p className="mt-1 text-base leading-relaxed text-charcoal">{s.fact}</p>
+            <p className="mt-2 text-xs text-ink-soft">Sumber: jurnal dan liputan lokal. Menunggu validasi komunitas.</p>
           </div>
           <button type="button" onClick={next} className="mt-3 min-h-[52px] w-full rounded-full bg-forest text-base font-semibold text-coconut">
             {step + 1 >= STEPS.length ? 'Lihat hasil' : 'Langkah berikutnya'}
