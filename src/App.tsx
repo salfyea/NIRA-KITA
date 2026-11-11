@@ -15,6 +15,7 @@ import { Masuk } from './screens/Masuk';
 import { KodeUndangan } from './screens/KodeUndangan';
 import { PasporPublik } from './screens/PasporPublik';
 import { useStore } from './store';
+import { TurStart } from './tour/TourContext';
 
 /** Penjaga: semua rute /learn/* butuh sesi, kalau tidak diarahkan ke /masuk. */
 const RequireSession: React.FC = () => {
@@ -30,6 +31,7 @@ export const App: React.FC = () => (
       <Route path="/masuk" element={<Masuk />} />
       <Route path="/kode-undangan" element={<KodeUndangan />} />
       <Route path="/p/:code" element={<PasporPublik />} />
+      <Route path="/tur" element={<TurStart />} />
       <Route element={<RequireSession />}>
         <Route path="/learn" element={<Perjalanan />} />
         <Route path="/learn/bab/:slug" element={<Bab />} />

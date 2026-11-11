@@ -3,6 +3,9 @@ import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { Layers, Map as MapIcon, Route, User, BookOpen, ShieldCheck, QrCode, UserCheck, Users } from 'lucide-react';
 import { useStore } from '../store';
 import { Toast } from './ui';
+import { TourOverlay } from '../tour/TourOverlay';
+import { useTour } from '../tour/TourContext';
+import { TOUR } from '../data/tour';
 
 const TABS = [
   { to: '/learn', label: 'Perjalanan', Icon: Route, end: true },
@@ -55,6 +58,7 @@ const ROLES = [
 /** Panel kiri di desktop: konteks ekosistem lima peran supaya juri tidak melihat satu aplikasi saja. */
 const SidePanel: React.FC = () => {
   const { reset } = useStore();
+  const tour = useTour();
   return (
     <aside className="hidden max-w-sm flex-col justify-center gap-6 pr-10 lg:flex">
       <div>
@@ -65,6 +69,35 @@ const SidePanel: React.FC = () => {
           dengan persetujuan komunitas di setiap langkah.
         </p>
       </div>
+      <div className="rounded-2xl border border-caramel/40 bg-coconut p-4">
+        <p className="text-xs font-bold uppercase tracking-[0.16em] text-caramel-dark">Tur untuk juri · ±4 menit</p>
+        {tour.active ? (
+          <ol className="mt-2 space-y-1">
+            {TOUR.map((t, i) => (
+              <li key={t.id}>
+                <button
+                  type="button"
+                  onClick={() => tour.go(i)}
+                  className={`flex min-h-[40px] w-full items-center gap-2 rounded-lg px-2 text-left text-sm font-semibold ${
+                    i === tour.step ? 'bg-forest text-coconut' : i < tour.step ? 'text-forest' : 'text-ink-soft hover:bg-cream'
+                  }`}
+                >
+                  <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${i === tour.step ? 'bg-coconut text-forest' : 'bg-bamboo/60 text-deep-forest'}`}>{i + 1}</span>
+                  {t.short}
+                </button>
+              </li>
+            ))}
+          </ol>
+        ) : (
+          <>
+            <p className="mt-1 text-sm leading-relaxed text-ink-soft">Tujuh layar yang menunjukkan klaim di proposal, satu per satu, dengan panduan singkat.</p>
+            <button type="button" onClick={() => tour.start(0)} className="mt-3 min-h-[48px] rounded-full bg-forest px-6 text-base font-semibold text-coconut">
+              Mulai tur
+            </button>
+          </>
+        )}
+      </div>
+      {!tour.active && (
       <div>
         <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-ink-soft">Lima peran dalam satu ekosistem</p>
         <ul className="space-y-1.5">
@@ -87,6 +120,7 @@ const SidePanel: React.FC = () => {
           ))}
         </ul>
       </div>
+      )}
       <p className="text-xs leading-relaxed text-ink-soft">
         Data ilustratif. Seluruh pembelajaran berbasis darat.
       </p>
@@ -118,6 +152,7 @@ export const PhoneShell: React.FC = () => {
         className="relative flex h-dvh w-full flex-col overflow-hidden bg-cream md:h-[min(844px,calc(100dvh-48px))] md:w-[390px] md:rounded-[46px] md:border-[10px] md:border-night md:shadow-[0_40px_80px_-30px_rgba(16,38,30,0.6)]"
       >
         <Toast message={toast} />
+        <TourOverlay />
         <div ref={scrollRef} className={`no-scrollbar relative flex-1 overflow-y-auto ${showTabs ? (pathname === '/learn/peta' ? 'pb-[72px]' : 'pb-24') : ''}`}>
           <div key={pathname} className={`screen-enter ${showTabs && pathname !== '/learn/peta' ? '' : 'h-full'}`}>
             <Outlet />

@@ -3,6 +3,7 @@ import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { Nira } from '../art/Nira';
 import { Scene } from '../art/Scene';
 import { useStore } from '../store';
+import { useTour } from '../tour/TourContext';
 
 const field =
   'mt-1 min-h-[48px] w-full rounded-xl border border-bamboo bg-coconut px-4 text-base text-charcoal placeholder:text-ink-soft focus:border-forest';
@@ -10,6 +11,7 @@ const field =
 /** Masuk atau daftar (simulasi): menerima isian apa saja, kata sandi tidak disimpan. */
 export const Masuk: React.FC = () => {
   const { session, signIn } = useStore();
+  const tour = useTour();
   const navigate = useNavigate();
   const [tab, setTab] = React.useState<'masuk' | 'daftar'>('masuk');
   const [name, setName] = React.useState('');
@@ -72,6 +74,13 @@ export const Masuk: React.FC = () => {
             Punya kode undangan?
           </Link>
         </div>
+        <button
+          type="button"
+          onClick={() => tour.start(0)}
+          className="mx-auto mt-2 flex min-h-[52px] w-full items-center justify-center rounded-full border-2 border-caramel-dark text-base font-semibold text-caramel-dark"
+        >
+          Juri atau tamu? Mulai tur 4 menit
+        </button>
       </div>
     </div>
   );

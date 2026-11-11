@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useLocation, useParams } from 'react-router-dom';
 import { BookOpen, Gamepad2, MapPin, Quote, Sparkles, Star } from 'lucide-react';
 import { Nira } from '../art/Nira';
 import { Scene, SLUG_SCENE } from '../art/Scene';
@@ -21,10 +21,17 @@ const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ b
 /** Paspor Warisan publik: halaman web dari QR kemasan, tanpa aplikasi dan tanpa login. */
 export const PasporPublik: React.FC = () => {
   const { code } = useParams();
+  const { hash } = useLocation();
   const batch = findBatch(code);
   const [result, setResult] = React.useState<{ stars: 1 | 2 | 3; avg: number } | null>(null);
   const [round, setRound] = React.useState(0);
   const [visitor, setVisitor] = React.useState(loadVisitor);
+
+  React.useEffect(() => {
+    if (!hash) return;
+    const t = setTimeout(() => document.getElementById(hash.slice(1))?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 450);
+    return () => clearTimeout(t);
+  }, [hash]);
 
   if (!batch) {
     return (
