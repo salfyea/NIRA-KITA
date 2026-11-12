@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Layers, Map as MapIcon, Route, User, BookOpen, ShieldCheck, QrCode, UserCheck, Users, Store } from 'lucide-react';
+import { Layers, Map as MapIcon, Route, User, BookOpen, ShieldCheck, QrCode, UserCheck, Users, Store, LogOut } from 'lucide-react';
 import { useStore } from '../store';
 import { Toast } from './ui';
 import { Logo } from '../art/Logo';
@@ -93,6 +93,7 @@ const SidePanel: React.FC = () => {
       <div className="rounded-2xl border border-caramel/40 bg-coconut p-4">
         <p className="text-xs font-bold uppercase tracking-[0.16em] text-caramel-dark">{t('Tur untuk juri · ±4 menit', 'Judges\' tour · ~4 minutes')}</p>
         {tour.active ? (
+          <>
           <ol className="mt-2 space-y-1">
             {TOUR.map((st, i) => (
               <li key={st.id}>
@@ -109,6 +110,10 @@ const SidePanel: React.FC = () => {
               </li>
             ))}
           </ol>
+          <button type="button" onClick={tour.stop} className="mt-3 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-full border-2 border-bamboo text-sm font-semibold text-deep-forest">
+            <LogOut className="h-4 w-4" /> {t('Keluar dari tur', 'Exit the tour')}
+          </button>
+          </>
         ) : (
           <>
             <p className="mt-1 text-sm leading-relaxed text-ink-soft">{t(`${TOUR.length} layar yang menunjukkan klaim di proposal, satu per satu, dengan panduan singkat.`, `${TOUR.length} screens that show the proposal's claims one by one, with a short guide.`)}</p>

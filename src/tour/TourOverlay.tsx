@@ -1,7 +1,7 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
 import { useLocation } from 'react-router-dom';
-import { ArrowRight, ChevronUp, Eye, Hand, ShieldCheck, X } from 'lucide-react';
+import { ArrowRight, ChevronLeft, ChevronUp, Eye, Hand, LogOut, ShieldCheck, X } from 'lucide-react';
 import { Nira } from '../art/Nira';
 import { getTour } from '../data/tour';
 import { t } from '../i18n';
@@ -66,11 +66,10 @@ export const TourOverlay: React.FC = () => {
           <div className="mt-3 grid grid-cols-[auto_1fr] gap-2">
             <button
               type="button"
-              onClick={prev}
-              disabled={step === 0}
-              className="min-h-[52px] rounded-full border-2 border-bamboo px-5 text-base font-semibold text-deep-forest disabled:opacity-40"
+              onClick={step === 0 ? stop : prev}
+              className="flex min-h-[52px] items-center justify-center gap-1.5 rounded-full border-2 border-bamboo px-5 text-base font-semibold text-deep-forest"
             >
-              {t('Kembali', 'Back')}
+              {step === 0 ? <LogOut className="h-4 w-4" /> : <ChevronLeft className="h-5 w-5" />} {step === 0 ? t('Keluar tur', 'Exit tour') : t('Kembali', 'Back')}
             </button>
             <button type="button" onClick={() => setOpen(false)} className="min-h-[52px] rounded-full bg-forest text-base font-semibold text-coconut">
               {t('Coba sekarang', 'Try it now')}
@@ -93,6 +92,9 @@ export const TourOverlay: React.FC = () => {
               <span className="block truncate text-sm font-semibold">{s.short}</span>
             </span>
             <ChevronUp className="h-4 w-4 shrink-0 text-[#E7C79A]" />
+          </button>
+          <button type="button" onClick={step === 0 ? stop : prev} aria-label={step === 0 ? t('Keluar dari tur', 'Exit the tour') : t('Langkah sebelumnya', 'Previous step')} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-coconut/40 text-coconut">
+            {step === 0 ? <X className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
           </button>
           <button type="button" onClick={next} className="flex min-h-[44px] shrink-0 items-center gap-1.5 rounded-full bg-caramel px-4 text-sm font-bold text-deep-forest">
             {last ? t('Selesai', 'Finish') : t('Lanjut', 'Next')} <ArrowRight className="h-4 w-4" />
