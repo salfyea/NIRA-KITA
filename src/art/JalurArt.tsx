@@ -74,6 +74,13 @@ const Medallion: React.FC<{ s: Station; x: number; y: number; onOpen: () => void
         <circle cx={x} cy={y} r={R - 4} />
       </clipPath>
       <ellipse cx={x} cy={y + R + 4} rx={R * 0.85} ry={7} fill="#18382C" opacity="0.14" />
+      {/* denyut: cincin tipis yang membesar dan memudar, hanya pada modul aktif */}
+      {st === 'active' && (
+        <circle cx={x} cy={y} r={R + 10} fill="none" stroke="#B87943" strokeWidth="2.5">
+          <animate attributeName="r" values={`${R + 10};${R + 22};${R + 10}`} dur="2.4s" repeatCount="indefinite" />
+          <animate attributeName="opacity" values="0.7;0;0.7" dur="2.4s" repeatCount="indefinite" />
+        </circle>
+      )}
       {/* kemajuan: satu busur cokelat di atas jalur pucat, tanpa cincin lain */}
       {showPct && (
         <>
