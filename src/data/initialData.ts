@@ -203,7 +203,7 @@ export const CURRICULUM_MODULES: CurriculumModule[] = [
       'Mempelajari urutan pengolahan nira menjadi gula cetak dan gula semut melalui diagram beranotasi, rekaman demonstrasi mentor, serta kesempatan observasi terpandu di dapur pengolahan.',
     visualDirection: 'Fotografi dokumenter dan diagram tahapan proses beranotasi.',
     duration: '60 Menit',
-    completionPercent: 40,
+    completionPercent: 0,
     unlocked: true,
     imageUrl:
       'https://images.unsplash.com/photo-1682996055064-599bec77fc62?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
@@ -213,7 +213,7 @@ export const CURRICULUM_MODULES: CurriculumModule[] = [
       'Menghubungkan pengetahuan lisan mentor dengan praktik dokumentasi yang akurat.',
     ],
     lessons: [
-      { id: 'L-201', title: 'Penyaringan Nira Segar dan Penilaian Kualitas Awal', duration: '15 mnt', type: 'Diagram Proses', completed: true },
+      { id: 'L-201', title: 'Penyaringan Nira Segar dan Penilaian Kualitas Awal', duration: '15 mnt', type: 'Diagram Proses', completed: false },
       { id: 'L-202', title: 'Membaca Titik Didih dan Karamelisasi Bersama Ibu Warsini', duration: '20 mnt', type: 'Dokumentasi Audio', completed: false },
       { id: 'L-203', title: 'Teknik Pengadukan, Pencetakan, dan Pendinginan Alami', duration: '25 mnt', type: 'Artikel Visual', completed: false },
     ],
@@ -230,7 +230,7 @@ export const CURRICULUM_MODULES: CurriculumModule[] = [
       'Membangun kesadaran keselamatan kerja secara menyeluruh. Seluruh aktivitas dalam modul ini dirancang berbasis simulasi dan observasi di darat tanpa melibatkan pemanjatan pohon.',
     visualDirection: 'Diagram keselamatan kerja yang jelas dan ilustrasi edukatif praktis.',
     duration: '50 Menit',
-    completionPercent: 25,
+    completionPercent: 0,
     unlocked: true,
     safetyNotice:
       'BATAS KESELAMATAN PROGRAM: Selama tahap percontohan, peserta belajar TIDAK memanjat pohon kelapa dan TIDAK memanen nira di ketinggian. Seluruh pembelajaran berlangsung di darat di bawah pendampingan mentor.',
@@ -242,7 +242,7 @@ export const CURRICULUM_MODULES: CurriculumModule[] = [
       'Memahami kesiapsiagaan darurat dan perlengkapan pelindung dasar.',
     ],
     lessons: [
-      { id: 'L-301', title: 'Peta Risiko Lingkungan Kebun dan Cuaca Hujan', duration: '15 mnt', type: 'Skenario Darat', completed: true },
+      { id: 'L-301', title: 'Peta Risiko Lingkungan Kebun dan Cuaca Hujan', duration: '15 mnt', type: 'Skenario Darat', completed: false },
       { id: 'L-302', title: 'Keselamatan Tungku, Suhu Tinggi, dan Ergonomi Dapur Produksi', duration: '20 mnt', type: 'Diagram Proses', completed: false },
       { id: 'L-303', title: 'Prosedur Tanggap Darurat Komunitas Desa', duration: '15 mnt', type: 'Artikel Visual', completed: false },
     ],

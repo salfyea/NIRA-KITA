@@ -39,6 +39,9 @@ Stack: Vite + React 19 + TypeScript + Tailwind 4 + react-router-dom v7 + lucide-
 - `src/store.tsx`: state lokal (localStorage, try/catch), termasuk `session` dan `onboarded`.
 - `src/data/`: data awal, kuis mini, helper atribusi.
 
+## Modul berurutan
+Modul hanya terbuka bila semua modul sebelumnya selesai (`isModuleLocked` di `src/store.tsx`, satu sumber kebenaran). Berlaku di Jalur Belajar, tautan langsung `/learn/bab/:slug` (dialihkan dengan pesan), dan tombol "Latih gerakan ini" di Arsip. Tur juri boleh melompat. Data tersimpan lama yang tidak konsisten dirapikan saat dimuat.
+
 ## NIRA Enterprise
 Sayap ekonomi dari model sosial-bisnis NIRA KITA: Jejak Nira (pelestarian dan pembelajaran) didanai oleh nilai produknya. `src/lib/finance.ts` berisi hitungan simulasi (omzet, laba, premi, titik impas, honor mentor yang terdanai) dan pembagian harga kemasan; harga jual dari tim (langsung Rp35.000/kg; reseller Rp30.000/kg, minimal 30 kg), sedangkan harga beli, harga acuan, biaya, porsi reseller, dan dana pelestarian masih ASUMSI contoh yang bisa diubah dan ditandai ilustratif sampai koperasi mengisi angka sebenarnya. Dana pelestarian dipotong dari omzet lebih dulu (bukan dari sisa laba). Pembelian dan pengaturan harga masuk catatan audit.
 

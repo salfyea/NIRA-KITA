@@ -136,6 +136,19 @@ const initialState = (): PersistedState => ({
   onboarded: false,
 });
 
+/** Modul hanya terbuka bila semua modul sebelumnya selesai (100%). */
+export const isModuleLocked = (modules: { completionPercent: number }[], index: number): boolean => modules.slice(0, index).some((m) => m.completionPercent < 100);
+
+/** Data tersimpan lama bisa punya progres di modul yang belum terbuka: rapikan supaya konsisten. */
+const enforceOrder = (state: PersistedState): PersistedState => {
+  const first = state.modules.findIndex((m) => m.completionPercent < 100);
+  if (first < 0) return state;
+  return {
+    ...state,
+    modules: state.modules.map((m, i) => (i > first && m.completionPercent > 0 ? { ...m, completionPercent: 0, lessons: m.lessons.map((l) => ({ ...l, completed: false })) } : m)),
+  };
+};
+
 const load = (): PersistedState => {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -147,7 +160,7 @@ const load = (): PersistedState => {
       base.quests.forEach((q) => {
         if (!quests.some((x) => x.id === q.id)) quests.push(q);
       });
-      return { ...base, ...saved, quests };
+      return enforceOrder({ ...base, ...saved, quests });
     }
   } catch {
     /* penyimpanan tidak tersedia, pakai data awal */

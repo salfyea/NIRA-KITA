@@ -7,7 +7,7 @@ import { SLUG_SCENE, Scene } from '../art/Scene';
 import { JH, JW, JalurArt, Station, VIEW_TOP_POSTER, pathFor, stationPoints } from '../art/JalurArt';
 import { ProgressBar, Sheet } from '../components/ui';
 import { download, lengthsAtY, standaloneSvg, svgToPng } from '../lib/exportSvg';
-import { useStore } from '../store';
+import { isModuleLocked, useStore } from '../store';
 import { LangToggle, t } from '../i18n';
 
 export const Perjalanan: React.FC = () => {
@@ -26,7 +26,7 @@ export const Perjalanan: React.FC = () => {
     const m = modules[i];
     if (m.completionPercent >= 100) return 'done';
     if (i === activeIdx) return 'active';
-    if (i > activeIdx && m.completionPercent === 0) return 'locked';
+    if (isModuleLocked(modules, i)) return 'locked';
     return 'open';
   };
 
