@@ -1,8 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ExternalLink, HeartHandshake, Plus, Sprout, TrendingUp } from 'lucide-react';
+import { ExternalLink, HeartHandshake, Plus, Sprout, Store, TrendingUp } from 'lucide-react';
 import { Ornate } from '../components/ui';
-import { PRESETS, Assumptions, Pricing, rupiah, simulate, splitPack } from '../lib/finance';
+import { PRESETS, PRICE, Assumptions, Pricing, quote, rupiah, simulate, splitPack } from '../lib/finance';
 import { useStore } from '../store';
 import type { QrBatch } from '../data/batches';
 import { StaffBar } from './Kurator';
@@ -157,7 +157,7 @@ const Pembelian: React.FC = () => {
 /* ============================ Harga kemasan ============================ */
 const BatchPricing: React.FC<{ batch: QrBatch }> = ({ batch }) => {
   const { setBatchPricing, showToast } = useStore();
-  const [p, setP] = React.useState<Pricing>(batch.pricing ?? { pricePerPack: 16000, packGram: 500, artisanPerKg: 20000, preservePct: 8 });
+  const [p, setP] = React.useState<Pricing>(batch.pricing ?? { pricePerPack: 17500, packGram: 500, artisanPerKg: 20000, preservePct: 8 });
   const split = splitPack(p);
   const set = (k: keyof Pricing) => (n: number) => setP((v) => ({ ...v, [k]: n }));
   return (
@@ -206,10 +206,49 @@ const BatchPricing: React.FC<{ batch: QrBatch }> = ({ batch }) => {
   );
 };
 
+/** Daftar harga saluran jual dan penghitung pesanan: reseller hanya berlaku mulai minimal order. */
+const DaftarHarga: React.FC = () => {
+  const [kg, setKg] = React.useState(30);
+  const q = quote(kg);
+  return (
+    <Ornate className="p-4">
+      <p className="text-xs font-bold uppercase tracking-[0.16em] text-caramel-dark">{t('Daftar harga jual', 'Selling price list')}</p>
+      <div className="mt-2 grid grid-cols-2 gap-2 text-center">
+        <div className="rounded-2xl bg-cream p-3">
+          <p className="text-xs font-semibold text-ink-soft">{t('Jual langsung', 'Direct sale')}</p>
+          <p className="font-serif text-2xl text-deep-forest">{rupiah(PRICE.direct)}</p>
+          <p className="text-[11px] text-ink-soft">{t('per kg, tanpa minimal', 'per kg, no minimum')}</p>
+        </div>
+        <div className="rounded-2xl bg-cream p-3">
+          <p className="text-xs font-semibold text-ink-soft">Reseller</p>
+          <p className="font-serif text-2xl text-deep-forest">{rupiah(PRICE.reseller)}</p>
+          <p className="text-[11px] text-ink-soft">{t(`per kg, minimal ${PRICE.resellerMinKg} kg`, `per kg, minimum ${PRICE.resellerMinKg} kg`)}</p>
+        </div>
+      </div>
+      <div className="mt-3">
+        <Num label={t('Hitung pesanan', 'Price an order')} value={kg} onChange={setKg} suffix="kg" step={5} />
+      </div>
+      <p className="mt-2 text-sm text-charcoal">
+        {t('Harga langsung', 'Direct price')}: <b>{rupiah(q.direct)}</b>
+      </p>
+      {q.eligible && q.reseller !== null ? (
+        <p className="mt-1 rounded-xl bg-forest/10 p-2 text-sm font-semibold leading-snug text-forest">
+          {t('Memenuhi minimal order reseller.', 'Meets the reseller minimum order.')} {t('Harga reseller', 'Reseller price')}: {rupiah(q.reseller)} ({t('hemat', 'saves')} {rupiah(q.saving)}).
+        </p>
+      ) : (
+        <p className="mt-1 rounded-xl bg-caramel/15 p-2 text-sm font-semibold leading-snug text-caramel-dark">
+          {t(`Belum memenuhi minimal order reseller: kurang ${q.short} kg lagi untuk harga reseller.`, `Below the reseller minimum order: ${q.short} kg more for the reseller price.`)}
+        </p>
+      )}
+    </Ornate>
+  );
+};
+
 const Harga: React.FC = () => {
   const { batches } = useStore();
   return (
     <div className="mt-4 space-y-3">
+      <DaftarHarga />
       <p className="rounded-xl bg-bamboo/40 p-3 text-sm leading-relaxed text-deep-forest">
         {t('Pembeli yang memindai kemasan melihat ke mana uangnya pergi: ke perajin, ke dana pelestarian Jejak Nira, dan ke operasional. Itulah nilai tambah produk ini.', 'A buyer who scans the package sees where the money goes: to the artisans, to the Jejak Nira preservation fund, and to operations. That is the added value of this product.')}
       </p>
@@ -234,7 +273,7 @@ const Simulasi: React.FC = () => {
   return (
     <div className="mt-4">
       <p className="rounded-xl bg-bamboo/40 p-3 text-sm leading-relaxed text-deep-forest">
-        {t('Simulasi, bukan proyeksi. Semua angka adalah asumsi contoh yang bisa kamu ubah. Ganti dengan angka koperasi sebelum dipakai untuk keputusan.', 'A simulation, not a projection. Every number is an example assumption you can change. Replace them with the cooperative\'s real figures before using it for decisions.')}
+        {t('Simulasi, bukan proyeksi. Harga jual (langsung Rp35.000, reseller Rp30.000, minimal 30 kg) dari tim. Harga beli, harga acuan, biaya, porsi reseller, dan dana pelestarian masih angka contoh yang bisa kamu ubah.', 'A simulation, not a projection. Selling prices (direct Rp35,000, reseller Rp30,000, minimum 30 kg) come from the team. The purchase price, reference price, costs, reseller share, and preservation fund are still example figures you can change.')}
       </p>
       <div className="mt-3 grid grid-cols-3 gap-2" role="group" aria-label={t('Skenario', 'Scenario')}>
         {PRESETS.map((pr) => (
@@ -248,7 +287,10 @@ const Simulasi: React.FC = () => {
         <Num label={t('Volume dibeli', 'Volume bought')} value={a.kgPerMonth} onChange={set('kgPerMonth')} suffix="kg/bln" step={50} />
         <Num label={t('Harga beli adil', 'Fair purchase price')} value={a.buyPrice} onChange={set('buyPrice')} suffix="Rp/kg" step={500} />
         <Num label={t('Harga acuan pasar', 'Market reference')} value={a.marketRef} onChange={set('marketRef')} suffix="Rp/kg" step={500} />
-        <Num label={t('Harga jual', 'Selling price')} value={a.sellPrice} onChange={set('sellPrice')} suffix="Rp/kg" step={500} />
+        <Num label={t('Harga jual langsung', 'Direct selling price')} value={a.directPrice} onChange={set('directPrice')} suffix="Rp/kg" step={500} />
+        <Num label={t('Harga reseller', 'Reseller price')} value={a.resellerPrice} onChange={set('resellerPrice')} suffix="Rp/kg" step={500} />
+        <Num label={t('Porsi lewat reseller', 'Share via resellers')} value={a.resellerShare} onChange={set('resellerShare')} suffix="% volume" step={5} />
+        <Num label={t('Minimal order reseller', 'Reseller minimum order')} value={a.resellerMinKg} onChange={set('resellerMinKg')} suffix="kg" step={5} />
         <Num label={t('Biaya per kg', 'Cost per kg')} value={a.opsPerKg} onChange={set('opsPerKg')} suffix="Rp/kg" step={250} hint={t('kemasan, QR, angkut', 'packaging, QR, transport')} />
         <Num label={t('Biaya tetap', 'Fixed costs')} value={a.fixedCost} onChange={set('fixedCost')} suffix="Rp/bln" step={100000} />
         <Num label={t('Dana pelestarian', 'Preservation fund')} value={a.preservePct} onChange={set('preservePct')} suffix="% omzet" step={1} hint={t('dipotong dari omzet, di depan', 'taken from revenue, up front')} />
@@ -268,7 +310,7 @@ const Simulasi: React.FC = () => {
           ]}
         />
         <p className="mt-3 text-sm text-charcoal">
-          {t('Omzet', 'Revenue')}: <b>{rupiah(o.revenue)}</b>
+          {t('Omzet', 'Revenue')}: <b>{rupiah(o.revenue)}</b> · {t('harga rata-rata', 'average price')} {rupiah(o.avgPrice)}/kg
         </p>
         <p className={`mt-1 rounded-xl p-3 text-sm font-semibold leading-snug ${covered ? 'bg-forest/10 text-forest' : 'bg-[#9E4F37]/10 text-[#9E4F37]'}`}>
           {covered
@@ -276,6 +318,12 @@ const Simulasi: React.FC = () => {
             : t(`Belum menutup biaya: kurang ${rupiah(-o.net)} per bulan. ${Number.isFinite(o.breakEvenKg) ? `Titik impas ±${Math.ceil(o.breakEvenKg)} kg per bulan.` : 'Margin per kg tidak positif: naikkan harga jual atau turunkan biaya.'}`, `Costs are not covered: short by ${rupiah(-o.net)} per month. ${Number.isFinite(o.breakEvenKg) ? `Break-even is about ${Math.ceil(o.breakEvenKg)} kg per month.` : 'The margin per kg is not positive: raise the price or cut costs.'}`)}
         </p>
         <ul className="mt-3 space-y-1.5 text-sm text-charcoal">
+          <li className="flex gap-2">
+            <Store className="mt-0.5 h-4 w-4 shrink-0 text-ink-soft" />
+            <span>
+              {t('Margin per kg:', 'Margin per kg:')} {t('langsung', 'direct')} <b className={o.directMargin >= 0 ? 'text-forest' : 'text-[#9E4F37]'}>{rupiah(o.directMargin)}</b>, reseller <b className={o.resellerMargin >= 0 ? 'text-forest' : 'text-[#9E4F37]'}>{rupiah(o.resellerMargin)}</b>. {t(`Pesanan reseller: ±${o.maxResellerOrders} per bulan bila tiap pesanan tepat ${a.resellerMinKg} kg.`, `Reseller orders: up to ${o.maxResellerOrders} per month if each order is exactly ${a.resellerMinKg} kg.`)}
+            </span>
+          </li>
           <li className="flex gap-2">
             <Sprout className="mt-0.5 h-4 w-4 shrink-0 text-forest" />
             <span>

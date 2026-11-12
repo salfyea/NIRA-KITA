@@ -38,7 +38,7 @@ Stack: Vite + React 19 + TypeScript + Tailwind 4 + react-router-dom v7 + lucide-
 - `src/data/`: data awal, kuis mini, helper atribusi.
 
 ## NIRA Enterprise
-Sayap ekonomi dari model sosial-bisnis NIRA KITA: Jejak Nira (pelestarian dan pembelajaran) didanai oleh nilai produknya. `src/lib/finance.ts` berisi hitungan simulasi (omzet, laba, premi, titik impas, honor mentor yang terdanai) dan pembagian harga kemasan; semua angka masukan adalah ASUMSI contoh yang bisa diubah dan ditandai ilustratif sampai koperasi mengisi angka sebenarnya. Dana pelestarian dipotong dari omzet lebih dulu (bukan dari sisa laba). Pembelian dan pengaturan harga masuk catatan audit.
+Sayap ekonomi dari model sosial-bisnis NIRA KITA: Jejak Nira (pelestarian dan pembelajaran) didanai oleh nilai produknya. `src/lib/finance.ts` berisi hitungan simulasi (omzet, laba, premi, titik impas, honor mentor yang terdanai) dan pembagian harga kemasan; harga jual dari tim (langsung Rp35.000/kg; reseller Rp30.000/kg, minimal 30 kg), sedangkan harga beli, harga acuan, biaya, porsi reseller, dan dana pelestarian masih ASUMSI contoh yang bisa diubah dan ditandai ilustratif sampai koperasi mengisi angka sebenarnya. Dana pelestarian dipotong dari omzet lebih dulu (bukan dari sisa laba). Pembelian dan pengaturan harga masuk catatan audit.
 
 ## Irama Tangan
 `src/lib/irama.ts`: mengukur irama gerak berulang (putaran/menit dan keteraturan) dari lintasan tangan dengan autokorelasi. Diuji dengan data sintetis (galat <2% untuk 30 sampai 90 rpm; menolak gerak acak, diam, atau terlalu pendek). Klip lapangan yang ada TIDAK cukup andal (tangan terdeteksi di 10%, 0%, 0% frame), jadi irama acuan harus direkam mentor dari perajin dengan kamera, disetujui kurator, lalu tampil di Arsip dan latihan mengaduk.
