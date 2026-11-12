@@ -12,7 +12,7 @@ export interface TourStep {
   tryIt: string;
   mood: NiraMood;
   /** Peran staf yang diperlukan layar ini (otomatis disiapkan oleh tur). */
-  role?: 'mentor' | 'curator' | 'admin';
+  role?: 'mentor' | 'curator' | 'admin' | 'enterprise';
 }
 
 /** Dihitung saat dipanggil supaya mengikuti bahasa aktif. */
@@ -162,5 +162,19 @@ export const getTour = (): TourStep[] => [
     tryIt: t('Buka tab Audit, lalu Batch QR dan buat batch baru.', 'Open the Audit tab, then QR Batches and create a new batch.'),
     mood: 'cheer',
     role: 'admin',
+  },
+  {
+    id: 'enterprise',
+    route: '/enterprise',
+    short: t('NIRA Enterprise', 'NIRA Enterprise'),
+    title: t('NIRA Enterprise: keuangan yang menopang', 'NIRA Enterprise: finance that sustains'),
+    see: t(
+      'Mitra perajin, catatan pembelian adil (premi di atas harga acuan), harga kemasan yang tampil di halaman QR, dan simulasi yang menunjukkan bagaimana dana pelestarian menopang Jejak Nira.',
+      'Artisan partners, fair-purchase records (a premium over the reference price), the pack price shown on the QR page, and a simulation of how the preservation fund sustains Jejak Nira.',
+    ),
+    proves: t('Model sosial-bisnis: pelestarian didanai oleh nilai produknya', 'A social-enterprise model: preservation funded by the value of the product'),
+    tryIt: t('Buka tab Simulasi dan ubah volume atau harga, lalu lihat tab Harga QR.', 'Open the Simulation tab and change the volume or price, then see the QR price tab.'),
+    mood: 'think',
+    role: 'enterprise',
   },
 ];

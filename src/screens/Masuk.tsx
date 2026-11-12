@@ -19,7 +19,7 @@ export const Masuk: React.FC = () => {
   const [name, setName] = React.useState('');
   const [email, setEmail] = React.useState('');
 
-  if (session) return <Navigate to={session.role === 'curator' ? '/kurator' : session.role === 'mentor' ? '/mentor' : session.role === 'admin' ? '/admin' : '/learn'} replace />;
+  if (session) return <Navigate to={session.role === 'curator' ? '/kurator' : session.role === 'mentor' ? '/mentor' : session.role === 'admin' ? '/admin' : session.role === 'enterprise' ? '/enterprise' : '/learn'} replace />;
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();

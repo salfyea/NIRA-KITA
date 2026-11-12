@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Layers, Map as MapIcon, Route, User, BookOpen, ShieldCheck, QrCode, UserCheck, Users } from 'lucide-react';
+import { Layers, Map as MapIcon, Route, User, BookOpen, ShieldCheck, QrCode, UserCheck, Users, Store } from 'lucide-react';
 import { useStore } from '../store';
 import { Toast } from './ui';
 import { Logo } from '../art/Logo';
@@ -50,17 +50,18 @@ const TabBar: React.FC = () => (
   </nav>
 );
 
-type RoleKey = 'learner' | 'visitor' | 'mentor' | 'curator' | 'admin';
+type RoleKey = 'learner' | 'visitor' | 'mentor' | 'curator' | 'admin' | 'enterprise';
 const getRoles = (): { key: RoleKey; label: string; desc: string; Icon: typeof BookOpen; path: string }[] => [
   { key: 'learner', label: t('Pelajar', 'Learner'), desc: t('Perjalanan, peta, koleksi, praktik gerak', 'Journey, map, collection, movement practice'), Icon: BookOpen, path: '/learn' },
   { key: 'visitor', label: t('Pengunjung QR', 'QR visitor'), desc: t('Paspor warisan dan game dari kemasan', 'Heritage passport and game from the package'), Icon: QrCode, path: '/p/NK-001' },
   { key: 'mentor', label: 'Mentor', desc: t('Unggah dengan izin, validasi pelajar, anotasi', 'Consented upload, learner validation, annotation'), Icon: UserCheck, path: '/mentor' },
   { key: 'curator', label: t('Kurator', 'Curator'), desc: t('Persetujuan budaya dan visibilitas', 'Cultural approval and visibility'), Icon: ShieldCheck, path: '/kurator' },
   { key: 'admin', label: 'Admin', desc: t('Capaian pilot, batch QR, audit', 'Pilot progress, QR batches, audit'), Icon: Users, path: '/admin' },
+  { key: 'enterprise', label: 'Enterprise', desc: t('Mitra, pembelian adil, harga QR, keuangan', 'Partners, fair purchasing, QR price, finance'), Icon: Store, path: '/enterprise' },
 ];
 
 const roleOfPath = (p: string): RoleKey | null =>
-  p.startsWith('/learn') ? 'learner' : p.startsWith('/p/') ? 'visitor' : p.startsWith('/mentor') ? 'mentor' : p.startsWith('/kurator') ? 'curator' : p.startsWith('/admin') ? 'admin' : null;
+  p.startsWith('/learn') ? 'learner' : p.startsWith('/p/') ? 'visitor' : p.startsWith('/mentor') ? 'mentor' : p.startsWith('/kurator') ? 'curator' : p.startsWith('/admin') ? 'admin' : p.startsWith('/enterprise') ? 'enterprise' : null;
 
 /** Panel kiri di desktop: konteks ekosistem lima peran supaya juri tidak melihat satu aplikasi saja. */
 const SidePanel: React.FC = () => {
@@ -75,6 +76,7 @@ const SidePanel: React.FC = () => {
     if (r === 'mentor') signIn('Pak Parmadi (mentor demo)', 'mentor');
     else if (r === 'curator') signIn('Kurator Budaya (demo)', 'curator');
     else if (r === 'admin') signIn('Admin Program (demo)', 'admin');
+    else if (r === 'enterprise') signIn('Koperasi NIRA (demo)', 'enterprise');
     else if (r === 'learner' && !session) signIn('Tamu Demo', 'learner');
     navigate(path);
   };
@@ -118,7 +120,7 @@ const SidePanel: React.FC = () => {
       </div>
       {!tour.active && (
       <div>
-        <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-ink-soft">{t('Lima peran dalam satu ekosistem', 'Five roles in one ecosystem')}</p>
+        <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-ink-soft">{t('Enam peran dalam satu ekosistem', 'Six roles in one ecosystem')}</p>
         <ul className="space-y-1.5">
           {getRoles().map(({ key, label, desc, Icon, path }) => {
             const active = current === key;

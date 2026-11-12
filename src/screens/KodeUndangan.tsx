@@ -9,6 +9,7 @@ const ROLES: Record<string, string> = {
   'MENTOR-2026': 'Mentor',
   'KURATOR-2026': 'Kurator',
   'ADMIN-2026': 'Admin',
+  'ENTERPRISE-2026': 'Enterprise',
 };
 
 /** Kode undangan untuk Mentor, Kurator, dan Admin. Tampilan peran masih placeholder yang rapi. */
@@ -22,8 +23,8 @@ export const KodeUndangan: React.FC = () => {
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     const r = ROLES[code.trim().toUpperCase()];
-    if (r === 'Mentor' || r === 'Kurator' || r === 'Admin') {
-      const map = { Mentor: ['Pak Parmadi (mentor demo)', 'mentor', '/mentor'], Kurator: ['Kurator Budaya (demo)', 'curator', '/kurator'], Admin: ['Admin Program (demo)', 'admin', '/admin'] } as const;
+    if (r === 'Mentor' || r === 'Kurator' || r === 'Admin' || r === 'Enterprise') {
+      const map = { Mentor: ['Pak Parmadi (mentor demo)', 'mentor', '/mentor'], Kurator: ['Kurator Budaya (demo)', 'curator', '/kurator'], Admin: ['Admin Program (demo)', 'admin', '/admin'], Enterprise: ['Koperasi NIRA (demo)', 'enterprise', '/enterprise'] } as const;
       const [nm, role, to] = map[r];
       signIn(nm, role);
       navigate(to, { replace: true });
@@ -61,7 +62,7 @@ export const KodeUndangan: React.FC = () => {
         <div className="mt-4">
           <h1 className="text-[28px] leading-tight text-deep-forest">{t('Kode undangan', 'Invite code')}</h1>
           <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-            {t('Untuk Mentor, Kurator, dan Admin. Pelajar tidak perlu kode, cukup daftar dari halaman masuk.', 'For Mentors, Curators, and Admins. Learners do not need a code; just sign up from the sign-in page.')}
+            {t('Untuk Mentor, Kurator, Admin, dan Enterprise. Pelajar tidak perlu kode, cukup daftar dari halaman masuk.', 'For Mentors, Curators, Admins, and Enterprise. Learners do not need a code; just sign up from the sign-in page.')}
           </p>
           <form onSubmit={submit} className="mt-5 space-y-3">
             <label className="block text-sm font-semibold text-deep-forest">
@@ -84,7 +85,7 @@ export const KodeUndangan: React.FC = () => {
               {t('Gunakan kode', 'Use code')}
             </button>
           </form>
-          <p className="mt-4 text-xs text-ink-soft">{t('Kode contoh untuk demo: MENTOR-2026, KURATOR-2026, ADMIN-2026.', 'Demo codes: MENTOR-2026, KURATOR-2026, ADMIN-2026.')}</p>
+          <p className="mt-4 text-xs text-ink-soft">{t('Kode contoh untuk demo: MENTOR-2026, KURATOR-2026, ADMIN-2026, ENTERPRISE-2026.', 'Demo codes: MENTOR-2026, KURATOR-2026, ADMIN-2026, ENTERPRISE-2026.')}</p>
         </div>
       )}
     </div>

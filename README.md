@@ -19,6 +19,7 @@ Stack: Vite + React 19 + TypeScript + Tailwind 4 + react-router-dom v7 + lucide-
 | `/learn/lab` | **Lab Pengetahuan**: Lab Dapur (eksperimen bebas) dan Peta Istilah (mencocokkan istilah dan fungsi), +40 XP sekali per eksperimen |
 | `/kode-undangan` | Kode `KURATOR-2026` membuka `/kurator`, `ADMIN-2026` membuka `/admin`, `MENTOR-2026` membuka `/mentor` |
 | `/mentor` | **Mentor** (`MENTOR-2026`): unggah rekaman dengan izin narasumber, validasi pelajar (satu-satunya yang membuka lencana mentor), anotasi klip |
+| `/enterprise` | **NIRA Enterprise** (`ENTERPRISE-2026`): mitra perajin, pencatatan pembelian adil (premi di atas harga acuan, masuk audit), harga kemasan yang tampil di halaman QR, simulasi keuangan |
 | `/kurator`, `/kurator/:id` | **Kurator**: antrean tinjauan, izin kontributor, checklist 6 poin, visibilitas (Privat, Pelajar, Publik QR), keputusan tercatat di audit |
 | `/admin` | **Admin**: capaian pilot (KPI), pembuat batch QR (kode QR nyata, unduh PNG), catatan audit |
 | `/tur` | Tur 9 langkah untuk juri (akun demo otomatis) |
@@ -35,6 +36,9 @@ Stack: Vite + React 19 + TypeScript + Tailwind 4 + react-router-dom v7 + lucide-
 - `src/art/`: `Nira` (maskot, mood happy/cheer/think/wave/sleep) dan `Scene` (8 adegan SVG).
 - `src/store.tsx`: state lokal (localStorage, try/catch), termasuk `session` dan `onboarded`.
 - `src/data/`: data awal, kuis mini, helper atribusi.
+
+## NIRA Enterprise
+Sayap ekonomi dari model sosial-bisnis NIRA KITA: Jejak Nira (pelestarian dan pembelajaran) didanai oleh nilai produknya. `src/lib/finance.ts` berisi hitungan simulasi (omzet, laba, premi, titik impas, honor mentor yang terdanai) dan pembagian harga kemasan; semua angka masukan adalah ASUMSI contoh yang bisa diubah dan ditandai ilustratif sampai koperasi mengisi angka sebenarnya. Dana pelestarian dipotong dari omzet lebih dulu (bukan dari sisa laba). Pembelian dan pengaturan harga masuk catatan audit.
 
 ## Irama Tangan
 `src/lib/irama.ts`: mengukur irama gerak berulang (putaran/menit dan keteraturan) dari lintasan tangan dengan autokorelasi. Diuji dengan data sintetis (galat <2% untuk 30 sampai 90 rpm; menolak gerak acak, diam, atau terlalu pendek). Klip lapangan yang ada TIDAK cukup andal (tangan terdeteksi di 10%, 0%, 0% frame), jadi irama acuan harus direkam mentor dari perajin dengan kamera, disetujui kurator, lalu tampil di Arsip dan latihan mengaduk.
