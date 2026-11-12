@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Camera, CameraOff, Check, EyeOff, Hand, Lock, ShieldCheck, Square, ThumbsUp } from 'lucide-react';
+import { Box, Camera, CameraOff, Check, EyeOff, Hand, Lock, ShieldCheck, Square, TriangleAlert } from 'lucide-react';
 import { Nira } from '../art/Nira';
 import { getPraktik, Task } from '../data/praktik';
 import type { Live } from './Alat3D';
@@ -220,22 +220,6 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
               const pr = Math.min(1, (pour.current.count + (pour.current.isTilted ? 0.5 : 0)) / t.times);
               setPr(pr);
               if (pour.current.count >= t.times) completeTask(null);
-            } else if (t.kind === 'judge') {
-              const choice = pose === 'thumbsUp' ? 'aman' : pose === 'open' ? 'bahaya' : '';
-              active = !!choice;
-              if (choice) {
-                if (holdPose.current !== choice) {
-                  holdPose.current = choice;
-                  holdStart.current = now;
-                }
-                const pr = Math.min(1, (now - (holdStart.current ?? now)) / HOLD_MS);
-                setPr(pr);
-                if (pr >= 1) completeTask(choice === t.answer);
-              } else {
-                holdPose.current = '';
-                holdStart.current = null;
-                setPr(0);
-              }
             }
           } else if (!hand) {
             holdStart.current = null;
@@ -281,6 +265,13 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
     setPhase('play');
   };
 
+  // Kartu skenario tidak memakai kamera: langsung ke keputusan, tanpa layar pilih kamera.
+  const scenarioMode = cfg?.mode === 'skenario';
+  React.useEffect(() => {
+    if (scenarioMode && phase === 'intro') startTap();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scenarioMode]);
+
   const stopAll = () => {
     stopCamera();
     setPhase('intro');
@@ -290,8 +281,9 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
 
   const prop3d = task.prop;
   const arTask = !tapMode && !!prop3d && AR_TASKS.includes(task.id);
+  const scenario = cfg.mode === 'skenario';
   const hintText = task.kind === 'judge' ? task.scenario : task.hint;
-  const wantLabel = task.kind === 'pose' ? poseLabel(task.pose) : task.kind === 'stir' ? t(`${task.laps} putaran melingkar`, `${task.laps} circular rounds`) : task.kind === 'pour' ? t(`Miring dan tegak ${task.times} kali`, `Tilt and straighten ${task.times} times`) : t('Jempol ke atas (aman) atau telapak terbuka (bahaya)', 'Thumbs up (safe) or open palm (unsafe)');
+  const wantLabel = task.kind === 'pose' ? poseLabel(task.pose) : task.kind === 'stir' ? t(`${task.laps} putaran melingkar`, `${task.laps} circular rounds`) : task.kind === 'pour' ? t(`Miring dan tegak ${task.times} kali`, `Tilt and straighten ${task.times} times`) : '';
 
   return (
     <div ref={introRef}>
@@ -394,7 +386,7 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
         <div className="mt-3 rounded-2xl bg-coconut p-4">
           <div className="flex items-center justify-between">
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-caramel-dark">
-              {t('Gerakan', 'Movement')} {Math.min(idx + 1, tasks.length)} {t('dari', 'of')} {tasks.length}
+              {scenario ? t('Situasi', 'Situation') : t('Gerakan', 'Movement')} {Math.min(idx + 1, tasks.length)} {t('dari', 'of')} {tasks.length}
             </p>
             <div className="flex gap-1" aria-hidden>
               {tasks.map((_, i) => (
@@ -407,9 +399,11 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
           {stage === 'do' ? (
             <>
               <p className={`mt-1 text-base leading-relaxed ${task.kind === 'judge' ? 'rounded-xl bg-cream p-3 font-semibold text-deep-forest' : 'text-charcoal'}`}>{hintText}</p>
-              <p className="mt-2 flex items-center gap-1.5 text-sm font-bold text-caramel-dark">
-                <Hand className="h-4 w-4" /> {wantLabel}
-              </p>
+              {task.kind !== 'judge' && (
+                <p className="mt-2 flex items-center gap-1.5 text-sm font-bold text-caramel-dark">
+                  <Hand className="h-4 w-4" /> {wantLabel}
+                </p>
+              )}
               {!tapMode && (
                 <>
                   <div className="mt-3 h-3 overflow-hidden rounded-full bg-bamboo/60" role="progressbar" aria-valuenow={Math.round(progress * 100)} aria-valuemin={0} aria-valuemax={100} aria-label={t('Kemajuan gerakan', 'Movement progress')}>
@@ -424,10 +418,10 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
               {tapMode && task.kind === 'judge' && (
                 <div className="mt-3 grid grid-cols-2 gap-2">
                   <button type="button" onClick={() => completeTask(task.answer === 'aman')} className="flex min-h-[56px] items-center justify-center gap-2 rounded-full bg-forest text-base font-semibold text-coconut">
-                    <ThumbsUp className="h-5 w-5" /> {t('Aman / boleh', 'Safe / allowed')}
+                    <ShieldCheck className="h-5 w-5" /> {cfg.yesLabel ?? t('Aman / boleh', 'Safe / allowed')}
                   </button>
                   <button type="button" onClick={() => completeTask(task.answer === 'bahaya')} className="flex min-h-[56px] items-center justify-center gap-2 rounded-full bg-[#9E4F37] text-base font-semibold text-coconut">
-                    <Hand className="h-5 w-5" /> {t('Bahaya / tidak', 'Unsafe / not allowed')}
+                    <TriangleAlert className="h-5 w-5" /> {cfg.noLabel ?? t('Bahaya / tidak', 'Unsafe / not allowed')}
                   </button>
                 </div>
               )}
@@ -446,7 +440,7 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
               )}
               {verdict === null && (
                 <p className="flex items-center gap-1.5 text-lg font-bold text-forest">
-                  <Check className="h-5 w-5" /> {t('Gerakan berhasil', 'Movement done')}
+                  <Check className="h-5 w-5" /> {scenario ? t('Dijawab', 'Answered') : t('Gerakan berhasil', 'Movement done')}
                 </p>
               )}
               <div className="ornate mt-2 p-3">
@@ -459,7 +453,7 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
               </div>
               {task.kind === 'stir' && !tapMode && lastRhythm.current && <IramaPanel rhythm={lastRhythm.current} reference={refRhythm} moving final />}
               <button type="button" onClick={next} className="mt-3 min-h-[52px] w-full rounded-full bg-forest text-base font-semibold text-coconut">
-                {idx + 1 >= tasks.length ? t('Selesai', 'Finish') : t('Gerakan berikutnya', 'Next movement')}
+                {idx + 1 >= tasks.length ? t('Selesai', 'Finish') : scenario ? t('Situasi berikutnya', 'Next situation') : t('Gerakan berikutnya', 'Next movement')}
               </button>
             </div>
           )}
@@ -475,8 +469,8 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
       {phase === 'done' && (
         <div className="py-2 text-center">
           <Nira mood="cheer" size={96} className="mx-auto" />
-          <p className="mt-2 text-xl font-semibold text-deep-forest">{t('Praktik gerak selesai', 'Movement practice complete')}</p>
-          <p className="mt-1 text-sm text-ink-soft">{t('Kamera sudah dimatikan. Teknik sesungguhnya tetap divalidasi oleh mentor.', 'The camera is off. Real technique is still validated by a mentor.')}</p>
+          <p className="mt-2 text-xl font-semibold text-deep-forest">{scenario ? t('Skenario selesai', 'Scenarios complete') : t('Praktik gerak selesai', 'Movement practice complete')}</p>
+          <p className="mt-1 text-sm text-ink-soft">{scenario ? t('Keselamatan dan etika dipelajari lewat keputusan, bukan lewat kamera.', 'Safety and ethics are learned through decisions, not through the camera.') : t('Kamera sudah dimatikan. Teknik sesungguhnya tetap divalidasi oleh mentor.', 'The camera is off. Real technique is still validated by a mentor.')}</p>
           <button type="button" onClick={() => setPhase('intro')} className="mt-2 inline-flex min-h-[44px] items-center rounded-full border-2 border-bamboo px-5 text-sm font-semibold text-deep-forest">
             {t('Ulangi', 'Repeat')}
           </button>

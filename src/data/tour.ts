@@ -62,8 +62,8 @@ export const getTour = (): TourStep[] => [
     short: t('Praktik gerak (CV)', 'Movement practice (CV)'),
     title: t('Praktik gerak dalam modul', 'Movement practice inside modules'),
     see: t(
-      'Di tiap modul, kamera mengenali gerak tangan: menuang, menyaring, mengaduk, atau menilai situasi aman dan bahaya. Diproses di perangkat; tidak ada video yang dikirim atau disimpan.',
-      'In each module the camera recognises hand movements: pouring, filtering, stirring, or judging safe and unsafe situations. It runs on the device; no video is sent or stored.',
+      'Kamera mengenali gerak tangan dan alatnya menempel di tanganmu: menuang, menjepit, mengaduk, dan mengukur irama. Modul keselamatan dan etika memakai skenario keputusan tanpa kamera. Diproses di perangkat; tidak ada video yang dikirim atau disimpan.',
+      'The camera recognises hand movements and the tool attaches to your hand: pouring, pinching, stirring, and measuring rhythm. The safety and ethics modules use camera-free decision scenarios. It runs on the device; no video is sent or stored.',
     ),
     proves: t('Computer vision yang terintegrasi ke kurikulum, dengan privasi terjaga', 'Computer vision built into the curriculum, with privacy preserved'),
     tryIt: t('Pilih Tanpa kamera atau Nyalakan kamera, lalu coba gerakan mengaduk.', 'Choose No camera or Turn on camera, then try the stirring movement.'),
