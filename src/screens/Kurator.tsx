@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Check, Eye, Lock, LogOut, Mic, QrCode, ShieldCheck, Users, X } from 'lucide-react';
+import { ArrowLeft, Check, Eye, Lock, LogOut, Mic, QrCode, ShieldCheck, Store, Users, X } from 'lucide-react';
 import { Ornate } from '../components/ui';
 import { attribution } from '../data/attribution';
 import { CuratorChecklist, HeritageRecord, VisibilityScope } from '../types/jejakNira';
@@ -9,7 +9,7 @@ import { t } from '../i18n';
 import { locLabel } from '../data/display';
 
 /** Bilah atas area staf: berpindah antara Kurator dan Admin, plus keluar. */
-export const StaffBar: React.FC<{ current: 'mentor' | 'kurator' | 'admin' }> = ({ current }) => {
+export const StaffBar: React.FC<{ current: 'mentor' | 'kurator' | 'admin' | 'enterprise' }> = ({ current }) => {
   const { session, signOut } = useStore();
   const navigate = useNavigate();
   return (
@@ -30,19 +30,20 @@ export const StaffBar: React.FC<{ current: 'mentor' | 'kurator' | 'admin' }> = (
           <LogOut className="h-4 w-4" /> {t('Keluar', 'Sign out')}
         </button>
       </div>
-      <nav className="mt-2 grid grid-cols-3 rounded-full border border-bamboo bg-coconut p-1" aria-label={t('Area staf', 'Staff area')}>
+      <nav className="mt-2 grid grid-cols-4 rounded-full border border-bamboo bg-coconut p-1" aria-label={t('Area staf', 'Staff area')}>
         {([
           ['mentor', '/mentor', 'Mentor', Mic],
           ['kurator', '/kurator', t('Kurator', 'Curator'), ShieldCheck],
           ['admin', '/admin', 'Admin', Users],
+          ['enterprise', '/enterprise', 'Enterprise', Store],
         ] as const).map(([k, to, label, Icon]) => (
           <Link
             key={k}
             to={to}
             aria-current={current === k ? 'page' : undefined}
-            className={`flex min-h-[44px] items-center justify-center gap-1.5 rounded-full text-sm font-semibold ${current === k ? 'bg-forest text-coconut' : 'text-ink-soft'}`}
+            className={`flex min-h-[44px] items-center justify-center gap-1 rounded-full text-[13px] font-semibold ${current === k ? 'bg-forest text-coconut' : 'text-ink-soft'}`}
           >
-            <Icon className="h-4 w-4" /> {label}
+            <Icon className="hidden h-4 w-4 min-[400px]:block" /> {label}
           </Link>
         ))}
       </nav>
@@ -97,7 +98,7 @@ export const Kurator: React.FC = () => {
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-caramel-dark">{t('Anotasi mentor menunggu', 'Mentor annotations pending')} ({pendingNotes.length})</p>
             {pendingNotes.map(([clip, a]) => (
               <div key={clip} className="mt-2 border-t border-bamboo/60 pt-2">
-                <p className="text-sm font-semibold text-deep-forest">{t('Klip', 'Clip')}: {clip}</p>
+                <p className="text-sm font-semibold text-deep-forest">{clip === 'irama-aduk' ? t('Irama acuan mengaduk (hasil ukur kamera)', 'Stirring reference rhythm (camera measurement)') : `${t('Klip', 'Clip')}: ${clip}`}</p>
                 <p className="text-sm leading-relaxed text-charcoal">"{a.text}"</p>
                 <p className="text-xs text-ink-soft">{t('Oleh', 'By')} {a.author}</p>
                 <button type="button" onClick={() => { approveAnnotation(clip); showToast(t('Anotasi disetujui dan tampil di Arsip Gerakan.', 'Annotation approved and shown in the Movement Archive.')); }} className="mt-2 min-h-[44px] rounded-full bg-forest px-5 text-sm font-semibold text-coconut">
@@ -120,8 +121,8 @@ export const Kurator: React.FC = () => {
                   {r.contributorName} · {locLabel(r.location.replace(', Cilongok, Banyumas', ''))}
                 </span>
                 <span className="mt-2 flex flex-wrap gap-1.5 text-[11px] font-bold">
-                  <span className={`rounded-full px-2 py-0.5 ${r.consent.internalLearning ? 'bg-forest/10 text-forest' : 'bg-bamboo/60 text-ink-soft'}`}>{t('Izin pelajar', 'Learner permission')} {r.consent.internalLearning ? '✓' : '✗'}</span>
-                  <span className={`rounded-full px-2 py-0.5 ${r.consent.publicQrPage ? 'bg-forest/10 text-forest' : 'bg-bamboo/60 text-ink-soft'}`}>{t('Izin QR publik', 'Public QR permission')} {r.consent.publicQrPage ? '✓' : '✗'}</span>
+                  <span className={`rounded-full px-2 py-0.5 ${r.consent.internalLearning ? 'bg-forest/10 text-forest' : 'bg-bamboo/60 text-ink-soft'}`}>{t('Izin pelajar', 'Learner permission')} {r.consent.internalLearning ? t('ya', 'yes') : t('belum', 'not yet')}</span>
+                  <span className={`rounded-full px-2 py-0.5 ${r.consent.publicQrPage ? 'bg-forest/10 text-forest' : 'bg-bamboo/60 text-ink-soft'}`}>{t('Izin QR publik', 'Public QR permission')} {r.consent.publicQrPage ? t('ya', 'yes') : t('belum', 'not yet')}</span>
                   <span className="rounded-full bg-coconut px-2 py-0.5 text-deep-forest ring-1 ring-bamboo">{scopeLabel(r.visibility)}</span>
                 </span>
               </Ornate>

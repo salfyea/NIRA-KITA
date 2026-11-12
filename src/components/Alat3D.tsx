@@ -36,9 +36,10 @@ export interface Live {
   stir: number; // sudut putar kumulatif pergelangan, radian
   progress: number; // 0..1 kemajuan gerakan
   done: boolean; // gerakan sudah selesai
+  lm: { x: number; y: number }[] | null; // 21 titik tangan (0..1) frame ini, null bila tidak terlihat
 }
 
-const mat = (color: number, rough = 0.85, metal = 0) => new MeshStandardMaterial({ color, roughness: rough, metalness: metal });
+export const mat = (color: number, rough = 0.85, metal = 0) => new MeshStandardMaterial({ color, roughness: rough, metalness: metal });
 const BAMBU = 0xc9b05f;
 const KAYU = 0x8a5a2b;
 
@@ -58,7 +59,7 @@ interface Built {
 }
 
 /* ---------------- bagian-bagian model ---------------- */
-const bambu = () => {
+export const bambu = () => {
   const g = new Group();
   g.add(new Mesh(new CylinderGeometry(0.26, 0.28, 1.5, 24, 1, true), (() => { const m = mat(BAMBU, 0.6); m.side = 2; return m; })()));
   const inner = new Mesh(new CircleGeometry(0.24, 24), mat(0x3a2c12));
@@ -78,7 +79,7 @@ const bambu = () => {
   return g;
 };
 
-const bowl = (r = 1) => {
+export const bowl = (r = 1) => {
   const g = new Group();
   const pts = [[0, 0], [0.45, 0.03], [0.85, 0.18], [1.15, 0.48], [1.32, 0.86], [1.34, 0.9]].map(([x, y]) => new Vector2(x * r, y * r));
   const shell = new Mesh(new LatheGeometry(pts, 40), (() => { const m = mat(0x2c2c2f, 0.5, 0.6); m.side = 2; return m; })());
@@ -90,7 +91,7 @@ const bowl = (r = 1) => {
   return g;
 };
 
-const sapSurface = (r: number, color = 0xc98a3a) => {
+export const sapSurface = (r: number, color = 0xc98a3a) => {
   const m = new Mesh(new CircleGeometry(r, 40), new MeshStandardMaterial({ color, roughness: 0.25, metalness: 0.1, emissive: 0x5a3208, emissiveIntensity: 0.5 }));
   m.rotation.x = -Math.PI / 2;
   return m;

@@ -60,8 +60,28 @@ export const LangRoot: React.FC<{ children: React.ReactNode }> = ({ children }) 
 };
 
 /** Tombol ID | EN. */
-export const LangToggle: React.FC<{ className?: string; tone?: 'light' | 'dark' }> = ({ className = '', tone = 'light' }) => {
+export const LangToggle: React.FC<{ className?: string; tone?: 'light' | 'dark' | 'text' }> = ({ className = '', tone = 'light' }) => {
   const l = useLang();
+  if (tone === 'text') {
+    // Varian untuk layar awal: dua kata dengan garis bawah bergaya tangan, tanpa pil putih di atas ilustrasi.
+    return (
+      <div className={`inline-flex items-center ${className}`} role="group" aria-label="Bahasa / Language">
+        {(['id', 'en'] as const).map((k, i) => (
+          <React.Fragment key={k}>
+            {i > 0 && <span aria-hidden className="text-deep-forest/40">/</span>}
+            <button
+              type="button"
+              aria-pressed={l === k}
+              onClick={() => setLang(k)}
+              className={`min-h-[44px] min-w-[44px] px-2 text-sm font-bold tracking-wide text-deep-forest [text-shadow:0_0_6px_rgba(255,243,210,1),0_0_2px_rgba(255,243,210,1)] ${l === k ? 'underline decoration-caramel decoration-2 underline-offset-[5px]' : 'opacity-60'}`}
+            >
+              {k.toUpperCase()}
+            </button>
+          </React.Fragment>
+        ))}
+      </div>
+    );
+  }
   const base = tone === 'dark' ? 'bg-deep-forest/80 text-coconut' : 'bg-coconut/95 text-deep-forest';
   return (
     <div className={`inline-flex rounded-full p-0.5 shadow ${base} ${className}`} role="group" aria-label="Bahasa / Language">

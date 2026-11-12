@@ -1,8 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
 import { Scene, SceneKind } from '../art/Scene';
 import { Nira, NiraMood } from '../art/Nira';
+import { Frond, LeafArrow, SproutDots, WaveEdge } from '../art/Organic';
 import { useStore } from '../store';
 import { LangToggle, t } from '../i18n';
 
@@ -41,50 +41,31 @@ export const Onboarding: React.FC = () => {
   };
 
   return (
-    <div className="flex h-full min-h-[600px] flex-col bg-cream">
-      <div className="relative h-[52%] min-h-[280px] overflow-hidden rounded-b-[36px]">
+    <div className="grain relative flex h-full min-h-[600px] flex-col bg-cream">
+      <div className="relative h-[61%] min-h-[320px] overflow-hidden">
         <Scene key={slide.kind} kind={slide.kind} className="absolute inset-0 h-full w-full" />
-        <LangToggle className="absolute left-4 top-4 z-10" />
-        <button
-          type="button"
-          onClick={done}
-          className="absolute right-4 top-4 min-h-[44px] rounded-full bg-coconut/90 px-4 text-sm font-semibold text-deep-forest"
-        >
+        <LangToggle tone="text" className="absolute left-2 top-3 z-10" />
+        <button type="button" onClick={done} className="absolute right-3 top-3 z-10 min-h-[44px] px-3 text-sm font-semibold text-deep-forest underline decoration-caramel decoration-2 underline-offset-[5px]">
           {t('Lewati', 'Skip')}
         </button>
-        <div className="absolute -bottom-2 left-5">
-          <Nira mood={slide.mood} size={84} />
+        <WaveEdge />
+        <div className="absolute bottom-3 left-5 z-10">
+          <Nira mood={slide.mood} size={88} />
         </div>
       </div>
-      <div className="flex flex-1 flex-col px-6 pb-6 pt-5">
-        <h1 key={`t${i}`} className="text-[28px] leading-tight text-deep-forest" style={{ animation: 'fade-up .4s both' }}>
+
+      <div className="relative z-10 flex flex-1 flex-col px-7 pb-6 pt-2">
+        <Frond className="-ml-1" />
+        <h1 key={`t${i}`} className="mt-1 font-serif text-[29px] leading-tight text-deep-forest" style={{ animation: 'fade-up .4s both' }}>
           {slide.title}
         </h1>
-        <p key={`p${i}`} className="mt-2 text-base leading-relaxed text-ink-soft" style={{ animation: 'fade-up .4s .05s both' }}>
+        <p key={`p${i}`} className="mt-2 text-[16px] leading-relaxed text-ink-soft" style={{ animation: 'fade-up .4s .05s both' }}>
           {slide.text}
         </p>
         <div className="mt-auto flex items-center justify-between pt-4">
-          <div className="flex gap-1" role="tablist" aria-label="Slide">
-            {SLIDES.map((_, n) => (
-              <button
-                key={n}
-                type="button"
-                role="tab"
-                aria-selected={n === i}
-                aria-label={`Slide ${n + 1}`}
-                onClick={() => setI(n)}
-                className="flex h-11 w-11 items-center justify-center"
-              >
-                <span className={`h-2 rounded-full transition-all ${n === i ? 'w-6 bg-caramel' : 'w-2 bg-bamboo'}`} />
-              </button>
-            ))}
-          </div>
-          <button
-            type="button"
-            onClick={() => (last ? done() : setI(i + 1))}
-            className="flex min-h-[48px] items-center gap-2 rounded-full bg-forest px-6 text-base font-semibold text-coconut"
-          >
-            {last ? t('Mulai', 'Start') : t('Lanjut', 'Next')} <ArrowRight className="h-4 w-4" />
+          <SproutDots count={SLIDES.length} index={i} onSelect={setI} />
+          <button type="button" onClick={() => (last ? done() : setI(i + 1))} className="btn-sticker flex min-h-[52px] items-center gap-2 rounded-[26px_30px_24px_30px] bg-forest px-6 text-base font-semibold text-coconut">
+            {last ? t('Mulai', 'Start') : t('Lanjut', 'Next')} <LeafArrow className="h-5 w-5" />
           </button>
         </div>
       </div>

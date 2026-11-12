@@ -1,12 +1,14 @@
 import React from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Camera, ClipboardCheck, Film, Hand, Play } from 'lucide-react';
+import { ArrowLeft, Camera, ClipboardCheck, Film, Hand, Lock, Play } from 'lucide-react';
 import { Nira } from '../art/Nira';
 import { Ornate } from '../components/ui';
 import { getGerakan } from '../data/gerakan';
 import { t } from '../i18n';
 import { HAND_CONNECTIONS, loadHandLandmarker, prefetchHandAssets } from '../lib/hand';
-import { useStore } from '../store';
+import { isModuleLocked, useStore } from '../store';
+import { useTour } from '../tour/TourContext';
+import { IramaPanel } from '../components/IramaPanel';
 
 const BAB_PRAKTIK = '/learn/bab/kerajinan-tradisional-transfer-pengetahuan?kartu=praktik';
 
@@ -65,7 +67,9 @@ export const Arsip: React.FC = () => {
 
 export const ArsipDetail: React.FC = () => {
   const { id } = useParams();
-  const { annotations } = useStore();
+  const { annotations, modules } = useStore();
+  const tour = useTour();
+  const praktikLocked = isModuleLocked(modules, modules.findIndex((m) => m.slug === 'kerajinan-tradisional-transfer-pengetahuan')) && !tour.active;
   const g = getGerakan().find((x) => x.id === id);
   const note = g ? annotations[g.id] : undefined;
   const videoRef = React.useRef<HTMLVideoElement>(null);
@@ -186,8 +190,26 @@ export const ArsipDetail: React.FC = () => {
         )}
       </Ornate>
 
-      {g.practice && (
-        <Link to={BAB_PRAKTIK} className="mt-4 flex min-h-[56px] items-center justify-center gap-2 rounded-full bg-caramel-dark text-lg font-semibold text-coconut">
+      {(g.id === 'mengaduk' || g.id === 'pengaduk-kayu') && (
+        <Ornate className="mt-4 p-4">
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-ink-soft">{t('Irama tangan', 'Hand rhythm')}</p>
+          {annotations['irama-aduk']?.approved && annotations['irama-aduk'].rhythm ? (
+            <IramaPanel rhythm={annotations['irama-aduk'].rhythm as never} moving final />
+          ) : (
+            <p className="mt-1 text-sm leading-relaxed text-ink-soft">
+              {t('Irama perajin belum bisa diukur dari klip ini: tangan terdeteksi di sekitar 10% frame saja (jauh dan tertutup uap). Irama acuan diambil dari rekaman dekat oleh mentor, disetujui kurator, lalu tampil di sini dan di latihan mengaduk.', 'The rhythm of the artisan cannot be measured reliably from this clip: the hand is detected in only about 10% of frames (far away and hidden by steam). The reference rhythm is taken from a close-up recording by a mentor, approved by the curator, and then shown here and in the stirring practice.')}
+            </p>
+          )}
+        </Ornate>
+      )}
+
+      {g.practice && praktikLocked && (
+        <p className="mt-4 flex items-center justify-center gap-2 rounded-2xl bg-bamboo/40 p-3 text-center text-sm font-semibold leading-snug text-deep-forest">
+          <Lock className="h-4 w-4 shrink-0" /> {t('Latihan ini ada di Modul 2. Selesaikan Modul 1 untuk membukanya.', 'This practice is in Module 2. Finish Module 1 to unlock it.')}
+        </p>
+      )}
+      {g.practice && !praktikLocked && (
+        <Link to={`${BAB_PRAKTIK}&tugas=${g.practice}`} className="mt-4 flex min-h-[56px] items-center justify-center gap-2 rounded-full bg-caramel-dark text-lg font-semibold text-coconut">
           <Hand className="h-5 w-5" /> {t('Latih gerakan ini', 'Practise this movement')}
         </Link>
       )}

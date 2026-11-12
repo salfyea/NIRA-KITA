@@ -1,8 +1,12 @@
 import React from 'react';
-import { Box, Camera, CameraOff, Check, EyeOff, Hand, Lock, ShieldCheck, Square, ThumbsUp } from 'lucide-react';
+import { Box, Camera, CameraOff, Check, EyeOff, Hand, Lock, ShieldCheck, Square, TriangleAlert } from 'lucide-react';
 import { Nira } from '../art/Nira';
 import { getPraktik, Task } from '../data/praktik';
 import type { Live } from './Alat3D';
+import { IramaPanel } from './IramaPanel';
+import { RhythmMeter } from '../lib/irama';
+import type { Rhythm } from '../lib/irama';
+import { useStore } from '../store';
 import { t } from '../i18n';
 import { classifyPose, HAND_CONNECTIONS, loadHandLandmarker, PourTracker, prefetchHandAssets, rollDeg, StirTracker } from '../lib/hand';
 import type { Pose } from '../lib/hand';
@@ -13,6 +17,10 @@ const poseLabel = (p: string): string | undefined =>
   ({ fist: t('Genggam', 'Fist'), open: t('Telapak terbuka', 'Open palm'), pinch: t('Jepit', 'Pinch'), point: t('Telunjuk', 'Point'), thumbsUp: t('Jempol ke atas', 'Thumbs up') } as Record<string, string>)[p];
 
 const Alat3D = React.lazy(() => import('./Alat3D'));
+const ARLayer = React.lazy(() => import('./ARLayer'));
+
+/** Gerakan yang alatnya menempel di tangan pada gambar kamera (AR). */
+const AR_TASKS = ['pegang-pongkor', 'tuang', 'jepit-kotoran', 'aduk'];
 
 type Phase = 'intro' | 'loading' | 'play' | 'error' | 'done';
 
@@ -20,7 +28,7 @@ type Phase = 'intro' | 'loading' | 'play' | 'error' | 'done';
  * Praktik gerak di dalam bab: tugas dari data/praktik.ts, dikenali lewat kamera (di perangkat)
  * atau dijalankan dengan ketukan bila kamera tidak dipakai. Bukan penilaian teknik.
  */
-export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, total: number) => void }> = ({ slug, onDone }) => {
+export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, total: number) => void; startTask?: string }> = ({ slug, onDone, startTask }) => {
   const cfg = getPraktik(slug);
   const tasks = cfg?.tasks ?? [];
   const [phase, setPhase] = React.useState<Phase>('intro');
@@ -32,6 +40,13 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
   const [handFound, setHandFound] = React.useState(false);
   const [show3d, setShow3d] = React.useState(true);
   const [modelReady, setModelReady] = React.useState(false);
+  const [rhythm, setRhythm] = React.useState<Rhythm | null>(null);
+  const meter = React.useRef(new RhythmMeter());
+  const rhythmAt = React.useRef(0);
+  const lastRhythm = React.useRef<Rhythm | null>(null);
+  const { annotations } = useStore();
+  const refNote = annotations['irama-aduk'];
+  const refRhythm = refNote?.approved ? refNote.rhythm : undefined;
   const [seen, setSeen] = React.useState<Pose>('none');
   const [error, setError] = React.useState('');
   const videoRef = React.useRef<HTMLVideoElement>(null);
@@ -42,7 +57,7 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
   const stageRef = React.useRef<'do' | 'why'>('do');
   const holdStart = React.useRef<number | null>(null);
   const holdPose = React.useRef<string>('');
-  const live = React.useRef<Live>({ ts: 0, roll: 0, stir: 0, progress: 0, done: false });
+  const live = React.useRef<Live>({ ts: 0, roll: 0, stir: 0, progress: 0, done: false, lm: null });
   const setPr = (v: number) => {
     live.current.progress = v;
     setProgress(v);
@@ -87,6 +102,9 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
     holdPose.current = '';
     live.current.done = false;
     live.current.stir = 0;
+    meter.current.reset();
+    lastRhythm.current = null;
+    setRhythm(null);
     setPr(0);
   };
 
@@ -129,10 +147,11 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
       const v = videoRef.current!;
       v.srcObject = stream;
       await v.play();
-      idxRef.current = 0;
+      const first = Math.max(0, tasks.findIndex((x) => x.id === startTask));
+      idxRef.current = first;
       stageRef.current = 'do';
       correct.current = 0;
-      setIdx(0);
+      setIdx(first);
       setStage('do');
       setVerdict(null);
       setTapMode(false);
@@ -153,6 +172,7 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
           const now = performance.now();
           const res = lm.detectForVideo(video, now);
           const hand = res.landmarks?.[0];
+          live.current.lm = hand ?? null;
           if (hand) {
             live.current.ts = now;
             live.current.roll = rollDeg(hand);
@@ -182,6 +202,13 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
               active = true;
               stir.current.push(now, hand[0].x, hand[0].y);
               live.current.stir = stir.current.angle;
+              meter.current.push(now, ((hand[0].x + hand[9].x) / 2) * canvas.width, ((hand[0].y + hand[9].y) / 2) * canvas.height);
+              if (now - rhythmAt.current > 400) {
+                rhythmAt.current = now;
+                const rr = meter.current.read();
+                if (rr) lastRhythm.current = rr;
+                setRhythm(rr);
+              }
               const pr = Math.min(1, stir.current.laps / t.laps);
               setPr(pr);
               if (pr >= 1) completeTask(null);
@@ -193,22 +220,6 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
               const pr = Math.min(1, (pour.current.count + (pour.current.isTilted ? 0.5 : 0)) / t.times);
               setPr(pr);
               if (pour.current.count >= t.times) completeTask(null);
-            } else if (t.kind === 'judge') {
-              const choice = pose === 'thumbsUp' ? 'aman' : pose === 'open' ? 'bahaya' : '';
-              active = !!choice;
-              if (choice) {
-                if (holdPose.current !== choice) {
-                  holdPose.current = choice;
-                  holdStart.current = now;
-                }
-                const pr = Math.min(1, (now - (holdStart.current ?? now)) / HOLD_MS);
-                setPr(pr);
-                if (pr >= 1) completeTask(choice === t.answer);
-              } else {
-                holdPose.current = '';
-                holdStart.current = null;
-                setPr(0);
-              }
             }
           } else if (!hand) {
             holdStart.current = null;
@@ -243,15 +254,23 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
   };
 
   const startTap = () => {
-    idxRef.current = 0;
+    const first = Math.max(0, tasks.findIndex((x) => x.id === startTask));
+    idxRef.current = first;
     stageRef.current = 'do';
     correct.current = 0;
-    setIdx(0);
+    setIdx(first);
     setStage('do');
     setVerdict(null);
     setTapMode(true);
     setPhase('play');
   };
+
+  // Kartu skenario tidak memakai kamera: langsung ke keputusan, tanpa layar pilih kamera.
+  const scenarioMode = cfg?.mode === 'skenario';
+  React.useEffect(() => {
+    if (scenarioMode && phase === 'intro') startTap();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scenarioMode]);
 
   const stopAll = () => {
     stopCamera();
@@ -261,8 +280,10 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
   if (!cfg || !task) return null;
 
   const prop3d = task.prop;
+  const arTask = !tapMode && !!prop3d && AR_TASKS.includes(task.id);
+  const scenario = cfg.mode === 'skenario';
   const hintText = task.kind === 'judge' ? task.scenario : task.hint;
-  const wantLabel = task.kind === 'pose' ? poseLabel(task.pose) : task.kind === 'stir' ? t(`${task.laps} putaran melingkar`, `${task.laps} circular rounds`) : task.kind === 'pour' ? t(`Miring dan tegak ${task.times} kali`, `Tilt and straighten ${task.times} times`) : t('Jempol ke atas (aman) atau telapak terbuka (bahaya)', 'Thumbs up (safe) or open palm (unsafe)');
+  const wantLabel = task.kind === 'pose' ? poseLabel(task.pose) : task.kind === 'stir' ? t(`${task.laps} putaran melingkar`, `${task.laps} circular rounds`) : task.kind === 'pour' ? t(`Miring dan tegak ${task.times} kali`, `Tilt and straighten ${task.times} times`) : '';
 
   return (
     <div ref={introRef}>
@@ -271,8 +292,18 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
         <div className="relative overflow-hidden rounded-2xl bg-deep-forest">
           <video ref={videoRef} playsInline muted className="block w-full -scale-x-100" />
           <canvas ref={canvasRef} className="absolute inset-0 h-full w-full -scale-x-100" />
+          {arTask && show3d && prop3d && (
+            <React.Suspense fallback={null}>
+              <ARLayer prop={prop3d} live={live} className="pointer-events-none absolute inset-0 -scale-x-100" />
+            </React.Suspense>
+          )}
+          {arTask && (
+            <button type="button" aria-label={show3d ? t('Sembunyikan alat', 'Hide the tool') : t('Tampilkan alat', 'Show the tool')} onClick={() => setShow3d((v) => !v)} className="absolute right-2 top-2 flex min-h-[44px] items-center gap-1.5 rounded-full bg-deep-forest/85 px-3 text-xs font-bold text-coconut">
+              {show3d ? <EyeOff className="h-4 w-4" /> : <Box className="h-4 w-4" />} {t('Alat', 'Tool')}
+            </button>
+          )}
           <div className="absolute left-2 top-2 flex items-center gap-1.5 rounded-full bg-deep-forest/85 px-3 py-1.5 text-xs font-bold text-coconut">
-            <span className="h-2 w-2 animate-pulse rounded-full bg-[#E0523A]" /> {t('Kamera aktif · diproses di perangkat', 'Camera on · processed on the device')}
+            <span className="h-2 w-2 animate-pulse rounded-full bg-[#E0523A]" /> {t('Kamera aktif · di perangkat', 'Camera on · on device')}
           </div>
           {!modelReady ? (
             <div className="absolute inset-x-3 bottom-3 flex items-center justify-center gap-2 rounded-xl bg-coconut/90 px-3 py-2 text-center text-sm font-semibold text-deep-forest">
@@ -334,7 +365,7 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
         </div>
       )}
 
-      {phase === 'play' && prop3d && (
+      {phase === 'play' && prop3d && !arTask && (
         show3d ? (
           <div className={`relative mt-2 overflow-hidden rounded-2xl border border-bamboo ${tapMode ? 'h-56' : 'h-44'}`}>
             <React.Suspense fallback={<div className="flex h-full items-center justify-center bg-bamboo/30 text-sm text-ink-soft">{t('Memuat alat 3D...', 'Loading the 3D tool...')}</div>}>
@@ -355,7 +386,7 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
         <div className="mt-3 rounded-2xl bg-coconut p-4">
           <div className="flex items-center justify-between">
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-caramel-dark">
-              {t('Gerakan', 'Movement')} {Math.min(idx + 1, tasks.length)} {t('dari', 'of')} {tasks.length}
+              {scenario ? t('Situasi', 'Situation') : t('Gerakan', 'Movement')} {Math.min(idx + 1, tasks.length)} {t('dari', 'of')} {tasks.length}
             </p>
             <div className="flex gap-1" aria-hidden>
               {tasks.map((_, i) => (
@@ -368,9 +399,11 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
           {stage === 'do' ? (
             <>
               <p className={`mt-1 text-base leading-relaxed ${task.kind === 'judge' ? 'rounded-xl bg-cream p-3 font-semibold text-deep-forest' : 'text-charcoal'}`}>{hintText}</p>
-              <p className="mt-2 flex items-center gap-1.5 text-sm font-bold text-caramel-dark">
-                <Hand className="h-4 w-4" /> {wantLabel}
-              </p>
+              {task.kind !== 'judge' && (
+                <p className="mt-2 flex items-center gap-1.5 text-sm font-bold text-caramel-dark">
+                  <Hand className="h-4 w-4" /> {wantLabel}
+                </p>
+              )}
               {!tapMode && (
                 <>
                   <div className="mt-3 h-3 overflow-hidden rounded-full bg-bamboo/60" role="progressbar" aria-valuenow={Math.round(progress * 100)} aria-valuemin={0} aria-valuemax={100} aria-label={t('Kemajuan gerakan', 'Movement progress')}>
@@ -381,13 +414,14 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
                   </p>
                 </>
               )}
+              {!tapMode && task.kind === 'stir' && <IramaPanel rhythm={rhythm} reference={refRhythm} moving={handFound} />}
               {tapMode && task.kind === 'judge' && (
                 <div className="mt-3 grid grid-cols-2 gap-2">
                   <button type="button" onClick={() => completeTask(task.answer === 'aman')} className="flex min-h-[56px] items-center justify-center gap-2 rounded-full bg-forest text-base font-semibold text-coconut">
-                    <ThumbsUp className="h-5 w-5" /> {t('Aman / boleh', 'Safe / allowed')}
+                    <ShieldCheck className="h-5 w-5" /> {cfg.yesLabel ?? t('Aman / boleh', 'Safe / allowed')}
                   </button>
                   <button type="button" onClick={() => completeTask(task.answer === 'bahaya')} className="flex min-h-[56px] items-center justify-center gap-2 rounded-full bg-[#9E4F37] text-base font-semibold text-coconut">
-                    <Hand className="h-5 w-5" /> {t('Bahaya / tidak', 'Unsafe / not allowed')}
+                    <TriangleAlert className="h-5 w-5" /> {cfg.noLabel ?? t('Bahaya / tidak', 'Unsafe / not allowed')}
                   </button>
                 </div>
               )}
@@ -406,7 +440,7 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
               )}
               {verdict === null && (
                 <p className="flex items-center gap-1.5 text-lg font-bold text-forest">
-                  <Check className="h-5 w-5" /> {t('Gerakan berhasil', 'Movement done')}
+                  <Check className="h-5 w-5" /> {scenario ? t('Dijawab', 'Answered') : t('Gerakan berhasil', 'Movement done')}
                 </p>
               )}
               <div className="ornate mt-2 p-3">
@@ -417,8 +451,9 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
                 <p className="text-xs font-bold uppercase tracking-wider text-forest">{t('Mengapa', 'Why')}</p>
                 <p className="mt-1 text-base leading-relaxed text-charcoal">{task.why}</p>
               </div>
+              {task.kind === 'stir' && !tapMode && lastRhythm.current && <IramaPanel rhythm={lastRhythm.current} reference={refRhythm} moving final />}
               <button type="button" onClick={next} className="mt-3 min-h-[52px] w-full rounded-full bg-forest text-base font-semibold text-coconut">
-                {idx + 1 >= tasks.length ? t('Selesai', 'Finish') : t('Gerakan berikutnya', 'Next movement')}
+                {idx + 1 >= tasks.length ? t('Selesai', 'Finish') : scenario ? t('Situasi berikutnya', 'Next situation') : t('Gerakan berikutnya', 'Next movement')}
               </button>
             </div>
           )}
@@ -434,8 +469,8 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
       {phase === 'done' && (
         <div className="py-2 text-center">
           <Nira mood="cheer" size={96} className="mx-auto" />
-          <p className="mt-2 text-xl font-semibold text-deep-forest">{t('Praktik gerak selesai', 'Movement practice complete')}</p>
-          <p className="mt-1 text-sm text-ink-soft">{t('Kamera sudah dimatikan. Teknik sesungguhnya tetap divalidasi oleh mentor.', 'The camera is off. Real technique is still validated by a mentor.')}</p>
+          <p className="mt-2 text-xl font-semibold text-deep-forest">{scenario ? t('Skenario selesai', 'Scenarios complete') : t('Praktik gerak selesai', 'Movement practice complete')}</p>
+          <p className="mt-1 text-sm text-ink-soft">{scenario ? t('Keselamatan dan etika dipelajari lewat keputusan, bukan lewat kamera.', 'Safety and ethics are learned through decisions, not through the camera.') : t('Kamera sudah dimatikan. Teknik sesungguhnya tetap divalidasi oleh mentor.', 'The camera is off. Real technique is still validated by a mentor.')}</p>
           <button type="button" onClick={() => setPhase('intro')} className="mt-2 inline-flex min-h-[44px] items-center rounded-full border-2 border-bamboo px-5 text-sm font-semibold text-deep-forest">
             {t('Ulangi', 'Repeat')}
           </button>

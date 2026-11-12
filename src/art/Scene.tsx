@@ -23,10 +23,11 @@ export const SLUG_SCENE: Record<string, SceneKind> = {
  * langit bergradien, tiga lapis bukit, kabut, cahaya matahari, dan detail kecil.
  * Penderes hanya digambar sebagai siluet jauh tanpa wajah; tidak ada adegan memanjat untuk pelajar.
  */
-export const Scene: React.FC<{ kind: SceneKind; className?: string; label?: string }> = ({
+export const Scene: React.FC<{ kind: SceneKind; className?: string; label?: string; svgProps?: React.SVGProps<SVGSVGElement> }> = ({
   kind,
   className = '',
   label,
+  svgProps,
 }) => {
   const id = useId().replace(/:/g, '');
   const u = (n: string) => `${n}${id}`;
@@ -209,8 +210,17 @@ export const Scene: React.FC<{ kind: SceneKind; className?: string; label?: stri
     </g>
   );
 
-  const Sparkle = ({ x, y, s = 1 }: { x: number; y: number; s?: number }) => (
-    <path d={`M${x} ${y - 7 * s} L${x + 2 * s} ${y - 2 * s} L${x + 7 * s} ${y} L${x + 2 * s} ${y + 2 * s} L${x} ${y + 7 * s} L${x - 2 * s} ${y + 2 * s} L${x - 7 * s} ${y} L${x - 2 * s} ${y - 2 * s}Z`} fill="#FFF3D2" opacity="0.95" />
+  /** Burung layang-layang kecil di langit fajar (menggantikan bintang berkilau). */
+  const Bird = ({ x, y, s = 1 }: { x: number; y: number; s?: number }) => (
+    <path
+      d={`M${x - 9 * s} ${y + 1 * s} C${x - 5 * s} ${y - 6 * s} ${x - 1 * s} ${y - 5 * s} ${x} ${y - 1 * s} C${x + 1 * s} ${y - 5 * s} ${x + 5 * s} ${y - 6 * s} ${x + 9 * s} ${y + 1 * s}`}
+      fill="none"
+      stroke="#5E4A32"
+      strokeWidth={1.7 * s}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      opacity="0.72"
+    />
   );
 
   /** Kartu warisan kecil melayang. */
@@ -241,9 +251,9 @@ export const Scene: React.FC<{ kind: SceneKind; className?: string; label?: stri
           <Palm x={290} y={196} h={66} s={0.75} lean={-4} />
           <Rumah x={230} y={198} s={0.7} />
           <Mist y={170} />
-          <Sparkle x={70} y={60} s={1.2} />
-          <Sparkle x={330} y={50} />
-          <Sparkle x={150} y={36} s={0.8} />
+          <Bird x={74} y={150} s={1.15} />
+          <Bird x={322} y={142} s={0.9} />
+          <Bird x={292} y={166} s={0.7} />
         </>
       );
       break;
@@ -277,8 +287,8 @@ export const Scene: React.FC<{ kind: SceneKind; className?: string; label?: stri
             <ellipse cx="168" cy="196" rx="2.2" ry="4" />
             <ellipse cx="206" cy="208" rx="2" ry="3.6" />
           </g>
-          <Sparkle x={90} y={54} s={1.2} />
-          <Sparkle x={200} y={34} s={0.8} />
+          <Bird x={90} y={54} s={1.2} />
+          <Bird x={200} y={34} s={0.8} />
         </>
       );
       break;
@@ -330,8 +340,8 @@ export const Scene: React.FC<{ kind: SceneKind; className?: string; label?: stri
             <circle cx="240" cy="136" r="2.4" />
             <circle cx="208" cy="120" r="1.6" />
           </g>
-          <Sparkle x={84} y={60} s={1.1} />
-          <Sparkle x={320} y={70} s={0.9} />
+          <Bird x={84} y={60} s={1.1} />
+          <Bird x={320} y={70} s={0.9} />
         </>
       );
       break;
@@ -357,7 +367,7 @@ export const Scene: React.FC<{ kind: SceneKind; className?: string; label?: stri
           <Card x={92} y={110} rot={-12} s={0.9} />
           <Card x={300} y={96} rot={10} s={0.8} />
           <Mist y={176} o={0.8} />
-          <Sparkle x={196} y={70} s={1} />
+          <Bird x={196} y={70} s={1} />
         </>
       );
       break;
@@ -451,7 +461,7 @@ export const Scene: React.FC<{ kind: SceneKind; className?: string; label?: stri
             <circle r="13" fill="#E9B65A" stroke="#B87943" strokeWidth="2" />
             <path d="M-5 -2 Q0 -9 5 -2 Q0 8 -5 -2Z" fill="#B87943" />
           </g>
-          <Sparkle x={200} y={90} s={1.1} />
+          <Bird x={200} y={90} s={1.1} />
           <Mist y={178} o={0.6} />
         </>
       );
@@ -465,6 +475,7 @@ export const Scene: React.FC<{ kind: SceneKind; className?: string; label?: stri
       role="img"
       aria-label={label ?? t(`Ilustrasi adegan ${kind}`, `Scene illustration: ${kind}`)}
       className={className}
+      {...svgProps}
     >
       {defs}
       <rect width="390" height="300" fill={ref('sky')} />

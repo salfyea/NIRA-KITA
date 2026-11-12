@@ -10,7 +10,11 @@ export type Task =
   | { kind: 'judge'; id: string; prop?: Prop3D; title: string; scenario: string; answer: 'aman' | 'bahaya'; why: string };
 
 export interface Praktik {
+  /** 'gerak': dikenali kamera. 'skenario': kartu keputusan tanpa kamera (jawaban ya/tidak tidak butuh CV). */
+  mode: 'gerak' | 'skenario';
   intro: string;
+  yesLabel?: string;
+  noLabel?: string;
   tasks: Task[];
 }
 
@@ -18,6 +22,7 @@ export interface Praktik {
 export const getPraktik = (slug: string): Praktik | undefined => {
   const all: Record<string, Praktik> = {
     'identitas-budaya-warisan-lokal': {
+      mode: 'gerak',
       intro: t('Kenali alat dan istilahnya lewat gerak tangan, supaya kata-katanya melekat di ingatan.', 'Get to know the tools and their names through hand movements, so the words stick in your memory.'),
       tasks: [
         {
@@ -44,6 +49,7 @@ export const getPraktik = (slug: string): Praktik | undefined => {
       ],
     },
     'kerajinan-tradisional-transfer-pengetahuan': {
+      mode: 'gerak',
       intro: t('Tiga gerakan dapur: menuang, menyaring, mengaduk. Kamera mengenali gerakan tanganmu tanpa menyimpan video.', 'Three kitchen movements: pouring, filtering, stirring. The camera recognises your hand movements without storing any video.'),
       tasks: [
         {
@@ -79,7 +85,10 @@ export const getPraktik = (slug: string): Praktik | undefined => {
       ],
     },
     'keselamatan-kerja-manajemen-risiko': {
-      intro: t('Nilai tiap situasi dengan gerak tangan: jempol ke atas untuk AMAN, telapak terbuka (stop) untuk BAHAYA.', 'Judge each situation with a hand gesture: thumbs up for SAFE, open palm (stop) for UNSAFE.'),
+      mode: 'skenario',
+      yesLabel: t('Aman', 'Safe'),
+      noLabel: t('Bahaya', 'Unsafe'),
+      intro: t('Baca situasinya, lalu putuskan: aman atau bahaya?', 'Read the situation, then decide: safe or unsafe?'),
       tasks: [
         {
           kind: 'judge',
@@ -114,7 +123,10 @@ export const getPraktik = (slug: string): Praktik | undefined => {
       ],
     },
     'keberlanjutan-mata-pencaharian-kewirausahaan': {
-      intro: t('Putuskan dengan gerak tangan: jempol ke atas untuk BOLEH, telapak terbuka (stop) untuk TIDAK BOLEH.', 'Decide with a hand gesture: thumbs up for ALLOWED, open palm (stop) for NOT ALLOWED.'),
+      mode: 'skenario',
+      yesLabel: t('Boleh', 'Allowed'),
+      noLabel: t('Tidak boleh', 'Not allowed'),
+      intro: t('Baca situasinya, lalu putuskan: boleh atau tidak boleh?', 'Read the situation, then decide: allowed or not allowed?'),
       tasks: [
         {
           kind: 'judge',

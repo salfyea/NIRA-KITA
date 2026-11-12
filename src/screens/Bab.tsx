@@ -9,7 +9,8 @@ import { getPraktik } from '../data/praktik';
 import { t } from '../i18n';
 import { GerakPraktik } from '../components/GerakPraktik';
 import { attribution } from '../data/attribution';
-import { isLearnerVisible, useStore } from '../store';
+import { isLearnerVisible, isModuleLocked, useStore } from '../store';
+import { useTour } from '../tour/TourContext';
 
 const CardShell: React.FC<{ kind: SceneKind; children: React.ReactNode; scene?: React.ReactNode; compact?: boolean }> = ({ kind, children, scene, compact }) => (
   <section className="no-scrollbar h-full w-full shrink-0 snap-center overflow-y-auto">
@@ -25,8 +26,15 @@ const CardShell: React.FC<{ kind: SceneKind; children: React.ReactNode; scene?: 
 export const Bab: React.FC = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
-  const { modules, records, collected, completeModule } = useStore();
+  const { modules, records, collected, completeModule, showToast } = useStore();
+  const tour = useTour();
   const mod = modules.find((m) => m.slug === slug);
+  // Modul berurutan: tautan langsung ke modul yang belum terbuka dialihkan (tur juri boleh melompat).
+  const locked = !!mod && isModuleLocked(modules, modules.indexOf(mod)) && !tour.active;
+  React.useEffect(() => {
+    if (locked) showToast(t('Selesaikan modul sebelumnya dulu untuk membuka modul ini.', 'Finish the previous module first to unlock this one.'));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [locked]);
   const scroller = React.useRef<HTMLDivElement>(null);
   const [params] = useSearchParams();
   const [idx, setIdx] = React.useState(0);
@@ -43,7 +51,7 @@ export const Bab: React.FC = () => {
     return () => clearTimeout(t);
   }, [params]);
 
-  if (!mod || !slug) return <Navigate to="/learn" replace />;
+  if (!mod || !slug || locked) return <Navigate to="/learn" replace />;
   const kind = SLUG_SCENE[slug] ?? 'identitas';
   const recs = records.filter((r) => r.relatedModuleSlug === slug && isLearnerVisible(r));
   const quiz = getQuiz(slug)!;
@@ -138,9 +146,9 @@ export const Bab: React.FC = () => {
 
         {hasPraktik && (
           <CardShell kind={kind} compact>
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-caramel-dark">{t('Praktik gerak', 'Movement practice')}</p>
-            <h2 className="text-2xl leading-tight text-deep-forest">{t('Coba dengan tanganmu', 'Try it with your hands')}</h2>
-            <GerakPraktik slug={slug} onDone={() => undefined} />
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-caramel-dark">{getPraktik(slug)?.mode === 'skenario' ? t('Skenario', 'Scenario') : t('Praktik gerak', 'Movement practice')}</p>
+            <h2 className="text-2xl leading-tight text-deep-forest">{getPraktik(slug)?.mode === 'skenario' ? t('Putuskan sendiri', 'Decide for yourself') : t('Coba dengan tanganmu', 'Try it with your hands')}</h2>
+            <GerakPraktik slug={slug} startTask={params.get('tugas') ?? undefined} onDone={() => undefined} />
           </CardShell>
         )}
 

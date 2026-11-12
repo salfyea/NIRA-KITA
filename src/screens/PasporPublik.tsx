@@ -11,6 +11,8 @@ import { attribution } from '../data/attribution';
 import { useStore } from '../store';
 import { loadVisitor, saveVisitor } from '../lib/visitor';
 import { LangToggle, t } from '../i18n';
+import { COLORS, StackBar } from '../components/StackBar';
+import { rupiah, splitPack } from '../lib/finance';
 import { HeritageRecord } from '../types/jejakNira';
 
 /** Hanya rekaman yang disetujui, berizin publik, dan diizinkan tampil di halaman QR. */
@@ -149,6 +151,30 @@ export const PasporPublik: React.FC = () => {
           </div>
         </Ornate>
       </section>
+
+      {/* 2b. ke mana uangnya pergi (hanya bila NIRA Enterprise sudah mengatur harga) */}
+      {batch.pricing && splitPack(batch.pricing).valid && (
+        <section id="harga" className="mt-8 scroll-mt-4 px-6">
+          <h2 className="text-[22px] text-deep-forest">{t('Ke mana uang kemasan ini pergi?', 'Where does the money for this package go?')}</h2>
+          <Ornate className="mt-3 p-4">
+            <p className="text-sm text-ink-soft">
+              {t('Harga kemasan', 'Pack price')} {rupiah(batch.pricing.pricePerPack)} · {batch.pricing.packGram} g
+            </p>
+            <div className="mt-3">
+              <StackBar
+                parts={[
+                  { label: t('Ke perajin', 'To the artisans'), value: splitPack(batch.pricing).artisan, color: COLORS.artisan },
+                  { label: t('Dana pelestarian pengetahuan (Jejak Nira)', 'Knowledge preservation fund (Jejak Nira)'), value: splitPack(batch.pricing).preserve, color: COLORS.preserve },
+                  { label: t('Operasional dan margin', 'Operations and margin'), value: splitPack(batch.pricing).rest, color: COLORS.rest },
+                ]}
+              />
+            </div>
+            <p className="mt-3 text-xs leading-relaxed text-ink-soft">
+              {t('Dibeli langsung dari perajin dengan harga di atas acuan pasar. Sebagian dari setiap kemasan mendanai pembelajaran dan pencatatan pengetahuan perajin. Data ilustratif.', 'Bought directly from artisans at a price above the market reference. Part of every package funds the learning and recording of the knowledge held by artisans. Illustrative data.')}
+            </p>
+          </Ornate>
+        </section>
+      )}
 
       {/* 3. kisah */}
       <section id="kisah" className="mt-8 scroll-mt-4 px-6">

@@ -11,14 +11,17 @@ Stack: Vite + React 19 + TypeScript + Tailwind 4 + react-router-dom v7 + lucide-
 | `/learn` | **Perjalanan**: jalur berkelok, 4 bab, bottom sheet, kartu "segera hadir" |
 | `/learn/bab/:slug` | Pembaca bab (kartu geser, kuis mini, hadiah), tanpa tab bar |
 | `/learn/misi/:id` | Detail misi |
+| `/learn` | **Jalur Belajar**: jalan berkelok dengan empat medali modul yang bisa diketuk (selesai, aktif dengan cincin kemajuan, terkunci berurutan) |
 | `/learn/peta` | **Peta** miring bergaya game, check-in terpandu (simulasi) |
 | `/learn/koleksi`, `/learn/koleksi/:id` | **Koleksi**: kartu dan glosarium, detail |
 | `/learn/profil` | **Profil**: level, XP, lencana, setel ulang demo, keluar |
 | `/learn/arsip`, `/learn/arsip/:id` | **Arsip Gerakan**: klip lapangan perajin, tombol kerangka tangan (MediaPipe di perangkat), tautan ke latihan |
-| `/learn/bab/:slug` (kartu Praktik gerak) | Praktik gerak per modul: menuang, menjepit, mengaduk, dan menilai situasi aman/bahaya atau boleh/tidak dengan jempol dan telapak |
+| `/learn/bab/:slug` (kartu Praktik gerak) | Praktik gerak per modul (menuang, menjepit, mengaduk dengan alat AR di tangan; Modul 3 dan 4 memakai kartu skenario tanpa kamera) |
+| `/learn/peta` | Peta ilustrasi vektor Cilongok (Gunung Slamet, sungai, sawah berteras, kebun kelapa, tiga desa) yang bisa diketuk, dengan unduhan PNG 2340x3840 dan SVG untuk poster |
 | `/learn/lab` | **Lab Pengetahuan**: Lab Dapur (eksperimen bebas) dan Peta Istilah (mencocokkan istilah dan fungsi), +40 XP sekali per eksperimen |
 | `/kode-undangan` | Kode `KURATOR-2026` membuka `/kurator`, `ADMIN-2026` membuka `/admin`, `MENTOR-2026` membuka `/mentor` |
 | `/mentor` | **Mentor** (`MENTOR-2026`): unggah rekaman dengan izin narasumber, validasi pelajar (satu-satunya yang membuka lencana mentor), anotasi klip |
+| `/enterprise` | **NIRA Enterprise** (`ENTERPRISE-2026`): mitra perajin, pencatatan pembelian adil (premi di atas harga acuan, masuk audit), harga kemasan yang tampil di halaman QR, simulasi keuangan |
 | `/kurator`, `/kurator/:id` | **Kurator**: antrean tinjauan, izin kontributor, checklist 6 poin, visibilitas (Privat, Pelajar, Publik QR), keputusan tercatat di audit |
 | `/admin` | **Admin**: capaian pilot (KPI), pembuat batch QR (kode QR nyata, unduh PNG), catatan audit |
 | `/tur` | Tur 9 langkah untuk juri (akun demo otomatis) |
@@ -35,6 +38,15 @@ Stack: Vite + React 19 + TypeScript + Tailwind 4 + react-router-dom v7 + lucide-
 - `src/art/`: `Nira` (maskot, mood happy/cheer/think/wave/sleep) dan `Scene` (8 adegan SVG).
 - `src/store.tsx`: state lokal (localStorage, try/catch), termasuk `session` dan `onboarded`.
 - `src/data/`: data awal, kuis mini, helper atribusi.
+
+## Modul berurutan
+Modul hanya terbuka bila semua modul sebelumnya selesai (`isModuleLocked` di `src/store.tsx`, satu sumber kebenaran). Berlaku di Jalur Belajar, tautan langsung `/learn/bab/:slug` (dialihkan dengan pesan), dan tombol "Latih gerakan ini" di Arsip. Tur juri boleh melompat. Data tersimpan lama yang tidak konsisten dirapikan saat dimuat.
+
+## NIRA Enterprise
+Sayap ekonomi dari model sosial-bisnis NIRA KITA: Jejak Nira (pelestarian dan pembelajaran) didanai oleh nilai produknya. `src/lib/finance.ts` berisi hitungan simulasi (omzet, laba, premi, titik impas, honor mentor yang terdanai) dan pembagian harga kemasan; harga jual dari tim (langsung Rp35.000/kg; reseller Rp30.000/kg, minimal 30 kg), sedangkan harga beli, harga acuan, biaya, porsi reseller, dan dana pelestarian masih ASUMSI contoh yang bisa diubah dan ditandai ilustratif sampai koperasi mengisi angka sebenarnya. Dana pelestarian dipotong dari omzet lebih dulu (bukan dari sisa laba). Pembelian dan pengaturan harga masuk catatan audit.
+
+## Irama Tangan
+`src/lib/irama.ts`: mengukur irama gerak berulang (putaran/menit dan keteraturan) dari lintasan tangan dengan autokorelasi. Diuji dengan data sintetis (galat <2% untuk 30 sampai 90 rpm; menolak gerak acak, diam, atau terlalu pendek). Klip lapangan yang ada TIDAK cukup andal (tangan terdeteksi di 10%, 0%, 0% frame), jadi irama acuan harus direkam mentor dari perajin dengan kamera, disetujui kurator, lalu tampil di Arsip dan latihan mengaduk.
 
 ## PWA (pasang dan offline)
 `public/manifest.webmanifest` + `public/sw.js` (ditulis tangan, tanpa pustaka). Cangkang aplikasi disimpan saat pemasangan; halaman jaringan-dulu; berkas besar (model tangan, WASM, klip, font) disimpan saat pertama dipakai. Di Profil ada tombol Pasang aplikasi dan "Siapkan untuk offline" (±27 MB). Tidak ada data pengguna atau video kamera yang disimpan. Uji: `qa-out` (lihat riwayat PR #20).

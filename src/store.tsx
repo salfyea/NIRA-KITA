@@ -38,11 +38,37 @@ interface PersistedState {
   /** Pengajuan pelajar yang menunggu validasi mentor, dan anotasi mentor pada klip Arsip Gerakan. */
   submissions: LearnerSubmission[];
   annotations: Record<string, Annotation>;
+  /** NIRA Enterprise: mitra, catatan pembelian, dan harga acuan pasar (Rp per kg). */
+  partners: Partner[];
+  purchases: Purchase[];
+  marketRef: number;
   session: Session | null;
   onboarded: boolean;
 }
 
+/** Mitra perajin NIRA Enterprise. Data ilustratif sampai kelompok sungguhan terdaftar dan memberi izin. */
+export interface Partner {
+  id: string;
+  name: string;
+  village: string;
+  members: number;
+  capacityKg: number; // kapasitas gula per bulan
+  status: 'Mitra aktif' | 'Penjajakan';
+  consentName: boolean; // boleh menampilkan nama kelompok di halaman publik
+}
+
+export interface Purchase {
+  id: string;
+  date: string;
+  partnerId: string;
+  kg: number;
+  pricePerKg: number;
+  marketRef: number; // harga acuan pasar saat dicatat
+}
+
 export interface Annotation {
+  /** Irama acuan hasil pengukuran kamera (hanya untuk anotasi irama). */
+  rhythm?: { rpm: number; regularity: number };
   text: string;
   author: string;
   approved: boolean;
@@ -51,7 +77,7 @@ export interface Annotation {
 export interface Session {
   name: string;
   /** Peran sesi. Pendaftaran mandiri selalu menjadi Pelajar. */
-  role: 'learner' | 'mentor' | 'curator' | 'admin';
+  role: 'learner' | 'mentor' | 'curator' | 'admin' | 'enterprise';
 }
 
 const SEED_AUDIT: AuditLogEntry[] = [
@@ -62,6 +88,17 @@ const SEED_AUDIT: AuditLogEntry[] = [
 ];
 
 const NO_CHECK = { identifiesTools: false, explainsFunctions: false, understandsSequence: false, identifiesGroundHazards: false, understandsSafetyPrinciples: false };
+const SEED_PARTNERS: Partner[] = [
+  { id: 'MIT-01', name: 'Kelompok Penderes Pernasidi', village: 'Pernasidi', members: 14, capacityKg: 220, status: 'Mitra aktif', consentName: true },
+  { id: 'MIT-02', name: 'Kelompok Pengolah Panembangan', village: 'Panembangan', members: 9, capacityKg: 160, status: 'Mitra aktif', consentName: true },
+  { id: 'MIT-03', name: 'Kelompok Penderes Karangtengah', village: 'Karangtengah', members: 11, capacityKg: 120, status: 'Penjajakan', consentName: false },
+];
+const SEED_PURCHASES: Purchase[] = [
+  { id: 'PUR-001', date: '4 Mei 2026', partnerId: 'MIT-01', kg: 90, pricePerKg: 20000, marketRef: 16000 },
+  { id: 'PUR-002', date: '9 Mei 2026', partnerId: 'MIT-02', kg: 70, pricePerKg: 20000, marketRef: 16000 },
+  { id: 'PUR-003', date: '16 Mei 2026', partnerId: 'MIT-01', kg: 110, pricePerKg: 20500, marketRef: 16000 },
+];
+
 const SEED_SUBMISSIONS: LearnerSubmission[] = [
   {
     id: 'SUB-001', learnerId: 'L-01', learnerName: 'Rani (pilot)', learnerAvatar: '', questId: 'QUEST-02', questTitle: 'The Alchemy of Warm Sap', moduleTitle: 'Kerajinan Tradisional & Transfer Pengetahuan',
@@ -92,9 +129,25 @@ const initialState = (): PersistedState => ({
   audit: SEED_AUDIT,
   submissions: SEED_SUBMISSIONS,
   annotations: {},
+  partners: SEED_PARTNERS,
+  purchases: SEED_PURCHASES,
+  marketRef: 16000,
   session: null,
   onboarded: false,
 });
+
+/** Modul hanya terbuka bila semua modul sebelumnya selesai (100%). */
+export const isModuleLocked = (modules: { completionPercent: number }[], index: number): boolean => modules.slice(0, index).some((m) => m.completionPercent < 100);
+
+/** Data tersimpan lama bisa punya progres di modul yang belum terbuka: rapikan supaya konsisten. */
+const enforceOrder = (state: PersistedState): PersistedState => {
+  const first = state.modules.findIndex((m) => m.completionPercent < 100);
+  if (first < 0) return state;
+  return {
+    ...state,
+    modules: state.modules.map((m, i) => (i > first && m.completionPercent > 0 ? { ...m, completionPercent: 0, lessons: m.lessons.map((l) => ({ ...l, completed: false })) } : m)),
+  };
+};
 
 const load = (): PersistedState => {
   try {
@@ -107,7 +160,7 @@ const load = (): PersistedState => {
       base.quests.forEach((q) => {
         if (!quests.some((x) => x.id === q.id)) quests.push(q);
       });
-      return { ...base, ...saved, quests };
+      return enforceOrder({ ...base, ...saved, quests });
     }
   } catch {
     /* penyimpanan tidak tersedia, pakai data awal */
@@ -128,8 +181,11 @@ interface Store extends PersistedState {
   reviewRecord: (id: string, input: ReviewInput) => void;
   addBatch: (b: Omit<QrBatch, 'code'>) => QrBatch;
   addRecord: (r: HeritageRecord) => void;
+  addPurchase: (p: { partnerId: string; kg: number; pricePerKg: number }) => void;
+  setMarketRef: (v: number) => void;
+  setBatchPricing: (code: string, pricing: NonNullable<QrBatch['pricing']>) => void;
   validateSubmission: (id: string, input: ValidateInput) => void;
-  saveAnnotation: (clipId: string, text: string) => void;
+  saveAnnotation: (clipId: string, text: string, rhythm?: { rpm: number; regularity: number }) => void;
   approveAnnotation: (clipId: string) => void;
   signOut: () => void;
   finishOnboarding: () => void;
@@ -293,10 +349,10 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const saveAnnotation = useCallback((clipId: string, text: string) => {
+  const saveAnnotation = useCallback((clipId: string, text: string, rhythm?: { rpm: number; regularity: number }) => {
     setState((s) => ({
       ...s,
-      annotations: { ...s.annotations, [clipId]: { text, author: s.session?.name ?? 'Mentor', approved: false } },
+      annotations: { ...s.annotations, [clipId]: { text, rhythm, author: s.session?.name ?? 'Mentor', approved: false } },
       audit: audited(s, 'Mentor', 'Menulis anotasi klip', clipId, 'Menunggu persetujuan kurator'),
     }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -308,6 +364,30 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       if (!a) return s;
       return { ...s, annotations: { ...s.annotations, [clipId]: { ...a, approved: true } }, audit: audited(s, 'Kurator', 'Menyetujui anotasi klip', clipId, 'Tampil di Arsip Gerakan') };
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  /** NIRA Enterprise mencatat pembelian dari mitra. Tiap catatan masuk audit. */
+  const addPurchase = useCallback((p: { partnerId: string; kg: number; pricePerKg: number }) => {
+    setState((s) => {
+      const id = `PUR-${String(s.purchases.length + 1).padStart(3, '0')}`;
+      const rec: Purchase = { id, date: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }), marketRef: s.marketRef, ...p };
+      const partner = s.partners.find((x) => x.id === p.partnerId);
+      return { ...s, purchases: [rec, ...s.purchases], audit: audited(s, 'Enterprise', 'Mencatat pembelian', id, `${partner?.name ?? p.partnerId}: ${p.kg} kg`) };
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const setMarketRef = useCallback((v: number) => {
+    setState((s) => (v > 0 ? { ...s, marketRef: v } : s));
+  }, []);
+
+  const setBatchPricing = useCallback((code: string, pricing: NonNullable<QrBatch['pricing']>) => {
+    setState((s) => ({
+      ...s,
+      batches: s.batches.map((b) => (b.code === code ? { ...b, pricing } : b)),
+      audit: audited(s, 'Enterprise', 'Mengatur harga batch', code, `${pricing.preservePct}% ke dana pelestarian`),
+    }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -357,8 +437,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           badges: state.badges.map((b) => (BADGE_EN[b.id] ? { ...b, ...BADGE_EN[b.id] } : b)),
         }
       : { records: state.records, modules: state.modules, quests: state.quests, badges: state.badges };
-    return { ...state, ...loc, level: lvl(level) as typeof level, nextLevel: lvl(nextLevel), toast, showToast, completeQuest, checkIn, completeModule, completeLab, signIn, reviewRecord, addBatch, addRecord, validateSubmission, saveAnnotation, approveAnnotation, signOut, finishOnboarding, reset };
-  }, [state, lang, toast, showToast, completeQuest, checkIn, completeModule, completeLab, signIn, reviewRecord, addBatch, addRecord, validateSubmission, saveAnnotation, approveAnnotation, signOut, finishOnboarding, reset]);
+    return { ...state, ...loc, level: lvl(level) as typeof level, nextLevel: lvl(nextLevel), toast, showToast, completeQuest, checkIn, completeModule, completeLab, signIn, reviewRecord, addBatch, addRecord, addPurchase, setMarketRef, setBatchPricing, validateSubmission, saveAnnotation, approveAnnotation, signOut, finishOnboarding, reset };
+  }, [state, lang, toast, showToast, completeQuest, checkIn, completeModule, completeLab, signIn, reviewRecord, addBatch, addRecord, addPurchase, setMarketRef, setBatchPricing, validateSubmission, saveAnnotation, approveAnnotation, signOut, finishOnboarding, reset]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 };

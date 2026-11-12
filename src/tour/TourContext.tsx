@@ -53,7 +53,7 @@ export const TourProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const step = Math.max(0, Math.min(TOUR.length - 1, n));
       // Layar staf butuh peran yang sesuai; tur menyiapkannya supaya juri tidak perlu kode undangan.
       const need = TOUR[step].role;
-      if (need && sessionRef.current?.role !== need) signIn(need === 'curator' ? 'Kurator Budaya (demo)' : need === 'mentor' ? 'Pak Parmadi (mentor demo)' : 'Admin Program (demo)', need);
+      if (need && sessionRef.current?.role !== need) signIn(need === 'curator' ? 'Kurator Budaya (demo)' : need === 'mentor' ? 'Pak Parmadi (mentor demo)' : need === 'enterprise' ? 'Koperasi NIRA (demo)' : 'Admin Program (demo)', need);
       setS({ active: true, step, open: true });
       navigate(TOUR[step].route);
     },
