@@ -21,7 +21,7 @@ const getTabs = () => [
 const TabBar: React.FC = () => (
   <nav
     aria-label={t('Navigasi utama', 'Main navigation')}
-    className="absolute inset-x-3 bottom-[max(12px,env(safe-area-inset-bottom))] z-30 rounded-[30px] border border-bamboo/80 bg-coconut/[0.98] p-1.5 shadow-[0_16px_34px_-12px_rgba(16,38,30,0.55),0_2px_6px_rgba(16,38,30,0.08)]"
+    className="absolute inset-x-3 bottom-[max(12px,env(safe-area-inset-bottom))] z-30 rounded-[30px] bg-coconut/[0.98] p-1.5 shadow-[0_16px_34px_-12px_rgba(16,38,30,0.55),0_2px_6px_rgba(16,38,30,0.08)]"
   >
     <ul className="grid grid-cols-4 gap-1">
       {getTabs().map(({ to, label, Icon, end }) => (

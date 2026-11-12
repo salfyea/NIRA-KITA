@@ -14,7 +14,7 @@ import { LangToggle, t } from '../i18n';
 const MascotCard: React.FC<{ to: string; mood: NiraMood; tint: string; title: string; text: string }> = ({ to, mood, tint, title, text }) => (
   <Link
     to={to}
-    className="relative block min-h-[92px] rounded-[26px_34px_28px_34px] border border-white/70 py-4 pl-[104px] pr-5 shadow-[0_14px_26px_-16px_rgba(16,38,30,0.65)]"
+    className="relative block min-h-[92px] rounded-[26px_34px_28px_34px] py-4 pl-[104px] pr-5 shadow-[0_14px_26px_-16px_rgba(16,38,30,0.65)]"
     style={{ background: tint }}
   >
     <span className="pointer-events-none absolute -top-6 left-3">
@@ -71,7 +71,7 @@ export const Perjalanan: React.FC = () => {
           <LangToggle className="shrink-0" />
         </div>
 
-        <div className="mt-4 rounded-3xl border border-bamboo bg-coconut p-4 shadow-[0_8px_22px_-14px_rgba(24,56,44,0.55)]">
+        <div className="mt-4 rounded-3xl surface p-4">
           <div className="flex items-center gap-3">
             <div className="min-w-0 flex-1">
               <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-caramel-dark">{t('Level', 'Level')} {level.level}</p>

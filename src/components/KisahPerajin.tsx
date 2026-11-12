@@ -86,7 +86,7 @@ export const KisahPerajin: React.FC<{ record: HeritageRecord }> = ({ record: r }
         <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-caramel-dark">{t(`Cerita dalam ${cards.length} kartu · geser`, `Story in ${cards.length} cards · swipe`)}</p>
         <div className="no-scrollbar -mx-6 flex snap-x snap-mandatory gap-3 overflow-x-auto px-6 pb-1">
           {cards.map(({ Icon, tone, ttl, d }, i) => (
-            <article key={ttl} className="w-[78%] shrink-0 snap-center rounded-2xl border border-bamboo bg-coconut p-4 shadow-[0_6px_16px_-10px_rgba(24,56,44,0.5)]">
+            <article key={ttl} className="w-[78%] shrink-0 snap-center rounded-2xl surface p-4">
               <span className={`flex h-11 w-11 items-center justify-center rounded-full ${tone}`}>
                 <Icon className="h-5 w-5" />
               </span>

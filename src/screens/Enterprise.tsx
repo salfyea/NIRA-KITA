@@ -134,7 +134,7 @@ const Pembelian: React.FC = () => {
           const partner = partners.find((x) => x.id === p.partnerId);
           const diff = p.pricePerKg - p.marketRef;
           return (
-            <li key={p.id} className="rounded-xl border border-bamboo bg-coconut p-3 text-sm">
+            <li key={p.id} className="rounded-xl surface p-3 text-sm">
               <div className="flex justify-between gap-2">
                 <b className="text-deep-forest">{partner?.name ?? p.partnerId}</b>
                 <span className="shrink-0 text-xs text-ink-soft">{p.date}</span>

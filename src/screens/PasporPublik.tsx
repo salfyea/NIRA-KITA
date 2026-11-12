@@ -124,7 +124,7 @@ export const PasporPublik: React.FC = () => {
               key={id}
               type="button"
               onClick={() => scrollTo(id)}
-              className="overflow-hidden rounded-2xl border border-bamboo bg-coconut text-left shadow-[0_6px_16px_-10px_rgba(24,56,44,0.5)]"
+              className="overflow-hidden rounded-2xl surface text-left"
             >
               <Vignette kind={kind} className="block h-20 w-full" />
               <span className="block p-3">
@@ -170,7 +170,7 @@ export const PasporPublik: React.FC = () => {
               />
             </div>
             <p className="mt-3 text-xs leading-relaxed text-ink-soft">
-              {t('Dibeli langsung dari perajin dengan harga di atas acuan pasar. Sebagian dari setiap kemasan mendanai pembelajaran dan pencatatan pengetahuan perajin..', 'Bought directly from artisans at a price above the market reference. Part of every package funds the learning and recording of the knowledge held by artisans.')}
+              {t('Dibeli langsung dari perajin dengan harga di atas acuan pasar. Sebagian dari setiap kemasan mendanai pembelajaran dan pencatatan pengetahuan perajin.', 'Bought directly from artisans at a price above the market reference. Part of every package funds the learning and recording of the knowledge held by artisans.')}
             </p>
           </Ornate>
         </section>
