@@ -5,7 +5,7 @@ import { Nira } from '../art/Nira';
 import { Ornate } from '../components/ui';
 import { getGerakan } from '../data/gerakan';
 import { t } from '../i18n';
-import { HAND_CONNECTIONS, loadHandLandmarker } from '../lib/hand';
+import { HAND_CONNECTIONS, loadHandLandmarker, prefetchHandAssets } from '../lib/hand';
 import { useStore } from '../store';
 
 const BAB_PRAKTIK = '/learn/bab/kerajinan-tradisional-transfer-pengetahuan?kartu=praktik';
@@ -84,7 +84,10 @@ export const ArsipDetail: React.FC = () => {
     let alive = true;
     let ever = false;
     setState('loading');
-    loadHandLandmarker()
+    prefetchHandAssets();
+    // biarkan status "memuat" tergambar dulu sebelum inisialisasi model yang berat
+    new Promise<void>((r) => requestAnimationFrame(() => setTimeout(r, 50)))
+      .then(() => loadHandLandmarker())
       .then((lm) => {
         if (!alive) return;
         setState('searching');

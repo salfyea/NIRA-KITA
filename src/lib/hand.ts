@@ -36,6 +36,14 @@ export const loadHandLandmarker = (): Promise<HandLandmarker> => {
 /** Berkas yang dibutuhkan pelacak tangan, untuk disiapkan agar bisa dipakai offline. */
 export const OFFLINE_ASSETS = [wasmJs, wasmBin, '/models/hand_landmarker.task'];
 
+let prefetched = false;
+/** Mengunduh berkas pelacak ke cache peramban tanpa memproses apa pun (tidak memblokir tampilan). */
+export const prefetchHandAssets = () => {
+  if (prefetched) return;
+  prefetched = true;
+  OFFLINE_ASSETS.forEach((u) => fetch(u).then((r) => r.blob()).catch(() => undefined));
+};
+
 export const HAND_CONNECTIONS: [number, number][] = [
   [0, 1], [1, 2], [2, 3], [3, 4],
   [0, 5], [5, 6], [6, 7], [7, 8],
