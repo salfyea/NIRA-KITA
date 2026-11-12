@@ -2,6 +2,7 @@ import React from 'react';
 import { Camera, CameraOff, Check, Hand, Lock, ShieldCheck, Square, ThumbsUp } from 'lucide-react';
 import { Nira } from '../art/Nira';
 import { getPraktik, Task } from '../data/praktik';
+import type { Live } from './Alat3D';
 import { t } from '../i18n';
 import { classifyPose, HAND_CONNECTIONS, loadHandLandmarker, PourTracker, rollDeg, StirTracker } from '../lib/hand';
 import type { Pose } from '../lib/hand';
@@ -10,6 +11,8 @@ const HOLD_MS = 1100;
 
 const poseLabel = (p: string): string | undefined =>
   ({ fist: t('Genggam', 'Fist'), open: t('Telapak terbuka', 'Open palm'), pinch: t('Jepit', 'Pinch'), point: t('Telunjuk', 'Point'), thumbsUp: t('Jempol ke atas', 'Thumbs up') } as Record<string, string>)[p];
+
+const Alat3D = React.lazy(() => import('./Alat3D'));
 
 type Phase = 'intro' | 'loading' | 'play' | 'error' | 'done';
 
@@ -37,6 +40,11 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
   const stageRef = React.useRef<'do' | 'why'>('do');
   const holdStart = React.useRef<number | null>(null);
   const holdPose = React.useRef<string>('');
+  const live = React.useRef<Live>({ ts: 0, roll: 0, stir: 0, progress: 0, done: false });
+  const setPr = (v: number) => {
+    live.current.progress = v;
+    setProgress(v);
+  };
   const stir = React.useRef(new StirTracker());
   const pour = React.useRef(new PourTracker());
   const correct = React.useRef(0);
@@ -56,15 +64,18 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
     pour.current.reset();
     holdStart.current = null;
     holdPose.current = '';
-    setProgress(0);
+    live.current.done = false;
+    live.current.stir = 0;
+    setPr(0);
   };
 
   const completeTask = React.useCallback((ok: boolean | null) => {
+    live.current.done = true;
     if (ok === true) correct.current += 1;
     setVerdict(ok);
     stageRef.current = 'why';
     setStage('why');
-    setProgress(0);
+    setPr(0);
   }, []);
 
   const next = () => {
@@ -114,6 +125,10 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
           const now = performance.now();
           const res = lm.detectForVideo(video, now);
           const hand = res.landmarks?.[0];
+          if (hand) {
+            live.current.ts = now;
+            live.current.roll = rollDeg(hand);
+          }
           canvas.width = video.videoWidth;
           canvas.height = video.videoHeight;
           const ctx = canvas.getContext('2d')!;
@@ -129,17 +144,18 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
               if (active) {
                 holdStart.current = holdStart.current ?? now;
                 const pr = Math.min(1, (now - holdStart.current) / HOLD_MS);
-                setProgress(pr);
+                setPr(pr);
                 if (pr >= 1) completeTask(null);
               } else {
                 holdStart.current = null;
-                setProgress(0);
+                setPr(0);
               }
             } else if (t.kind === 'stir') {
               active = true;
               stir.current.push(now, hand[0].x, hand[0].y);
+              live.current.stir = stir.current.angle;
               const pr = Math.min(1, stir.current.laps / t.laps);
-              setProgress(pr);
+              setPr(pr);
               if (pr >= 1) completeTask(null);
             } else if (t.kind === 'pour') {
               if (pose === 'fist' || pose === 'thumbsUp') {
@@ -147,7 +163,7 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
                 pour.current.push(rollDeg(hand));
               }
               const pr = Math.min(1, (pour.current.count + (pour.current.isTilted ? 0.5 : 0)) / t.times);
-              setProgress(pr);
+              setPr(pr);
               if (pour.current.count >= t.times) completeTask(null);
             } else if (t.kind === 'judge') {
               const choice = pose === 'thumbsUp' ? 'aman' : pose === 'open' ? 'bahaya' : '';
@@ -158,17 +174,17 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
                   holdStart.current = now;
                 }
                 const pr = Math.min(1, (now - (holdStart.current ?? now)) / HOLD_MS);
-                setProgress(pr);
+                setPr(pr);
                 if (pr >= 1) completeTask(choice === t.answer);
               } else {
                 holdPose.current = '';
                 holdStart.current = null;
-                setProgress(0);
+                setPr(0);
               }
             }
           } else if (!hand) {
             holdStart.current = null;
-            setProgress(0);
+            setPr(0);
           }
           if (hand) {
             ctx.lineWidth = 4;
@@ -216,6 +232,7 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
 
   if (!cfg || !task) return null;
 
+  const prop3d = task.prop;
   const hintText = task.kind === 'judge' ? task.scenario : task.hint;
   const wantLabel = task.kind === 'pose' ? poseLabel(task.pose) : task.kind === 'stir' ? t(`${task.laps} putaran melingkar`, `${task.laps} circular rounds`) : task.kind === 'pour' ? t(`Miring dan tegak ${task.times} kali`, `Tilt and straighten ${task.times} times`) : t('Jempol ke atas (aman) atau telapak terbuka (bahaya)', 'Thumbs up (safe) or open palm (unsafe)');
 
@@ -229,7 +246,14 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
           <div className="absolute left-2 top-2 flex items-center gap-1.5 rounded-full bg-deep-forest/85 px-3 py-1.5 text-xs font-bold text-coconut">
             <span className="h-2 w-2 animate-pulse rounded-full bg-[#E0523A]" /> {t('Kamera aktif · diproses di perangkat', 'Camera on · processed on the device')}
           </div>
-          {!handFound && <div className="absolute inset-x-3 bottom-3 rounded-xl bg-coconut/90 px-3 py-2 text-center text-sm font-semibold text-deep-forest">{t('Tunjukkan satu tanganmu ke kamera', 'Show one hand to the camera')}</div>}
+          {prop3d && stage === 'do' && (
+            <div className="absolute bottom-2 right-2 aspect-square w-[46%] overflow-hidden rounded-2xl border-2 border-coconut shadow-lg">
+              <React.Suspense fallback={null}>
+                <Alat3D prop={prop3d} live={live} caption={false} className="h-full w-full" />
+              </React.Suspense>
+            </div>
+          )}
+          {!handFound && <div className="absolute inset-x-3 top-12 rounded-xl bg-coconut/90 px-3 py-2 text-center text-sm font-semibold text-deep-forest">{t('Tunjukkan satu tanganmu ke kamera', 'Show one hand to the camera')}</div>}
         </div>
       </div>
 
@@ -279,6 +303,14 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
           <button type="button" onClick={startTap} className="mt-1 min-h-[52px] w-full rounded-full border-2 border-bamboo text-base font-semibold text-deep-forest">
             {t('Lanjut tanpa kamera', 'Continue without camera')}
           </button>
+        </div>
+      )}
+
+      {phase === 'play' && tapMode && prop3d && (
+        <div className="mt-3 h-56 overflow-hidden rounded-2xl border border-bamboo">
+          <React.Suspense fallback={<div className="flex h-full items-center justify-center bg-bamboo/30 text-sm text-ink-soft">{t('Memuat alat 3D...', 'Loading the 3D tool...')}</div>}>
+            <Alat3D prop={prop3d} live={live} className="h-full w-full" />
+          </React.Suspense>
         </div>
       )}
 

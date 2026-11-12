@@ -1,11 +1,13 @@
 import { t } from '../i18n';
 
 /** Praktik gerak per modul. Isi pembelajaran ("mengapa") menaut ke materi dan sumber yang sudah ada. */
+export type Prop3D = 'pongkor' | 'wajan' | 'kain' | 'pohon' | 'tungku' | 'kemasan';
+
 export type Task =
-  | { kind: 'pose'; id: string; title: string; hint: string; why: string; pose: 'fist' | 'open' | 'pinch' | 'point' | 'thumbsUp' }
-  | { kind: 'stir'; id: string; title: string; hint: string; why: string; laps: number }
-  | { kind: 'pour'; id: string; title: string; hint: string; why: string; times: number }
-  | { kind: 'judge'; id: string; title: string; scenario: string; answer: 'aman' | 'bahaya'; why: string };
+  | { kind: 'pose'; id: string; prop?: Prop3D; title: string; hint: string; why: string; pose: 'fist' | 'open' | 'pinch' | 'point' | 'thumbsUp' }
+  | { kind: 'stir'; id: string; prop?: Prop3D; title: string; hint: string; why: string; laps: number }
+  | { kind: 'pour'; id: string; prop?: Prop3D; title: string; hint: string; why: string; times: number }
+  | { kind: 'judge'; id: string; prop?: Prop3D; title: string; scenario: string; answer: 'aman' | 'bahaya'; why: string };
 
 export interface Praktik {
   intro: string;
@@ -21,6 +23,7 @@ export const getPraktik = (slug: string): Praktik | undefined => {
         {
           kind: 'pose',
           id: 'tunjuk',
+          prop: 'wajan',
           pose: 'point',
           title: t('Tunjuk dan sebut', 'Point and name'),
           hint: t('Acungkan telunjuk, lalu sebutkan satu alat yang kamu kenal: pongkor, wajan, atau bathok.', 'Raise your index finger and name a tool you know: pongkor, wajan (wok), or bathok (shell mold).'),
@@ -29,6 +32,7 @@ export const getPraktik = (slug: string): Praktik | undefined => {
         {
           kind: 'pose',
           id: 'pegang-pongkor',
+          prop: 'pongkor',
           pose: 'fist',
           title: t('Genggam seperti memegang pongkor', 'Grip as if holding a pongkor'),
           hint: t('Bayangkan memegang pongkor bambu: genggam dengan mantap, tetapi hati-hati.', 'Imagine holding a bamboo pongkor: grip it firmly, but carefully.'),
@@ -45,6 +49,7 @@ export const getPraktik = (slug: string): Praktik | undefined => {
         {
           kind: 'pour',
           id: 'tuang',
+          prop: 'pongkor',
           times: 2,
           title: t('Tuang nira', 'Pour the sap'),
           hint: t('Genggam, lalu miringkan tanganmu ke samping seperti menuang, dan tegakkan lagi. Dua kali.', 'Make a fist, tilt your hand to the side as if pouring, then straighten it again. Twice.'),
@@ -53,6 +58,7 @@ export const getPraktik = (slug: string): Praktik | undefined => {
         {
           kind: 'pose',
           id: 'jepit-kotoran',
+          prop: 'kain',
           pose: 'pinch',
           title: t('Jepit kotoran dari kain', 'Pinch debris off the cloth'),
           hint: t('Temukan ujung jempol dan telunjuk seperti menjepit sesuatu yang kecil, tiga jari lain tetap lurus.', 'Bring your thumb and index fingertips together as if pinching something tiny, the other three fingers straight.'),
@@ -61,6 +67,7 @@ export const getPraktik = (slug: string): Praktik | undefined => {
         {
           kind: 'stir',
           id: 'aduk',
+          prop: 'wajan',
           laps: 3,
           title: t('Mengaduk di wajan', 'Stirring in the wok'),
           hint: t('Genggam gagang pengaduk khayalan, lalu putar tanganmu melingkar. Tiga putaran.', 'Grip an imaginary stirring handle, then move your hand in circles. Three rounds.'),
@@ -77,6 +84,7 @@ export const getPraktik = (slug: string): Praktik | undefined => {
         {
           kind: 'judge',
           id: 's1',
+          prop: 'pohon',
           answer: 'bahaya',
           title: t('Situasi 1', 'Situation 1'),
           scenario: t('Pelajar diminta memanjat pohon kelapa untuk melihat penyadapan dari dekat.', 'A learner is asked to climb a coconut tree to watch the tapping up close.'),
@@ -88,6 +96,7 @@ export const getPraktik = (slug: string): Praktik | undefined => {
         {
           kind: 'judge',
           id: 's2',
+          prop: 'tungku',
           answer: 'aman',
           title: t('Situasi 2', 'Situation 2'),
           scenario: t('Pelajar duduk di jarak aman dari tungku sambil mendengarkan penjelasan perajin.', 'A learner sits at a safe distance from the stove while listening to the artisan explain.'),
@@ -96,6 +105,7 @@ export const getPraktik = (slug: string): Praktik | undefined => {
         {
           kind: 'judge',
           id: 's3',
+          prop: 'tungku',
           answer: 'bahaya',
           title: t('Situasi 3', 'Situation 3'),
           scenario: t('Menyentuh gula yang baru dituang dari wajan karena penasaran.', 'Touching freshly poured sugar from the wok out of curiosity.'),
@@ -109,6 +119,7 @@ export const getPraktik = (slug: string): Praktik | undefined => {
         {
           kind: 'judge',
           id: 'k1',
+          prop: 'kemasan',
           answer: 'bahaya',
           title: t('Situasi 1', 'Situation 1'),
           scenario: t('Mencetak nama dan foto perajin di kemasan tanpa bertanya dulu kepadanya.', 'Printing an artisan’s name and photo on the package without asking them first.'),
@@ -117,6 +128,7 @@ export const getPraktik = (slug: string): Praktik | undefined => {
         {
           kind: 'judge',
           id: 'k2',
+          prop: 'kemasan',
           answer: 'aman',
           title: t('Situasi 2', 'Situation 2'),
           scenario: t('Menampilkan kisah perajin di halaman QR setelah ada izin dan persetujuan kurator.', 'Showing an artisan’s story on the QR page after permission and curator approval.'),
@@ -125,6 +137,7 @@ export const getPraktik = (slug: string): Praktik | undefined => {
         {
           kind: 'judge',
           id: 'k3',
+          prop: 'kemasan',
           answer: 'bahaya',
           title: t('Situasi 3', 'Situation 3'),
           scenario: t('Mengubah cerita yang dianggap sakral oleh komunitas supaya lebih menarik dijual.', 'Altering a story the community considers sacred so it sells better.'),
