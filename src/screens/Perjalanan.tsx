@@ -1,12 +1,11 @@
 import React from 'react';
-import { flushSync } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, Download, FlaskConical, Hand, Lock, Sparkles } from 'lucide-react';
+import { ArrowRight, FlaskConical, Hand, Lock, Sparkles } from 'lucide-react';
 import { Nira } from '../art/Nira';
 import { SLUG_SCENE, Scene } from '../art/Scene';
-import { JH, JW, JalurArt, Station, VIEW_TOP_POSTER, pathFor, stationPoints } from '../art/JalurArt';
+import { JalurArt, Station, pathFor, stationPoints } from '../art/JalurArt';
 import { ProgressBar, Sheet } from '../components/ui';
-import { download, lengthsAtY, standaloneSvg, svgToPng } from '../lib/exportSvg';
+import { lengthsAtY } from '../lib/pathLength';
 import { isModuleLocked, useStore } from '../store';
 import { LangToggle, t } from '../i18n';
 
@@ -14,9 +13,6 @@ export const Perjalanan: React.FC = () => {
   const { session, level, nextLevel, xp, modules, quests } = useStore();
   const navigate = useNavigate();
   const [openSlug, setOpenSlug] = React.useState<string | null>(null);
-  const [poster, setPoster] = React.useState(false);
-  const [busy, setBusy] = React.useState(false);
-  const svgRef = React.useRef<SVGSVGElement>(null);
 
   const activeIdx = Math.max(
     0,
@@ -39,25 +35,6 @@ export const Perjalanan: React.FC = () => {
     const ys = stationPoints(modules.length).map((p) => p.y);
     return lengthsAtY(pathFor(modules.length), ys)[lastReached] ?? null;
   }, [lastReached, modules.length]);
-
-  /** Poster selalu tampil lengkap berwarna (tanpa gembok), apa pun progres pelajar. */
-  const exportWith = async (fn: (svg: SVGSVGElement) => Promise<void> | void) => {
-    if (!svgRef.current || busy) return;
-    setBusy(true);
-    try {
-      flushSync(() => setPoster(true));
-      await fn(svgRef.current);
-    } finally {
-      flushSync(() => setPoster(false));
-      setBusy(false);
-    }
-  };
-  const savePng = () =>
-    exportWith(async (svg) => {
-      const blob = await svgToPng(svg, JW, JH - VIEW_TOP_POSTER, 5);
-      if (blob) download(blob, 'jalur-belajar-nira.png');
-    });
-  const saveSvg = () => exportWith((svg) => download(new Blob([standaloneSvg(svg, JW * 4, (JH - VIEW_TOP_POSTER) * 4)], { type: 'image/svg+xml' }), 'jalur-belajar-nira.svg'));
 
   const sel = modules.find((m) => m.slug === openSlug);
   const selQuest = sel ? quests.find((q) => q.id === sel.associatedQuestId) : undefined;
@@ -115,20 +92,9 @@ export const Perjalanan: React.FC = () => {
       </header>
 
       <div className="px-2 pt-1">
-        <JalurArt ref={svgRef} stations={stations} poster={poster} doneLength={doneLength} onOpen={setOpenSlug} />
+        <JalurArt stations={stations} doneLength={doneLength} onOpen={setOpenSlug} />
       </div>
-      <div className="mx-5 mb-4 mt-1 rounded-2xl border border-dashed border-bamboo p-3">
-        <p className="text-center text-xs font-semibold text-ink-soft">{t('Butuh gambar ini untuk poster atau slide?', 'Need this picture for a poster or slides?')}</p>
-        <div className="mt-2 grid grid-cols-2 gap-2">
-          <button type="button" onClick={savePng} disabled={busy} className="flex min-h-[44px] items-center justify-center gap-1.5 rounded-full bg-forest text-[13px] font-semibold text-coconut disabled:opacity-60">
-            <Download className="h-4 w-4" /> {busy ? t('Menyiapkan...', 'Preparing...') : 'PNG'}
-          </button>
-          <button type="button" onClick={saveSvg} disabled={busy} className="flex min-h-[44px] items-center justify-center gap-1.5 rounded-full border-2 border-bamboo text-[13px] font-semibold text-deep-forest disabled:opacity-60">
-            <Download className="h-4 w-4" /> {t('Vektor SVG', 'Vector SVG')}
-          </button>
-        </div>
-        <p className="mt-1.5 text-center text-[11px] leading-tight text-ink-soft">{t('Unduhan selalu menampilkan semua modul berwarna, lengkap dengan judul.', 'The download always shows every module in colour, with a title.')}</p>
-      </div>
+      <div className="pb-4" />
 
       <section className="space-y-3 px-5 pb-6">
         <Link to="/learn/lab" className="flex min-h-[64px] items-center gap-3 rounded-2xl border border-bamboo bg-coconut p-3 shadow-[0_6px_16px_-10px_rgba(24,56,44,0.5)]">

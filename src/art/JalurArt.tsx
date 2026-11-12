@@ -4,15 +4,14 @@ import { t } from '../i18n';
 
 /**
  * Jalur belajar: jalan berkelok di atas latar krem dengan empat medali modul yang bisa diketuk.
- * Di aplikasi tampil bersih tanpa bingkai; "mode poster" menambah judul dan latar hangat untuk diunduh.
+ * Tampil bersih tanpa bingkai.
  */
 export const JW = 390;
 export const JROW = 172;
 export const JTOP = 232;
 export const JH = JTOP + 3 * JROW + 250;
-/** Batas atas tampilan: aplikasi memotong langit, poster menyertakan ruang judul. */
+/** Batas atas tampilan: bagian atas kanvas (ruang kosong di atas awal jalan) dipotong. */
 export const VIEW_TOP_APP = 132;
-export const VIEW_TOP_POSTER = 30;
 const XS = [0.3, 0.7, 0.3, 0.7];
 const SERIF = "'DM Serif Display', Georgia, 'Times New Roman', serif";
 const SANS = "Inter, 'Segoe UI', system-ui, sans-serif";
@@ -52,15 +51,15 @@ const PALMS: [number, number, number][] = [
 
 const Palm: React.FC<{ x: number; y: number; s: number }> = ({ x, y, s }) => <use href="#jl-palm" x={x - 17 * s} y={y - 46 * s} width={34 * s} height={46 * s} />;
 
-const Medallion: React.FC<{ s: Station; x: number; y: number; poster: boolean; onOpen: () => void }> = ({ s, x, y, poster, onOpen }) => {
-  const st: Status = poster ? 'open' : s.status;
+const Medallion: React.FC<{ s: Station; x: number; y: number; onOpen: () => void }> = ({ s, x, y, onOpen }) => {
+  const st: Status = s.status;
   const R = 44;
-  const ring = st === 'active' ? '#B87943' : st === 'done' ? '#234B3A' : poster ? '#B87943' : '#D2C7AA';
+  const ring = st === 'active' ? '#B87943' : st === 'done' ? '#234B3A' : '#D2C7AA';
   const cid = `jl-clip-${s.id}`;
   const label = s.number.replace('MODUL ', t('MODUL ', 'MODULE '));
   const title = s.title.split(' & ')[0];
   const fs = title.length > 22 ? 12.5 : 14.5;
-  const showPct = !poster && st !== 'locked' && s.percent > 0 && s.percent < 100;
+  const showPct = st !== 'locked' && s.percent > 0 && s.percent < 100;
   return (
     <g
       role="button"
@@ -125,30 +124,24 @@ const Medallion: React.FC<{ s: Station; x: number; y: number; poster: boolean; o
   );
 };
 
-export const JalurArt = React.forwardRef<SVGSVGElement, { stations: Station[]; poster: boolean; doneLength: number | null; onOpen: (slug: string) => void }>(({ stations, poster, doneLength, onOpen }, ref) => {
+export const JalurArt = React.forwardRef<SVGSVGElement, { stations: Station[]; doneLength: number | null; onOpen: (slug: string) => void }>(({ stations, doneLength, onOpen }, ref) => {
   const n = stations.length;
   const pts = stationPoints(n);
   const d = pathFor(n);
   const activeIdx = stations.findIndex((s) => s.status === 'active');
-  const top = poster ? VIEW_TOP_POSTER : VIEW_TOP_APP;
+  const top = VIEW_TOP_APP;
   return (
     <svg ref={ref} xmlns="http://www.w3.org/2000/svg" viewBox={`0 ${top} ${JW} ${JH - top}`} role="group" aria-label={t('Jalur belajar: empat modul', 'Learning path: four modules')} className="block h-auto w-full">
       <defs>
-        <linearGradient id="jl-bg" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#F8DDB0" />
-          <stop offset="0.22" stopColor="#FBF1DC" />
-          <stop offset="1" stopColor="#E3EBD0" />
-        </linearGradient>
-        <radialGradient id="jl-sun" cx="0.5" cy="0.5" r="0.5">
-          <stop offset="0" stopColor="#FFF6DC" />
-          <stop offset="0.45" stopColor="#FFE9B8" stopOpacity="0.85" />
-          <stop offset="1" stopColor="#FFE9B8" stopOpacity="0" />
-        </radialGradient>
         <radialGradient id="jl-body" cx="0.38" cy="0.3" r="0.85">
           <stop offset="0" stopColor="#E3EFC8" />
           <stop offset="0.5" stopColor="#B6CF8E" />
           <stop offset="1" stopColor="#7BA36A" />
         </radialGradient>
+        <linearGradient id="jl-fade" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#F7F3E9" stopOpacity="0" />
+          <stop offset="1" stopColor="#F7F3E9" stopOpacity="1" />
+        </linearGradient>
         <filter id="jl-grey">
           <feColorMatrix type="saturate" values="0" />
         </filter>
@@ -184,18 +177,11 @@ export const JalurArt = React.forwardRef<SVGSVGElement, { stations: Station[]; p
         </symbol>
       </defs>
 
-      {/* latar: transparan di aplikasi, hangat di poster */}
-      {poster && (
-        <>
-          <rect x="0" y={top} width={JW} height={JH - top} fill="url(#jl-bg)" />
-          <circle cx="322" cy="86" r="60" fill="url(#jl-sun)" />
-          <circle cx="322" cy="86" r="16" fill="#FFF1CF" />
-        </>
-      )}
-
       {/* bukit lembut di dasar halaman */}
       <path d={`M-10 ${JH - 190} C70 ${JH - 230} 150 ${JH - 170} 230 ${JH - 205} S350 ${JH - 230} 400 ${JH - 200} V${JH + 10} H-10Z`} fill="#CFDDB8" opacity="0.55" />
       <path d={`M-10 ${JH - 120} C80 ${JH - 150} 170 ${JH - 100} 260 ${JH - 130} S360 ${JH - 140} 400 ${JH - 118} V${JH + 10} H-10Z`} fill="#B9CFA0" opacity="0.6" />
+
+      <rect x="0" y={JH - 70} width={JW} height="70" fill="url(#jl-fade)" />
 
       {/* kebun kelapa di tepi */}
       {PALMS.map(([x, y, s], i) => (
@@ -207,7 +193,7 @@ export const JalurArt = React.forwardRef<SVGSVGElement, { stations: Station[]; p
       <path d={d} fill="none" stroke="#E9DDC3" strokeWidth="19" strokeLinecap="round" strokeLinejoin="round" />
       <path d={d} fill="none" stroke="#FFFDF8" strokeWidth="2.6" strokeLinecap="round" strokeDasharray="2 12" />
       {/* bagian yang sudah dilalui */}
-      {!poster && doneLength !== null && (
+      {doneLength !== null && (
         <>
           <path d={d} fill="none" stroke="#C99A5E" strokeWidth="19" strokeLinecap="round" strokeLinejoin="round" strokeDasharray={`${doneLength} 100000`} opacity="0.55" />
           <path d={d} fill="none" stroke="#FFFDF8" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" strokeDasharray={`${doneLength} 100000`} />
@@ -250,33 +236,18 @@ export const JalurArt = React.forwardRef<SVGSVGElement, { stations: Station[]; p
 
       {/* medali modul */}
       {stations.map((s, i) => (
-        <Medallion key={s.id} s={s} x={pts[i].x} y={pts[i].y} poster={poster} onOpen={() => onOpen(s.slug)} />
+        <Medallion key={s.id} s={s} x={pts[i].x} y={pts[i].y} onOpen={() => onOpen(s.slug)} />
       ))}
 
-      {/* Nira menemani di stasiun aktif (di awal jalur pada poster) */}
+      {/* Nira menemani di stasiun aktif */}
       {(() => {
-        const i = poster ? 0 : Math.max(0, activeIdx);
+        const i = Math.max(0, activeIdx);
         const p = pts[i];
         const left = p.x > JW / 2;
         const nx = left ? p.x - 118 : p.x + 60;
         return <use href="#jl-nira" x={nx} y={p.y - 44} width="52" height="64" />;
       })()}
 
-      {/* judul hanya di poster, tanpa bingkai */}
-      {poster && (
-        <g>
-          <text x={JW / 2} y="66" textAnchor="middle" fontFamily={SERIF} fontSize="34" letterSpacing="4" fill="#18382C">
-            {t('JEJAK BELAJAR', 'LEARNING PATH')}
-          </text>
-          <line x1={JW / 2 - 40} y1="80" x2={JW / 2 + 40} y2="80" stroke="#B87943" strokeWidth="2" strokeLinecap="round" />
-          <text x={JW / 2} y="100" textAnchor="middle" fontFamily={SANS} fontSize="10.5" fontWeight="700" letterSpacing="2.4" fill="#8F5A2E">
-            {t('EMPAT MODUL · JEJAK NIRA', 'FOUR MODULES · JEJAK NIRA')}
-          </text>
-          <text x={JW / 2} y={JH - 18} textAnchor="middle" fontFamily={SERIF} fontStyle="italic" fontSize="12.5" fill="#234B3A">
-            {t('Jejak pengetahuan, warisan masa depan', 'Trail of knowledge, heritage for the future')}
-          </text>
-        </g>
-      )}
     </svg>
   );
 });
