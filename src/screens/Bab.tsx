@@ -6,17 +6,39 @@ import { Nira } from '../art/Nira';
 import { ApprovalChip } from '../components/ui';
 import { CHAPTER_XP, getQuiz } from '../data/quiz';
 import { getPraktik } from '../data/praktik';
-import { getLessonBody } from '../data/pelajaran';
+import { getLessonBody, getLessonMedia } from '../data/pelajaran';
+import type { Live } from '../components/Alat3D';
 import { t } from '../i18n';
 import { GerakPraktik } from '../components/GerakPraktik';
 import { attribution } from '../data/attribution';
 import { isLearnerVisible, isModuleLocked, useStore } from '../store';
 import { useTour } from '../tour/TourContext';
 
-const CardShell: React.FC<{ kind: SceneKind; children: React.ReactNode; scene?: React.ReactNode; compact?: boolean }> = ({ kind, children, scene, compact }) => (
+const Alat3DLazy = React.lazy(() => import('../components/Alat3D'));
+
+/** Media pelajaran: klip lapangan, adegan 3D yang bergerak sendiri, foto, atau ilustrasi, dengan keterangan. */
+const LessonMediaView: React.FC<{ id: string; fallback: SceneKind }> = ({ id, fallback }) => {
+  const m = getLessonMedia(id);
+  const live = React.useRef<Live>({ ts: 0, roll: 0, stir: 0, progress: 0, done: false, lm: null });
+  return (
+    <div className="absolute inset-0">
+      {m.kind === 'video' && <video src={`${m.src}#t=0.1`} autoPlay muted loop playsInline preload="metadata" className="h-full w-full object-cover" aria-label={m.caption} />}
+      {m.kind === 'photo' && <img src={m.src} alt={m.caption} className="h-full w-full object-cover" />}
+      {m.kind === 'scene' && <Scene kind={m.scene ?? fallback} className="h-full w-full" />}
+      {m.kind === '3d' && (
+        <React.Suspense fallback={<Scene kind={fallback} className="h-full w-full" />}>
+          <Alat3DLazy prop={m.prop} live={live} caption={false} className="h-full w-full" />
+        </React.Suspense>
+      )}
+      <p className="absolute inset-x-3 bottom-4 rounded-xl bg-deep-forest/80 px-3 py-1.5 text-[11px] font-semibold leading-snug text-coconut">{m.caption}</p>
+    </div>
+  );
+};
+
+const CardShell: React.FC<{ kind: SceneKind; children: React.ReactNode; scene?: React.ReactNode; compact?: boolean; media?: React.ReactNode }> = ({ kind, children, scene, compact, media }) => (
   <section className="no-scrollbar h-full w-full shrink-0 snap-center overflow-y-auto">
-    <div className={`relative overflow-hidden rounded-b-[32px] ${compact ? 'h-[84px]' : 'h-[40%] min-h-[220px]'}`}>
-      <Scene kind={kind} className="absolute inset-0 h-full w-full" />
+    <div className={`relative overflow-hidden rounded-b-[32px] ${media ? 'h-[36%] min-h-[210px]' : compact ? 'h-[84px]' : 'h-[40%] min-h-[220px]'}`}>
+      {media ?? <Scene kind={kind} className="absolute inset-0 h-full w-full" />}
       {scene}
     </div>
     <div className={`px-6 pb-6 ${compact ? 'pt-3' : 'pt-4'}`}>{children}</div>
@@ -130,7 +152,7 @@ export const Bab: React.FC = () => {
         )}
 
         {mod.lessons.map((l, n) => (
-          <CardShell key={l.id} kind={kind} compact>
+          <CardShell key={l.id} kind={kind} media={<LessonMediaView id={l.id} fallback={kind} />}>
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-caramel-dark">
               {t('Pelajaran', 'Lesson')} {n + 1} {t('dari', 'of')} {mod.lessons.length} · {l.duration}
             </p>

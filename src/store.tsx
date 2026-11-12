@@ -41,6 +41,7 @@ interface PersistedState {
   /** NIRA Enterprise: mitra, catatan pembelian, dan harga acuan pasar (Rp per kg). */
   partners: Partner[];
   purchases: Purchase[];
+  orders: Order[];
   marketRef: number;
   session: Session | null;
   onboarded: boolean;
@@ -64,6 +65,19 @@ export interface Purchase {
   kg: number;
   pricePerKg: number;
   marketRef: number; // harga acuan pasar saat dicatat
+}
+
+export type OrderStatus = 'Baru' | 'Dikemas' | 'Dikirim' | 'Selesai';
+export const ORDER_FLOW: OrderStatus[] = ['Baru', 'Dikemas', 'Dikirim', 'Selesai'];
+
+/** Pesanan NIRA Enterprise. Saluran ditentukan dari jumlah: reseller hanya bila memenuhi minimal order. */
+export interface Order {
+  id: string;
+  date: string;
+  buyer: string;
+  channel: 'langsung' | 'reseller';
+  kg: number;
+  status: OrderStatus;
 }
 
 export interface Annotation {
@@ -99,6 +113,14 @@ const SEED_PURCHASES: Purchase[] = [
   { id: 'PUR-003', date: '16 Mei 2026', partnerId: 'MIT-01', kg: 110, pricePerKg: 20500, marketRef: 16000 },
 ];
 
+const SEED_ORDERS: Order[] = [
+  { id: 'ORD-001', date: '18 Mei 2026', buyer: 'Toko Oleh-oleh Purwokerto', channel: 'reseller', kg: 40, status: 'Dikemas' },
+  { id: 'ORD-002', date: '19 Mei 2026', buyer: 'Ibu Sari', channel: 'langsung', kg: 3, status: 'Baru' },
+  { id: 'ORD-003', date: '19 Mei 2026', buyer: 'Kedai Kopi Nira', channel: 'reseller', kg: 30, status: 'Baru' },
+  { id: 'ORD-004', date: '15 Mei 2026', buyer: 'Pak Budi', channel: 'langsung', kg: 5, status: 'Dikirim' },
+  { id: 'ORD-005', date: '10 Mei 2026', buyer: 'Warung Gula Jawa', channel: 'reseller', kg: 35, status: 'Selesai' },
+];
+
 const SEED_SUBMISSIONS: LearnerSubmission[] = [
   {
     id: 'SUB-001', learnerId: 'L-01', learnerName: 'Rani (pilot)', learnerAvatar: '', questId: 'QUEST-02', questTitle: 'The Alchemy of Warm Sap', moduleTitle: 'Kerajinan Tradisional & Transfer Pengetahuan',
@@ -131,6 +153,7 @@ const initialState = (): PersistedState => ({
   annotations: {},
   partners: SEED_PARTNERS,
   purchases: SEED_PURCHASES,
+  orders: SEED_ORDERS,
   marketRef: 16000,
   session: null,
   onboarded: false,
@@ -184,6 +207,8 @@ interface Store extends PersistedState {
   addBatch: (b: Omit<QrBatch, 'code'>) => QrBatch;
   addRecord: (r: HeritageRecord) => void;
   addPurchase: (p: { partnerId: string; kg: number; pricePerKg: number }) => void;
+  addOrder: (o: { buyer: string; kg: number }) => void;
+  advanceOrder: (id: string) => void;
   setMarketRef: (v: number) => void;
   setBatchPricing: (code: string, pricing: NonNullable<QrBatch['pricing']>) => void;
   validateSubmission: (id: string, input: ValidateInput) => void;
@@ -412,6 +437,27 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const addOrder = useCallback((o: { buyer: string; kg: number }) => {
+    setState((s) => {
+      const id = `ORD-${String(s.orders.length + 1).padStart(3, '0')}`;
+      const channel: Order['channel'] = o.kg >= 30 ? 'reseller' : 'langsung';
+      const rec: Order = { id, date: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }), buyer: o.buyer, channel, kg: o.kg, status: 'Baru' };
+      return { ...s, orders: [rec, ...s.orders], audit: audited(s, 'Enterprise', 'Mencatat pesanan', id, `${o.buyer}: ${o.kg} kg (${channel})`) };
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const advanceOrder = useCallback((id: string) => {
+    setState((s) => {
+      const o = s.orders.find((x) => x.id === id);
+      if (!o) return s;
+      const next = ORDER_FLOW[ORDER_FLOW.indexOf(o.status) + 1];
+      if (!next) return s;
+      return { ...s, orders: s.orders.map((x) => (x.id === id ? { ...x, status: next } : x)), audit: audited(s, 'Enterprise', 'Memajukan pesanan', id, `${o.status} → ${next}`) };
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const setMarketRef = useCallback((v: number) => {
     setState((s) => (v > 0 ? { ...s, marketRef: v } : s));
   }, []);
@@ -471,8 +517,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           badges: state.badges.map((b) => (BADGE_EN[b.id] ? { ...b, ...BADGE_EN[b.id] } : b)),
         }
       : { records: state.records, modules: state.modules, quests: state.quests, badges: state.badges };
-    return { ...state, ...loc, level: lvl(level) as typeof level, nextLevel: lvl(nextLevel), toast, showToast, completeQuest, submitReflection, checkIn, completeModule, completeLab, signIn, reviewRecord, addBatch, addRecord, addPurchase, setMarketRef, setBatchPricing, validateSubmission, saveAnnotation, approveAnnotation, signOut, finishOnboarding, reset };
-  }, [state, lang, toast, showToast, completeQuest, submitReflection, checkIn, completeModule, completeLab, signIn, reviewRecord, addBatch, addRecord, addPurchase, setMarketRef, setBatchPricing, validateSubmission, saveAnnotation, approveAnnotation, signOut, finishOnboarding, reset]);
+    return { ...state, ...loc, level: lvl(level) as typeof level, nextLevel: lvl(nextLevel), toast, showToast, completeQuest, submitReflection, checkIn, completeModule, completeLab, signIn, reviewRecord, addBatch, addRecord, addPurchase, addOrder, advanceOrder, setMarketRef, setBatchPricing, validateSubmission, saveAnnotation, approveAnnotation, signOut, finishOnboarding, reset };
+  }, [state, lang, toast, showToast, completeQuest, submitReflection, checkIn, completeModule, completeLab, signIn, reviewRecord, addBatch, addRecord, addPurchase, addOrder, advanceOrder, setMarketRef, setBatchPricing, validateSubmission, saveAnnotation, approveAnnotation, signOut, finishOnboarding, reset]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 };

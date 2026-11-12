@@ -60,3 +60,29 @@ export const getLessonBody = (id: string): string =>
       'One packaging batch links to its village of origin and only to recordings the curator approved with QR permission. A buyer who scans sees the story, the game, and where the money from the pack goes.',
     ),
   } as Record<string, string>)[id] ?? '';
+
+export type LessonMedia =
+  | { kind: 'video'; src: string; caption: string }
+  | { kind: '3d'; prop: 'pongkor' | 'wajan' | 'kain' | 'pohon' | 'tungku' | 'kemasan'; caption: string }
+  | { kind: 'photo'; src: string; caption: string }
+  | { kind: 'scene'; scene: 'penderes' | 'bersama' | 'keselamatan' | 'keberlanjutan' | 'kerajinan' | 'identitas'; caption: string };
+
+const FIELD = () => t('Rekaman lapangan tim NIRA KITA', 'Field recording by the NIRA KITA team');
+
+/** Media tiap pelajaran: klip lapangan tim, adegan 3D yang bergerak, foto dapur, atau ilustrasi. */
+export const getLessonMedia = (id: string): LessonMedia =>
+  ({
+    'L-101': { kind: 'video', src: '/media/pohon-kelapa.mp4', caption: t('Pohon kelapa dilihat dari darat. ' , 'A coconut tree seen from the ground. ') + FIELD() },
+    'L-102': { kind: 'scene', scene: 'penderes', caption: t('Fajar di kebun kelapa', 'Dawn in the coconut grove') },
+    'L-103': { kind: '3d', prop: 'pongkor', caption: t('Pongkor: wadah bambu penampung nira', 'Pongkor: the bamboo container for sap') },
+    'L-104': { kind: 'scene', scene: 'bersama', caption: t('Pengetahuan diteruskan bersama', 'Knowledge passed on together') },
+    'L-201': { kind: '3d', prop: 'kain', caption: t('Kain saring menahan semut, bunga kelapa, dan lebah', 'The filter cloth holds back ants, coconut flowers, and bees') },
+    'L-202': { kind: 'video', src: '/media/wajan-nira.mp4', caption: t('Nira di wajan di atas tungku batu. ', 'Sap in the wok over a stone stove. ') + FIELD() },
+    'L-203': { kind: 'video', src: '/media/mengaduk.mp4', caption: t('Mengaduk pekatan nira. ', 'Stirring the reduced sap. ') + FIELD() },
+    'L-301': { kind: '3d', prop: 'pohon', caption: t('Belajar dari darat: tidak ada yang memanjat', 'Learning from the ground: nobody climbs') },
+    'L-302': { kind: '3d', prop: 'tungku', caption: t('Tungku panas: duduk di luar lingkaran aman', 'A hot stove: sit outside the safe ring') },
+    'L-303': { kind: 'scene', scene: 'keselamatan', caption: t('Tahu siapa yang harus dihubungi', 'Know who to contact') },
+    'L-401': { kind: 'scene', scene: 'keberlanjutan', caption: t('Dari nira sampai ke pembeli', 'From sap to the buyer') },
+    'L-402': { kind: 'scene', scene: 'bersama', caption: t('Cerita dengan izin perajin', 'Stories told with the artisan\'s consent') },
+    'L-403': { kind: '3d', prop: 'kemasan', caption: t('Kemasan dengan QR Paspor Warisan', 'A package with the Heritage Passport QR') },
+  } as Record<string, LessonMedia>)[id];
