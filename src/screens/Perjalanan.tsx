@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight, FlaskConical, Hand, Lock, Sparkles } from 'lucide-react';
-import { Nira } from '../art/Nira';
 import { SLUG_SCENE, Scene } from '../art/Scene';
 import { JalurArt, Station, pathFor, stationPoints } from '../art/JalurArt';
 import { ProgressBar, Sheet } from '../components/ui';
@@ -45,11 +44,6 @@ export const Perjalanan: React.FC = () => {
     <div className="bg-cream">
       <header className="px-5 pb-1 pt-5">
         <div className="flex items-center gap-3">
-          <span className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-coconut bg-gradient-to-b from-[#FBE9C9] to-[#DCE6C4] shadow-sm">
-            <span className="mt-2">
-              <Nira mood="happy" size={40} float={false} />
-            </span>
-          </span>
           <div className="min-w-0 flex-1">
             <p className="text-xs font-semibold text-ink-soft">{t('Halo,', 'Hello,')}</p>
             <p className="truncate font-serif text-[22px] leading-tight text-deep-forest">{session?.name}</p>
@@ -59,7 +53,6 @@ export const Perjalanan: React.FC = () => {
 
         <div className="mt-4 rounded-3xl border border-bamboo bg-coconut p-4 shadow-[0_8px_22px_-14px_rgba(24,56,44,0.55)]">
           <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-caramel/15 font-serif text-xl text-caramel-dark">{level.level}</span>
             <div className="min-w-0 flex-1">
               <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-caramel-dark">{t('Level', 'Level')} {level.level}</p>
               <p className="truncate text-base font-semibold leading-tight text-deep-forest">{level.indonesianName}</p>

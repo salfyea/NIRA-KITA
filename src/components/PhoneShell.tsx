@@ -20,26 +20,23 @@ const getTabs = () => [
 const TabBar: React.FC = () => (
   <nav
     aria-label={t('Navigasi utama', 'Main navigation')}
-    className="absolute inset-x-0 bottom-0 z-30 border-t border-bamboo bg-coconut/95 px-2 pb-[max(10px,env(safe-area-inset-bottom))] pt-2 backdrop-blur-md"
+    className="absolute inset-x-3 bottom-[max(12px,env(safe-area-inset-bottom))] z-30 rounded-[30px] border border-bamboo/80 bg-coconut/90 p-1.5 shadow-[0_16px_34px_-12px_rgba(16,38,30,0.55),0_2px_6px_rgba(16,38,30,0.08)] backdrop-blur-xl"
   >
-    <ul className="grid grid-cols-4">
+    <ul className="grid grid-cols-4 gap-1">
       {getTabs().map(({ to, label, Icon, end }) => (
         <li key={to}>
           <NavLink
             to={to}
             end={end}
             className={({ isActive }) =>
-              `relative flex flex-col items-center gap-1 rounded-xl px-1 py-1.5 text-[11px] font-semibold transition-colors ${
-                isActive ? 'text-deep-forest' : 'text-ink-soft hover:text-deep-forest'
+              `flex min-h-[52px] flex-col items-center justify-center gap-0.5 rounded-[22px] px-1 text-[11px] font-semibold transition-colors ${
+                isActive ? 'bg-forest text-coconut shadow-[0_4px_10px_-4px_rgba(16,38,30,0.6)]' : 'text-ink-soft hover:text-deep-forest'
               }`
             }
           >
             {({ isActive }) => (
               <>
-                <span
-                  className={`absolute -top-2 h-[3px] w-8 rounded-full bg-caramel transition-opacity ${isActive ? 'opacity-100' : 'opacity-0'}`}
-                />
-                <Icon className={`h-[22px] w-[22px] ${isActive ? 'text-caramel-dark' : ''}`} strokeWidth={isActive ? 2.3 : 1.9} />
+                <Icon className="h-[21px] w-[21px]" strokeWidth={isActive ? 2.3 : 1.9} />
                 {label}
               </>
             )}
@@ -203,7 +200,7 @@ export const PhoneShell: React.FC = () => {
         <Toast message={toast} />
         <TourOverlay />
         <OfflinePill />
-        <div ref={scrollRef} className={`no-scrollbar relative flex-1 overflow-y-auto ${showTabs ? (pathname === '/learn/peta' ? 'pb-[72px]' : pathname === '/learn' ? '' : 'pb-24') : ''}`}>
+        <div ref={scrollRef} className={`no-scrollbar relative flex-1 overflow-y-auto ${showTabs ? (pathname === '/learn/peta' ? 'pb-[92px]' : pathname === '/learn' ? '' : 'pb-28') : ''}`}>
           <div key={pathname} className={`screen-enter ${showTabs && pathname !== '/learn/peta' ? '' : 'h-full'}`}>
             <Outlet />
           </div>
