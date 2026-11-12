@@ -3,13 +3,16 @@ import { Scene, SceneKind } from './Scene';
 import { t } from '../i18n';
 
 /**
- * Ilustrasi "Jalur Belajar": lanskap vektor dengan empat stasiun modul yang bisa diketuk.
- * Murni SVG supaya bisa diunduh sebagai poster (PNG atau SVG).
+ * Jalur belajar: jalan berkelok di atas latar krem dengan empat medali modul yang bisa diketuk.
+ * Di aplikasi tampil bersih tanpa bingkai; "mode poster" menambah judul dan latar hangat untuk diunduh.
  */
 export const JW = 390;
 export const JROW = 172;
 export const JTOP = 232;
 export const JH = JTOP + 3 * JROW + 250;
+/** Batas atas tampilan: aplikasi memotong langit, poster menyertakan ruang judul. */
+export const VIEW_TOP_APP = 132;
+export const VIEW_TOP_POSTER = 30;
 const XS = [0.3, 0.7, 0.3, 0.7];
 const SERIF = "'DM Serif Display', Georgia, 'Times New Roman', serif";
 const SANS = "Inter, 'Segoe UI', system-ui, sans-serif";
@@ -23,13 +26,14 @@ export interface Station {
   number: string; // "MODUL 01"
   title: string;
   status: Status;
+  percent: number;
 }
 
 export const stationPoints = (n: number) => Array.from({ length: n }, (_, i) => ({ x: XS[i % XS.length] * JW, y: JTOP + i * JROW }));
 
 export const pathFor = (n: number): string => {
   const pts = stationPoints(n);
-  let d = `M${JW / 2} 120 C${JW / 2} 160 ${pts[0].x} 150 ${pts[0].x} ${pts[0].y}`;
+  let d = `M${JW / 2} 100 C${JW / 2} 160 ${pts[0].x} 150 ${pts[0].x} ${pts[0].y}`;
   for (let i = 1; i < n; i++) {
     const q = pts[i - 1];
     const p = pts[i];
@@ -41,29 +45,27 @@ export const pathFor = (n: number): string => {
   return d;
 };
 
+/** Pohon kelapa di tepi saja, supaya jalan dan medali tetap lega. */
 const PALMS: [number, number, number][] = [
-  [40, 330, 1], [70, 352, 0.85], [350, 300, 1], [330, 330, 0.8], [36, 462, 0.95], [66, 480, 0.8], [352, 520, 1], [326, 548, 0.85],
-  [44, 640, 1], [76, 664, 0.8], [350, 690, 0.95], [322, 716, 0.8], [40, 790, 0.9], [352, 800, 0.95], [70, 830, 0.8], [322, 836, 0.85],
-  [30, 250, 0.8], [362, 230, 0.75],
+  [30, 196, 0.8], [362, 176, 0.75], [34, 392, 0.95], [356, 330, 0.9], [36, 566, 0.9], [366, 548, 0.95], [34, 746, 0.95], [360, 690, 0.85], [354, 900, 0.9],
 ].sort((a, b) => a[1] - b[1]) as [number, number, number][];
 
 const Palm: React.FC<{ x: number; y: number; s: number }> = ({ x, y, s }) => <use href="#jl-palm" x={x - 17 * s} y={y - 46 * s} width={34 * s} height={46 * s} />;
 
 const Medallion: React.FC<{ s: Station; x: number; y: number; poster: boolean; onOpen: () => void }> = ({ s, x, y, poster, onOpen }) => {
   const st: Status = poster ? 'open' : s.status;
-  const R = 46;
-  const ring = st === 'active' ? '#B87943' : st === 'done' ? '#234B3A' : poster ? '#B87943' : '#C9BC9C';
+  const R = 44;
+  const ring = st === 'active' ? '#B87943' : st === 'done' ? '#234B3A' : poster ? '#B87943' : '#D2C7AA';
   const cid = `jl-clip-${s.id}`;
   const label = s.number.replace('MODUL ', t('MODUL ', 'MODULE '));
   const title = s.title.split(' & ')[0];
-  const fs = title.length > 22 ? 10.5 : 13;
-  const tw = Math.max(86, title.length * fs * 0.53 + 26);
-  const cx = Math.min(JW - 34 - (tw / 2 + 8), Math.max(34 + (tw / 2 + 8), x));
+  const fs = title.length > 22 ? 12.5 : 14.5;
+  const showPct = !poster && st !== 'locked' && s.percent > 0 && s.percent < 100;
   return (
     <g
       role="button"
       tabIndex={0}
-      aria-label={`${label}: ${s.title}${st === 'locked' ? t(', terkunci', ', locked') : ''}`}
+      aria-label={`${label}: ${s.title}${st === 'locked' ? t(', terkunci', ', locked') : showPct ? `, ${s.percent}%` : ''}`}
       onClick={onOpen}
       onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), onOpen())}
       style={{ cursor: 'pointer', outline: 'none' }}
@@ -71,38 +73,52 @@ const Medallion: React.FC<{ s: Station; x: number; y: number; poster: boolean; o
       <clipPath id={cid}>
         <circle cx={x} cy={y} r={R - 5} />
       </clipPath>
-      <ellipse cx={x} cy={y + R + 5} rx={R * 0.9} ry={8} fill="#18382C" opacity="0.18" />
+      <ellipse cx={x} cy={y + R + 4} rx={R * 0.85} ry={7} fill="#18382C" opacity="0.14" />
       {st === 'active' && (
-        <circle cx={x} cy={y} r={R + 10} fill="none" stroke="#B87943" strokeWidth="3">
-          <animate attributeName="r" values={`${R + 6};${R + 16};${R + 6}`} dur="2.2s" repeatCount="indefinite" />
-          <animate attributeName="opacity" values="0.9;0.15;0.9" dur="2.2s" repeatCount="indefinite" />
+        <circle cx={x} cy={y} r={R + 12} fill="none" stroke="#B87943" strokeWidth="2.5">
+          <animate attributeName="r" values={`${R + 9};${R + 20};${R + 9}`} dur="2.4s" repeatCount="indefinite" />
+          <animate attributeName="opacity" values="0.75;0.05;0.75" dur="2.4s" repeatCount="indefinite" />
         </circle>
       )}
-      <circle cx={x} cy={y} r={R + 4} fill="#FFFDF8" />
+      {/* cincin kemajuan modul */}
+      {showPct && (
+        <>
+          <circle cx={x} cy={y} r={R + 8} fill="none" stroke="#E7DCC2" strokeWidth="5" />
+          <circle cx={x} cy={y} r={R + 8} fill="none" stroke="#4C9B45" strokeWidth="5" strokeLinecap="round" pathLength="100" strokeDasharray={`${s.percent} 100`} transform={`rotate(-90 ${x} ${y})`} />
+        </>
+      )}
+      <circle cx={x} cy={y} r={R + 3} fill="#FFFDF8" />
       <circle cx={x} cy={y} r={R} fill={ring} />
-      <g clipPath={`url(#${cid})`} filter={st === 'locked' ? 'url(#jl-grey)' : undefined} opacity={st === 'locked' ? 0.7 : 1}>
-        <Scene kind={s.kind} svgProps={{ x: x - 62, y: y - 48, width: 124, height: 96, 'aria-hidden': true, role: undefined }} />
+      <g clipPath={`url(#${cid})`} filter={st === 'locked' ? 'url(#jl-grey)' : undefined} opacity={st === 'locked' ? 0.65 : 1}>
+        <Scene kind={s.kind} svgProps={{ x: x - 60, y: y - 46, width: 120, height: 92, 'aria-hidden': true, role: undefined }} />
       </g>
       <circle cx={x} cy={y} r={R - 5} fill="none" stroke="#FFFDF8" strokeWidth="2.5" />
       {st === 'done' && (
         <g>
-          <circle cx={x + 34} cy={y - 34} r={13} fill="#234B3A" stroke="#FFFDF8" strokeWidth="3" />
-          <path d={`M${x + 28} ${y - 34} l4.5 4.5 l8 -9`} fill="none" stroke="#FFFDF8" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+          <circle cx={x + 33} cy={y - 33} r={12.5} fill="#234B3A" stroke="#FFFDF8" strokeWidth="3" />
+          <path d={`M${x + 27.5} ${y - 33} l4.3 4.3 l7.6 -8.6`} fill="none" stroke="#FFFDF8" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+        </g>
+      )}
+      {showPct && (
+        <g>
+          <rect x={x + 18} y={y + 24} width={32} height={17} rx={8.5} fill="#4C9B45" stroke="#FFFDF8" strokeWidth="2.4" />
+          <text x={x + 34} y={y + 36.4} textAnchor="middle" fontFamily={SANS} fontSize="10" fontWeight="700" fill="#FFFDF8">
+            {s.percent}%
+          </text>
         </g>
       )}
       {st === 'locked' && (
         <g>
-          <circle cx={x} cy={y} r={16} fill="#18382C" opacity="0.82" />
+          <circle cx={x} cy={y} r={16} fill="#18382C" opacity="0.8" />
           <rect x={x - 6.5} y={y - 2.5} width={13} height={10} rx={2} fill="#FFFDF8" />
           <path d={`M${x - 4} ${y - 2.5} v-3.5 a4 4 0 0 1 8 0 v3.5`} fill="none" stroke="#FFFDF8" strokeWidth="2.2" />
         </g>
       )}
-      {/* pita nama */}
-      <path d={`M${cx - tw / 2 - 8} ${y + R + 12} h${tw + 16} l-7 13 l7 13 h-${tw + 16} l7 -13z`} fill="#234B3A" stroke="#B87943" strokeWidth="1.6" strokeLinejoin="round" />
-      <text x={cx} y={y + R + 23.5} textAnchor="middle" fontFamily={SANS} fontSize="8.5" fontWeight="700" letterSpacing="1.6" fill="#E7C79A">
+      {/* nama modul */}
+      <text x={x} y={y + R + 24} textAnchor="middle" fontFamily={SANS} fontSize="9.5" fontWeight="700" letterSpacing="2" fill={st === 'locked' ? '#8A8F86' : '#B87943'}>
         {label}
       </text>
-      <text x={cx} y={y + R + 36} textAnchor="middle" fontFamily={SERIF} fontSize={fs} fill="#FFFDF8">
+      <text x={x} y={y + R + 42} textAnchor="middle" fontFamily={SERIF} fontSize={fs} fill={st === 'locked' ? '#7C8279' : '#18382C'}>
         {title}
       </text>
     </g>
@@ -114,26 +130,18 @@ export const JalurArt = React.forwardRef<SVGSVGElement, { stations: Station[]; p
   const pts = stationPoints(n);
   const d = pathFor(n);
   const activeIdx = stations.findIndex((s) => s.status === 'active');
+  const top = poster ? VIEW_TOP_POSTER : VIEW_TOP_APP;
   return (
-    <svg ref={ref} xmlns="http://www.w3.org/2000/svg" viewBox={`0 0 ${JW} ${JH}`} role="group" aria-label={t('Jalur belajar: empat modul', 'Learning path: four modules')} className="block h-auto w-full">
+    <svg ref={ref} xmlns="http://www.w3.org/2000/svg" viewBox={`0 ${top} ${JW} ${JH - top}`} role="group" aria-label={t('Jalur belajar: empat modul', 'Learning path: four modules')} className="block h-auto w-full">
       <defs>
-        <linearGradient id="jl-sky" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#F4C98A" />
-          <stop offset="0.5" stopColor="#FBE3BB" />
-          <stop offset="1" stopColor="#F4E8CB" />
-        </linearGradient>
-        <linearGradient id="jl-land" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#C2D69B" />
-          <stop offset="0.45" stopColor="#A9C48B" />
-          <stop offset="1" stopColor="#86AB74" />
-        </linearGradient>
-        <linearGradient id="jl-mtn" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#8BA68F" />
-          <stop offset="1" stopColor="#BCC6A6" />
+        <linearGradient id="jl-bg" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#F8DDB0" />
+          <stop offset="0.22" stopColor="#FBF1DC" />
+          <stop offset="1" stopColor="#E3EBD0" />
         </linearGradient>
         <radialGradient id="jl-sun" cx="0.5" cy="0.5" r="0.5">
           <stop offset="0" stopColor="#FFF6DC" />
-          <stop offset="0.45" stopColor="#FFE9B8" stopOpacity="0.9" />
+          <stop offset="0.45" stopColor="#FFE9B8" stopOpacity="0.85" />
           <stop offset="1" stopColor="#FFE9B8" stopOpacity="0" />
         </radialGradient>
         <radialGradient id="jl-body" cx="0.38" cy="0.3" r="0.85">
@@ -141,21 +149,9 @@ export const JalurArt = React.forwardRef<SVGSVGElement, { stations: Station[]; p
           <stop offset="0.5" stopColor="#B6CF8E" />
           <stop offset="1" stopColor="#7BA36A" />
         </radialGradient>
-        <pattern id="jl-terrace" width="16" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(-7)">
-          <rect width="16" height="7" fill="#CBDB82" />
-          <path d="M0 5.5 Q4 3.5 8 5.5 T16 5.5" fill="none" stroke="#A7BD62" strokeWidth="1.4" />
-          <path d="M0 1.8 Q4 0 8 1.8 T16 1.8" fill="none" stroke="#DBE79C" strokeWidth="1" />
-        </pattern>
-        <filter id="jl-paper" x="0" y="0" width="100%" height="100%">
-          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="7" result="n" />
-          <feColorMatrix in="n" type="matrix" values="0 0 0 0 0.45  0 0 0 0 0.36  0 0 0 0 0.2  0 0 0 0.09 0" />
-        </filter>
         <filter id="jl-grey">
           <feColorMatrix type="saturate" values="0" />
         </filter>
-        <clipPath id="jl-clip">
-          <rect x="15" y="15" width={JW - 30} height={JH - 30} rx="12" />
-        </clipPath>
         <symbol id="jl-palm" viewBox="-2 -4 40 52">
           <path d="M15 46 Q17 28 17 14 L19 14 Q19 28 21 46Z" fill="#7A4F28" />
           <path d="M18 14 C8 4 -2 6 -2 12 C6 10 12 11 18 14Z" fill="#2F6A4B" />
@@ -188,140 +184,99 @@ export const JalurArt = React.forwardRef<SVGSVGElement, { stations: Station[]; p
         </symbol>
       </defs>
 
-      <rect width={JW} height={JH} fill="#F4E8CB" />
-      <rect width={JW} height={JH} filter="url(#jl-paper)" />
+      {/* latar: transparan di aplikasi, hangat di poster */}
+      {poster && (
+        <>
+          <rect x="0" y={top} width={JW} height={JH - top} fill="url(#jl-bg)" />
+          <circle cx="322" cy="86" r="60" fill="url(#jl-sun)" />
+          <circle cx="322" cy="86" r="16" fill="#FFF1CF" />
+        </>
+      )}
 
-      <g clipPath="url(#jl-clip)">
-        {/* langit */}
-        <rect width={JW} height="330" fill="url(#jl-sky)" />
-        <circle cx="318" cy="168" r="62" fill="url(#jl-sun)" />
-        <circle cx="318" cy="168" r="17" fill="#FFF1CF" />
-        <g fill="#FFFDF8" opacity="0.85">
-          <ellipse cx="62" cy="150" rx="26" ry="7" />
-          <ellipse cx="80" cy="144" rx="18" ry="7" />
-          <ellipse cx="236" cy="132" rx="22" ry="6" />
-          <ellipse cx="252" cy="127" rx="14" ry="6" />
-        </g>
-        {/* gunung di kejauhan */}
-        <path d="M-10 262 L46 224 L96 200 L140 168 L176 196 L232 226 L292 214 L346 236 L400 252 V300 H-10Z" fill="url(#jl-mtn)" opacity="0.75" />
-        <path d="M-10 278 L66 246 L130 218 L196 244 L268 232 L330 252 L400 268 V310 H-10Z" fill="#9DB596" opacity="0.8" />
+      {/* bukit lembut di dasar halaman */}
+      <path d={`M-10 ${JH - 190} C70 ${JH - 230} 150 ${JH - 170} 230 ${JH - 205} S350 ${JH - 230} 400 ${JH - 200} V${JH + 10} H-10Z`} fill="#CFDDB8" opacity="0.55" />
+      <path d={`M-10 ${JH - 120} C80 ${JH - 150} 170 ${JH - 100} 260 ${JH - 130} S360 ${JH - 140} 400 ${JH - 118} V${JH + 10} H-10Z`} fill="#B9CFA0" opacity="0.6" />
 
-        {/* daratan */}
-        <path d="M-10 276 C60 262 130 286 200 274 C270 262 330 284 400 272 V1000 H-10Z" fill="url(#jl-land)" />
-        <g fill="none" stroke="#DCE8BC" strokeWidth="1.2" opacity="0.6">
-          <path d="M-10 300 C70 286 130 312 200 300 C270 288 340 312 400 298" />
-          <path d="M-10 470 C60 458 120 484 190 474 C260 464 330 486 400 470" opacity="0.7" />
-          <path d="M-10 640 C70 628 130 654 200 644 C270 634 340 656 400 640" opacity="0.6" />
-          <path d="M-10 810 C70 798 130 824 200 814 C270 804 340 826 400 810" opacity="0.55" />
-        </g>
-
-        {/* sungai dan jembatan, tepat di tengah ruas modul 1 ke 2 */}
-        <path d="M-10 338 C70 358 130 318 200 338 S320 362 400 344" fill="none" stroke="#7DB1B9" strokeWidth="18" strokeLinecap="round" />
-        <path d="M-10 338 C70 358 130 318 200 338 S320 362 400 344" fill="none" stroke="#A9D3D6" strokeWidth="12" strokeLinecap="round" />
-        <path d="M-10 338 C70 358 130 318 200 338 S320 362 400 344" fill="none" stroke="#E3F3F2" strokeWidth="1.6" strokeLinecap="round" strokeDasharray="5 7" />
-
-        {/* sawah berteras */}
-        <path d="M24 408 C48 396 92 400 112 412 L106 448 C84 460 48 458 24 446Z" fill="url(#jl-terrace)" stroke="#9DB35E" strokeWidth="1.2" />
-        <path d="M296 572 C322 560 360 564 374 576 L370 608 C350 620 316 618 296 606Z" fill="url(#jl-terrace)" stroke="#9DB35E" strokeWidth="1.2" />
-        <path d="M22 738 C46 726 90 730 110 742 L104 776 C82 788 46 786 22 774Z" fill="url(#jl-terrace)" stroke="#9DB35E" strokeWidth="1.2" />
-
-        {/* kebun kelapa */}
-        {PALMS.map(([x, y, s], i) => (
-          <Palm key={i} x={x} y={y} s={s} />
-        ))}
-
-        {/* jalan */}
-        <path d={d} fill="none" stroke="#B79A6B" strokeWidth="26" strokeLinecap="round" strokeLinejoin="round" opacity="0.55" />
-        <path d={d} fill="none" stroke="#E9D8B2" strokeWidth="22" strokeLinecap="round" strokeLinejoin="round" />
-        <path d={d} fill="none" stroke="#F7EED6" strokeWidth="14" strokeLinecap="round" strokeLinejoin="round" />
-        <path d={d} fill="none" stroke="#B79A6B" strokeWidth="2" strokeLinecap="round" strokeDasharray="2 11" opacity="0.8" />
-        {/* bagian yang sudah dilalui */}
-        {!poster && doneLength !== null && (
-          <path d={d} fill="none" stroke="#B87943" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" strokeDasharray={`${doneLength} 100000`} opacity="0.95" />
-        )}
-        {/* jembatan */}
-        <g transform="translate(229 342) rotate(33)">
-          <rect x="-34" y="-17" width="68" height="34" rx="4" fill="#8A5A2B" />
-          <rect x="-31" y="-14" width="62" height="28" rx="3" fill="#C99A5E" />
-          {[-24, -12, 0, 12, 24].map((px) => (
-            <line key={px} x1={px} y1="-14" x2={px} y2="14" stroke="#8A5A2B" strokeWidth="1.4" />
-          ))}
-          <line x1="-34" y1="-17" x2="34" y2="-17" stroke="#5C4023" strokeWidth="2.6" />
-          <line x1="-34" y1="17" x2="34" y2="17" stroke="#5C4023" strokeWidth="2.6" />
-        </g>
-
-        {/* perlengkapan di sepanjang jalan: pongkor, wajan, tanda hati-hati, kemasan */}
-        <g transform="translate(274 270)">
-          <rect x="-7" y="-22" width="14" height="40" rx="5" fill="#C9B05F" stroke="#9C8540" strokeWidth="1.2" />
-          <rect x="-8" y="-9" width="16" height="3" fill="#9C8540" />
-          <rect x="-8" y="6" width="16" height="3" fill="#9C8540" />
-          <ellipse cx="0" cy="-22" rx="7" ry="2.4" fill="#4A3A18" />
-        </g>
-        <g transform="translate(92 468)">
-          <ellipse cx="0" cy="12" rx="22" ry="5" fill="#18382C" opacity="0.18" />
-          <rect x="-17" y="-4" width="34" height="16" rx="5" fill="#8C8678" />
-          <path d="M-20 -4 Q0 -22 20 -4Z" fill="#2C2C2F" />
-          <ellipse cx="0" cy="-5" rx="19" ry="4" fill="#C98A3A" />
-          <path d="M-5 -14 q-3 -8 1 -14 M4 -14 q-3 -8 1 -16" stroke="#FFFDF8" strokeWidth="2.4" fill="none" strokeLinecap="round" opacity="0.8" />
-        </g>
-        <g transform="translate(296 640)">
-          <path d="M0 -26 L24 14 H-24Z" fill="#F2B84B" stroke="#18382C" strokeWidth="2.4" strokeLinejoin="round" />
-          <rect x="-2.2" y="-12" width="4.4" height="14" rx="2" fill="#18382C" />
-          <circle cx="0" cy="7.5" r="2.6" fill="#18382C" />
-          <rect x="-1.6" y="14" width="3.2" height="22" fill="#7A4F28" />
-        </g>
-        <g transform="translate(86 806)">
-          <rect x="-16" y="-24" width="32" height="42" rx="4" fill="#C9A26B" stroke="#8F6A3A" strokeWidth="1.4" />
-          <rect x="-11" y="-14" width="22" height="22" fill="#FFFDF8" />
-          <path d="M-8 -11 h6 v6 h-6z M2 -11 h6 v6 h-6z M-8 -1 h6 v6 h-6z M3 0 h3 v3 h-3z" fill="#18382C" />
-        </g>
-
-        {/* desa di ujung jalur */}
-        <g>
-          <use href="#jl-house" x={JW / 2 - 118} y={JTOP + 3 * JROW + 104} width="46" height="41" />
-          <use href="#jl-house" x={JW / 2 + 56} y={JTOP + 3 * JROW + 98} width="52" height="46" />
-        </g>
-        <g transform={`translate(${JW / 2 + 22} ${JTOP + 3 * JROW + 196})`}>
-          <rect x="-1.8" y="-52" width="3.6" height="56" fill="#5C4023" />
-          <path d="M1.8 -52 h54 l-9 11 l9 11 h-54z" fill="#B87943" stroke="#FFFDF8" strokeWidth="1.6" strokeLinejoin="round" />
-        </g>
-
-        {/* stasiun modul */}
-        {stations.map((s, i) => (
-          <Medallion key={s.id} s={s} x={pts[i].x} y={pts[i].y} poster={poster} onOpen={() => onOpen(s.slug)} />
-        ))}
-
-        {/* Nira: di stasiun aktif, atau di awal jalur pada poster */}
-        {(() => {
-          const i = poster ? 0 : Math.max(0, activeIdx);
-          const p = pts[i];
-          const left = p.x > JW / 2;
-          const nx = left ? p.x - 118 : p.x + 62;
-          return <use href="#jl-nira" x={nx} y={p.y - 44} width="52" height="64" />;
-        })()}
-      </g>
-
-      {/* judul */}
-      <g>
-        <path d="M46 30 H344 L332 56 L344 82 H46 L58 56Z" fill="#234B3A" stroke="#B87943" strokeWidth="2.2" strokeLinejoin="round" />
-        <path d="M52 36 H338 L326 56 L338 76 H52 L64 56Z" fill="none" stroke="#E7C79A" strokeWidth="0.9" strokeLinejoin="round" />
-        <text x={JW / 2} y="65" textAnchor="middle" fontFamily={SERIF} fontSize="26" letterSpacing="3" fill="#FFFDF8">
-          {t('JEJAK BELAJAR', 'LEARNING PATH')}
-        </text>
-        <text x={JW / 2} y="103" textAnchor="middle" fontFamily={SANS} fontSize="10.5" fontWeight="700" letterSpacing="2.4" fill="#8F5A2E">
-          {t('EMPAT MODUL · JEJAK NIRA', 'FOUR MODULES · JEJAK NIRA')}
-        </text>
-      </g>
-
-      {/* bingkai */}
-      <rect x="6" y="6" width={JW - 12} height={JH - 12} rx="18" fill="none" stroke="#234B3A" strokeWidth="3.2" />
-      <rect x="14" y="14" width={JW - 28} height={JH - 28} rx="12" fill="none" stroke="#B87943" strokeWidth="1.3" />
-      {([[14, 14], [JW - 14, 14], [14, JH - 14], [JW - 14, JH - 14]] as const).map(([cx, cy]) => (
-        <path key={`${cx}-${cy}`} d={`M${cx} ${cy - 7} L${cx + 7} ${cy} L${cx} ${cy + 7} L${cx - 7} ${cy}Z`} fill="#B87943" stroke="#FFFDF8" strokeWidth="1.4" />
+      {/* kebun kelapa di tepi */}
+      {PALMS.map(([x, y, s], i) => (
+        <Palm key={i} x={x} y={y} s={s} />
       ))}
-      <text x={JW / 2} y={JH - 24} textAnchor="middle" fontFamily={SERIF} fontStyle="italic" fontSize="12" fill="#234B3A">
-        {t('Jejak pengetahuan, warisan masa depan', 'Trail of knowledge, heritage for the future')}
-      </text>
+
+      {/* jalan */}
+      <path d={d} fill="none" stroke="#D3C3A2" strokeWidth="24" strokeLinecap="round" strokeLinejoin="round" />
+      <path d={d} fill="none" stroke="#E9DDC3" strokeWidth="19" strokeLinecap="round" strokeLinejoin="round" />
+      <path d={d} fill="none" stroke="#FFFDF8" strokeWidth="2.6" strokeLinecap="round" strokeDasharray="2 12" />
+      {/* bagian yang sudah dilalui */}
+      {!poster && doneLength !== null && (
+        <>
+          <path d={d} fill="none" stroke="#C99A5E" strokeWidth="19" strokeLinecap="round" strokeLinejoin="round" strokeDasharray={`${doneLength} 100000`} opacity="0.55" />
+          <path d={d} fill="none" stroke="#FFFDF8" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" strokeDasharray={`${doneLength} 100000`} />
+        </>
+      )}
+
+      {/* perlengkapan tiap modul, kecil dan di tepi jalan */}
+      <g transform="translate(300 232)">
+        <rect x="-7" y="-22" width="14" height="40" rx="5" fill="#C9B05F" stroke="#9C8540" strokeWidth="1.2" />
+        <rect x="-8" y="-9" width="16" height="3" fill="#9C8540" />
+        <rect x="-8" y="6" width="16" height="3" fill="#9C8540" />
+        <ellipse cx="0" cy="-22" rx="7" ry="2.4" fill="#4A3A18" />
+      </g>
+      <g transform="translate(88 456)">
+        <ellipse cx="0" cy="12" rx="22" ry="5" fill="#18382C" opacity="0.15" />
+        <rect x="-17" y="-4" width="34" height="16" rx="5" fill="#8C8678" />
+        <path d="M-20 -4 Q0 -22 20 -4Z" fill="#2C2C2F" />
+        <ellipse cx="0" cy="-5" rx="19" ry="4" fill="#C98A3A" />
+        <path d="M-5 -14 q-3 -8 1 -14 M4 -14 q-3 -8 1 -16" stroke="#C9C2B0" strokeWidth="2.4" fill="none" strokeLinecap="round" opacity="0.9" />
+      </g>
+      <g transform="translate(304 610)">
+        <path d="M0 -26 L24 14 H-24Z" fill="#F2B84B" stroke="#18382C" strokeWidth="2.4" strokeLinejoin="round" />
+        <rect x="-2.2" y="-12" width="4.4" height="14" rx="2" fill="#18382C" />
+        <circle cx="0" cy="7.5" r="2.6" fill="#18382C" />
+        <rect x="-1.6" y="14" width="3.2" height="22" fill="#7A4F28" />
+      </g>
+      <g transform="translate(86 790)">
+        <rect x="-16" y="-24" width="32" height="42" rx="4" fill="#C9A26B" stroke="#8F6A3A" strokeWidth="1.4" />
+        <rect x="-11" y="-14" width="22" height="22" fill="#FFFDF8" />
+        <path d="M-8 -11 h6 v6 h-6z M2 -11 h6 v6 h-6z M-8 -1 h6 v6 h-6z M3 0 h3 v3 h-3z" fill="#18382C" />
+      </g>
+
+      {/* desa dan bendera di ujung jalan */}
+      <use href="#jl-house" x={JW / 2 - 118} y={JTOP + 3 * JROW + 104} width="46" height="41" />
+      <use href="#jl-house" x={JW / 2 + 56} y={JTOP + 3 * JROW + 98} width="52" height="46" />
+      <g transform={`translate(${JW / 2 + 22} ${JTOP + 3 * JROW + 196})`}>
+        <rect x="-1.8" y="-52" width="3.6" height="56" fill="#5C4023" />
+        <path d="M1.8 -52 h54 l-9 11 l9 11 h-54z" fill="#B87943" stroke="#FFFDF8" strokeWidth="1.6" strokeLinejoin="round" />
+      </g>
+
+      {/* medali modul */}
+      {stations.map((s, i) => (
+        <Medallion key={s.id} s={s} x={pts[i].x} y={pts[i].y} poster={poster} onOpen={() => onOpen(s.slug)} />
+      ))}
+
+      {/* Nira menemani di stasiun aktif (di awal jalur pada poster) */}
+      {(() => {
+        const i = poster ? 0 : Math.max(0, activeIdx);
+        const p = pts[i];
+        const left = p.x > JW / 2;
+        const nx = left ? p.x - 118 : p.x + 60;
+        return <use href="#jl-nira" x={nx} y={p.y - 44} width="52" height="64" />;
+      })()}
+
+      {/* judul hanya di poster, tanpa bingkai */}
+      {poster && (
+        <g>
+          <text x={JW / 2} y="66" textAnchor="middle" fontFamily={SERIF} fontSize="34" letterSpacing="4" fill="#18382C">
+            {t('JEJAK BELAJAR', 'LEARNING PATH')}
+          </text>
+          <line x1={JW / 2 - 40} y1="80" x2={JW / 2 + 40} y2="80" stroke="#B87943" strokeWidth="2" strokeLinecap="round" />
+          <text x={JW / 2} y="100" textAnchor="middle" fontFamily={SANS} fontSize="10.5" fontWeight="700" letterSpacing="2.4" fill="#8F5A2E">
+            {t('EMPAT MODUL · JEJAK NIRA', 'FOUR MODULES · JEJAK NIRA')}
+          </text>
+          <text x={JW / 2} y={JH - 18} textAnchor="middle" fontFamily={SERIF} fontStyle="italic" fontSize="12.5" fill="#234B3A">
+            {t('Jejak pengetahuan, warisan masa depan', 'Trail of knowledge, heritage for the future')}
+          </text>
+        </g>
+      )}
     </svg>
   );
 });

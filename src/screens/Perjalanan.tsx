@@ -1,9 +1,10 @@
 import React from 'react';
 import { flushSync } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
-import { Download, FlaskConical, Hand, Lock, Sparkles } from 'lucide-react';
+import { ArrowRight, Download, FlaskConical, Hand, Lock, Sparkles } from 'lucide-react';
+import { Nira } from '../art/Nira';
 import { SLUG_SCENE, Scene } from '../art/Scene';
-import { JH, JW, JalurArt, Station, pathFor, stationPoints } from '../art/JalurArt';
+import { JH, JW, JalurArt, Station, VIEW_TOP_POSTER, pathFor, stationPoints } from '../art/JalurArt';
 import { ProgressBar, Sheet } from '../components/ui';
 import { download, lengthsAtY, standaloneSvg, svgToPng } from '../lib/exportSvg';
 import { useStore } from '../store';
@@ -29,7 +30,7 @@ export const Perjalanan: React.FC = () => {
     return 'open';
   };
 
-  const stations: Station[] = modules.map((m, i) => ({ id: m.id, slug: m.slug, kind: SLUG_SCENE[m.slug] ?? 'identitas', number: m.number, title: m.title, status: status(i) }));
+  const stations: Station[] = modules.map((m, i) => ({ id: m.id, slug: m.slug, kind: SLUG_SCENE[m.slug] ?? 'identitas', number: m.number, title: m.title, status: status(i), percent: m.completionPercent }));
 
   // Bagian jalan yang sudah dilalui: sampai stasiun terakhir yang selesai atau sedang berjalan.
   const lastReached = stations.reduce((acc, st, i) => (st.status === 'done' || st.status === 'active' ? i : acc), -1);
@@ -53,10 +54,10 @@ export const Perjalanan: React.FC = () => {
   };
   const savePng = () =>
     exportWith(async (svg) => {
-      const blob = await svgToPng(svg, JW, JH, 5);
+      const blob = await svgToPng(svg, JW, JH - VIEW_TOP_POSTER, 5);
       if (blob) download(blob, 'jalur-belajar-nira.png');
     });
-  const saveSvg = () => exportWith((svg) => download(new Blob([standaloneSvg(svg, JW * 4, JH * 4)], { type: 'image/svg+xml' }), 'jalur-belajar-nira.svg'));
+  const saveSvg = () => exportWith((svg) => download(new Blob([standaloneSvg(svg, JW * 4, (JH - VIEW_TOP_POSTER) * 4)], { type: 'image/svg+xml' }), 'jalur-belajar-nira.svg'));
 
   const sel = modules.find((m) => m.slug === openSlug);
   const selQuest = sel ? quests.find((q) => q.id === sel.associatedQuestId) : undefined;
@@ -65,35 +66,69 @@ export const Perjalanan: React.FC = () => {
 
   return (
     <div className="bg-cream">
-      <header className="relative px-5 pb-2 pt-5">
-        <LangToggle className="absolute right-4 top-3 z-10" />
-        <p className="pr-28 text-sm font-semibold text-ink-soft">
-          {t('Halo', 'Hello')}, {session?.name}
-        </p>
-        <div className="mt-2 flex items-center gap-3 rounded-2xl border border-bamboo bg-coconut px-3 py-2.5">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-caramel/15 text-sm font-bold text-caramel-dark">{level.level}</span>
+      <header className="px-5 pb-1 pt-5">
+        <div className="flex items-center gap-3">
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-coconut bg-gradient-to-b from-[#FBE9C9] to-[#DCE6C4] shadow-sm">
+            <span className="mt-2">
+              <Nira mood="happy" size={40} float={false} />
+            </span>
+          </span>
           <div className="min-w-0 flex-1">
-            <div className="flex items-baseline justify-between gap-2">
-              <p className="truncate text-sm font-semibold text-deep-forest">{level.indonesianName}</p>
-              <p className="shrink-0 text-xs font-semibold text-ink-soft">{xp} XP</p>
-            </div>
-            <ProgressBar value={toNext} className="mt-1.5" />
+            <p className="text-xs font-semibold text-ink-soft">{t('Halo,', 'Hello,')}</p>
+            <p className="truncate font-serif text-[22px] leading-tight text-deep-forest">{session?.name}</p>
           </div>
+          <LangToggle className="shrink-0" />
+        </div>
+
+        <div className="mt-4 rounded-3xl border border-bamboo bg-coconut p-4 shadow-[0_8px_22px_-14px_rgba(24,56,44,0.55)]">
+          <div className="flex items-center gap-3">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-caramel/15 font-serif text-xl text-caramel-dark">{level.level}</span>
+            <div className="min-w-0 flex-1">
+              <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-caramel-dark">{t('Level', 'Level')} {level.level}</p>
+              <p className="truncate text-base font-semibold leading-tight text-deep-forest">{level.indonesianName}</p>
+            </div>
+            <p className="shrink-0 text-right">
+              <span className="font-serif text-2xl leading-none text-deep-forest">{xp}</span>
+              <span className="ml-1 text-xs font-semibold text-ink-soft">XP</span>
+            </p>
+          </div>
+          <ProgressBar value={toNext} className="mt-3" />
+          <p className="mt-1.5 text-xs text-ink-soft">
+            {nextLevel ? t(`${nextLevel.minXp - xp} XP lagi menuju ${nextLevel.indonesianName}`, `${nextLevel.minXp - xp} XP to ${nextLevel.indonesianName}`) : t('Level tertinggi tercapai', 'Top level reached')}
+          </p>
+          {modules[activeIdx] && (
+            <button
+              type="button"
+              onClick={() => setOpenSlug(modules[activeIdx].slug)}
+              className="mt-3 flex min-h-[52px] w-full items-center gap-3 rounded-2xl bg-forest px-4 text-left text-coconut"
+            >
+              <span className="min-w-0 flex-1">
+                <span className="block text-[11px] font-bold uppercase tracking-[0.14em] text-[#E7C79A]">{t('Lanjutkan', 'Continue')}</span>
+                <span className="block truncate text-[15px] font-semibold leading-tight">
+                  {modules[activeIdx].number.replace('MODUL ', t('Modul ', 'Module '))} · {modules[activeIdx].title.split(' & ')[0]}
+                </span>
+              </span>
+              <ArrowRight className="h-5 w-5 shrink-0" />
+            </button>
+          )}
         </div>
       </header>
 
       <div className="px-2 pt-1">
         <JalurArt ref={svgRef} stations={stations} poster={poster} doneLength={doneLength} onOpen={setOpenSlug} />
       </div>
-      <div className="grid grid-cols-2 gap-2 px-4 pb-1 pt-3">
-        <button type="button" onClick={savePng} disabled={busy} className="flex min-h-[44px] items-center justify-center gap-1.5 rounded-full bg-forest text-[13px] font-semibold text-coconut disabled:opacity-60">
-          <Download className="h-4 w-4" /> {busy ? t('Menyiapkan...', 'Preparing...') : t('Poster PNG', 'Poster PNG')}
-        </button>
-        <button type="button" onClick={saveSvg} disabled={busy} className="flex min-h-[44px] items-center justify-center gap-1.5 rounded-full border-2 border-bamboo text-[13px] font-semibold text-deep-forest disabled:opacity-60">
-          <Download className="h-4 w-4" /> {t('Vektor SVG', 'Vector SVG')}
-        </button>
+      <div className="mx-5 mb-4 mt-1 rounded-2xl border border-dashed border-bamboo p-3">
+        <p className="text-center text-xs font-semibold text-ink-soft">{t('Butuh gambar ini untuk poster atau slide?', 'Need this picture for a poster or slides?')}</p>
+        <div className="mt-2 grid grid-cols-2 gap-2">
+          <button type="button" onClick={savePng} disabled={busy} className="flex min-h-[44px] items-center justify-center gap-1.5 rounded-full bg-forest text-[13px] font-semibold text-coconut disabled:opacity-60">
+            <Download className="h-4 w-4" /> {busy ? t('Menyiapkan...', 'Preparing...') : 'PNG'}
+          </button>
+          <button type="button" onClick={saveSvg} disabled={busy} className="flex min-h-[44px] items-center justify-center gap-1.5 rounded-full border-2 border-bamboo text-[13px] font-semibold text-deep-forest disabled:opacity-60">
+            <Download className="h-4 w-4" /> {t('Vektor SVG', 'Vector SVG')}
+          </button>
+        </div>
+        <p className="mt-1.5 text-center text-[11px] leading-tight text-ink-soft">{t('Unduhan selalu menampilkan semua modul berwarna, lengkap dengan judul.', 'The download always shows every module in colour, with a title.')}</p>
       </div>
-      <p className="px-4 pb-4 pt-1 text-center text-[11px] leading-tight text-ink-soft">{t('Ketuk modul untuk membukanya. Poster selalu tampil lengkap berwarna.', 'Tap a module to open it. The poster always shows every module in full colour.')}</p>
 
       <section className="space-y-3 px-5 pb-6">
         <Link to="/learn/lab" className="flex min-h-[64px] items-center gap-3 rounded-2xl border border-bamboo bg-coconut p-3 shadow-[0_6px_16px_-10px_rgba(24,56,44,0.5)]">
