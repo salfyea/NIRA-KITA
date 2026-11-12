@@ -1,5 +1,5 @@
 import React from 'react';
-import { Camera, CameraOff, Check, Hand, Lock, ShieldCheck, Square, ThumbsUp } from 'lucide-react';
+import { Box, Camera, CameraOff, Check, EyeOff, Hand, Lock, ShieldCheck, Square, ThumbsUp } from 'lucide-react';
 import { Nira } from '../art/Nira';
 import { getPraktik, Task } from '../data/praktik';
 import type { Live } from './Alat3D';
@@ -30,6 +30,7 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
   const [verdict, setVerdict] = React.useState<null | boolean>(null);
   const [progress, setProgress] = React.useState(0);
   const [handFound, setHandFound] = React.useState(false);
+  const [show3d, setShow3d] = React.useState(true);
   const [seen, setSeen] = React.useState<Pose>('none');
   const [error, setError] = React.useState('');
   const videoRef = React.useRef<HTMLVideoElement>(null);
@@ -246,14 +247,7 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
           <div className="absolute left-2 top-2 flex items-center gap-1.5 rounded-full bg-deep-forest/85 px-3 py-1.5 text-xs font-bold text-coconut">
             <span className="h-2 w-2 animate-pulse rounded-full bg-[#E0523A]" /> {t('Kamera aktif · diproses di perangkat', 'Camera on · processed on the device')}
           </div>
-          {prop3d && stage === 'do' && (
-            <div className="absolute bottom-2 right-2 aspect-square w-[46%] overflow-hidden rounded-2xl border-2 border-coconut shadow-lg">
-              <React.Suspense fallback={null}>
-                <Alat3D prop={prop3d} live={live} caption={false} className="h-full w-full" />
-              </React.Suspense>
-            </div>
-          )}
-          {!handFound && <div className="absolute inset-x-3 top-12 rounded-xl bg-coconut/90 px-3 py-2 text-center text-sm font-semibold text-deep-forest">{t('Tunjukkan satu tanganmu ke kamera', 'Show one hand to the camera')}</div>}
+          {!handFound && <div className="absolute inset-x-3 bottom-3 rounded-xl bg-coconut/90 px-3 py-2 text-center text-sm font-semibold text-deep-forest">{t('Tunjukkan satu tanganmu ke kamera', 'Show one hand to the camera')}</div>}
         </div>
       </div>
 
@@ -306,12 +300,21 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
         </div>
       )}
 
-      {phase === 'play' && tapMode && prop3d && (
-        <div className="mt-3 h-56 overflow-hidden rounded-2xl border border-bamboo">
-          <React.Suspense fallback={<div className="flex h-full items-center justify-center bg-bamboo/30 text-sm text-ink-soft">{t('Memuat alat 3D...', 'Loading the 3D tool...')}</div>}>
-            <Alat3D prop={prop3d} live={live} className="h-full w-full" />
-          </React.Suspense>
-        </div>
+      {phase === 'play' && prop3d && (
+        show3d ? (
+          <div className={`relative mt-2 overflow-hidden rounded-2xl border border-bamboo ${tapMode ? 'h-56' : 'h-44'}`}>
+            <React.Suspense fallback={<div className="flex h-full items-center justify-center bg-bamboo/30 text-sm text-ink-soft">{t('Memuat alat 3D...', 'Loading the 3D tool...')}</div>}>
+              <Alat3D prop={prop3d} live={live} caption={tapMode} className="h-full w-full" />
+            </React.Suspense>
+            <button type="button" onClick={() => setShow3d(false)} className="absolute right-1.5 top-1.5 flex min-h-[44px] items-center gap-1.5 rounded-full bg-deep-forest/80 px-3 text-xs font-bold text-coconut">
+              <EyeOff className="h-4 w-4" /> {t('Sembunyikan', 'Hide')}
+            </button>
+          </div>
+        ) : (
+          <button type="button" onClick={() => setShow3d(true)} className="mt-2 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-full border border-bamboo text-sm font-semibold text-deep-forest">
+            <Box className="h-4 w-4" /> {t('Tampilkan alat 3D', 'Show the 3D tool')}
+          </button>
+        )
       )}
 
       {phase === 'play' && (
