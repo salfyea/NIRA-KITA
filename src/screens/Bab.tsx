@@ -6,6 +6,7 @@ import { Nira } from '../art/Nira';
 import { ApprovalChip } from '../components/ui';
 import { CHAPTER_XP, getQuiz } from '../data/quiz';
 import { getPraktik } from '../data/praktik';
+import { getLessonBody } from '../data/pelajaran';
 import { t } from '../i18n';
 import { GerakPraktik } from '../components/GerakPraktik';
 import { attribution } from '../data/attribution';
@@ -59,7 +60,7 @@ export const Bab: React.FC = () => {
 
   // Urutan kartu: intro, rekaman, tujuan, kuis, hadiah.
   const hasPraktik = !!getPraktik(slug);
-  const total = 1 + Math.max(recs.length, 1) + 1 + (hasPraktik ? 1 : 0) + 1 + 1;
+  const total = 1 + Math.max(recs.length, 1) + mod.lessons.length + 1 + (hasPraktik ? 1 : 0) + 1 + 1;
   const praktikAt = hasPraktik ? total - 3 : -1;
   const quizAt = total - 2;
   const rewardAt = total - 1;
@@ -127,6 +128,17 @@ export const Bab: React.FC = () => {
             </CardShell>
           ))
         )}
+
+        {mod.lessons.map((l, n) => (
+          <CardShell key={l.id} kind={kind} compact>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-caramel-dark">
+              {t('Pelajaran', 'Lesson')} {n + 1} {t('dari', 'of')} {mod.lessons.length} · {l.duration}
+            </p>
+            <h2 className="mt-1 text-[26px] leading-tight text-deep-forest">{l.title}</h2>
+            <p className="mt-3 text-base leading-relaxed text-charcoal">{getLessonBody(l.id)}</p>
+            <span className="mt-4 inline-block rounded-full bg-forest/10 px-3 py-1 text-xs font-bold text-forest">{l.type}</span>
+          </CardShell>
+        ))}
 
         <CardShell kind={kind}>
           <h2 className="text-2xl text-deep-forest">{t('Tujuan belajar', 'Learning goals')}</h2>

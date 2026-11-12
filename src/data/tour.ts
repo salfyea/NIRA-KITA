@@ -131,7 +131,7 @@ export const getTour = (): TourStep[] => [
       'Mentors upload recordings with the source’s consent, annotate techniques on clips, and validate learners. New recordings are Private by default.',
     ),
     proves: t('Izin direkam sejak awal, validasi dilakukan manusia', 'Consent is recorded from the start; validation is done by humans'),
-    tryIt: t('Buka tab Validasi dan validasi akun demo, lalu lihat lencana di Profil.', 'Open the Validate tab and validate the demo account, then see the badge in Profile.'),
+    tryIt: t('Buka tab Validasi dan validasi satu pelajar.', 'Open the Validate tab and validate a learner.'),
     mood: 'wave',
     role: 'mentor',
   },

@@ -140,15 +140,18 @@ export const Perjalanan: React.FC = () => {
                     onClick={() => navigate(`/learn/bab/${sel.slug}`)}
                     className="min-h-[52px] rounded-full bg-forest text-base font-semibold text-coconut"
                   >
-                    {sel.completionPercent >= 100 ? t('Baca lagi', 'Read again') : t('Mulai bab', 'Start chapter')}
+                    {sel.completionPercent >= 100 ? t('Baca lagi', 'Read again') : sel.completionPercent > 0 ? t('Lanjutkan belajar', 'Keep learning') : t('Mulai belajar', 'Start learning')}
                   </button>
-                  {selQuest && (
+                  {selQuest && sel.completionPercent >= 100 && (
                     <Link
                       to={`/learn/misi/${selQuest.id}`}
                       className="flex min-h-[52px] items-center justify-center rounded-full border-2 border-caramel-dark text-base font-semibold text-caramel-dark"
                     >
-                      {t('Misi', 'Quest')}: {selQuest.title}
+                      {t('Tugas refleksi untuk mentor', 'Reflection task for the mentor')}
                     </Link>
+                  )}
+                  {selQuest && sel.completionPercent < 100 && (
+                    <p className="text-center text-xs leading-snug text-ink-soft">{t('Setelah bab selesai, ada tugas refleksi singkat yang dibaca mentor.', 'After the chapter, a short reflection task is read by a mentor.')}</p>
                   )}
                 </div>
               </>

@@ -20,7 +20,7 @@ const Alat3D = React.lazy(() => import('./Alat3D'));
 const ARLayer = React.lazy(() => import('./ARLayer'));
 
 /** Gerakan yang alatnya menempel di tangan pada gambar kamera (AR). */
-const AR_TASKS = ['pegang-pongkor', 'tuang', 'jepit-kotoran', 'aduk'];
+const AR_TASKS = ['pegang-pongkor', 'tuang', 'jepit-kotoran', 'aduk', 'aduk-tetap'];
 
 type Phase = 'intro' | 'loading' | 'play' | 'error' | 'done';
 
@@ -44,6 +44,8 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
   const meter = React.useRef(new RhythmMeter());
   const rhythmAt = React.useRef(0);
   const lastRhythm = React.useRef<Rhythm | null>(null);
+  const steadyMs = React.useRef(0);
+  const steadyLast = React.useRef(0);
   const { annotations } = useStore();
   const refNote = annotations['irama-aduk'];
   const refRhythm = refNote?.approved ? refNote.rhythm : undefined;
@@ -103,6 +105,8 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
     live.current.done = false;
     live.current.stir = 0;
     meter.current.reset();
+    steadyMs.current = 0;
+    steadyLast.current = 0;
     lastRhythm.current = null;
     setRhythm(null);
     setPr(0);
@@ -198,7 +202,7 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
                 holdStart.current = null;
                 setPr(0);
               }
-            } else if (t.kind === 'stir') {
+            } else if (t.kind === 'stir' || t.kind === 'steady') {
               active = true;
               stir.current.push(now, hand[0].x, hand[0].y);
               live.current.stir = stir.current.angle;
@@ -209,7 +213,17 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
                 if (rr) lastRhythm.current = rr;
                 setRhythm(rr);
               }
-              const pr = Math.min(1, stir.current.laps / t.laps);
+              let pr: number;
+              if (t.kind === 'steady') {
+                // Waktu terkumpul hanya saat irama teratur (>= 50%); kehilangan irama menahan kemajuan.
+                const dt = steadyLast.current ? Math.min(250, now - steadyLast.current) : 0;
+                steadyLast.current = now;
+                const ok = !!lastRhythm.current && lastRhythm.current.regularity >= 0.5 && now - rhythmAt.current < 1200;
+                steadyMs.current = ok ? steadyMs.current + dt : Math.max(0, steadyMs.current - dt * 0.5);
+                pr = Math.min(1, steadyMs.current / (t.seconds * 1000));
+              } else {
+                pr = Math.min(1, stir.current.laps / t.laps);
+              }
               setPr(pr);
               if (pr >= 1) completeTask(null);
             } else if (t.kind === 'pour') {
@@ -283,7 +297,7 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
   const arTask = !tapMode && !!prop3d && AR_TASKS.includes(task.id);
   const scenario = cfg.mode === 'skenario';
   const hintText = task.kind === 'judge' ? task.scenario : task.hint;
-  const wantLabel = task.kind === 'pose' ? poseLabel(task.pose) : task.kind === 'stir' ? t(`${task.laps} putaran melingkar`, `${task.laps} circular rounds`) : task.kind === 'pour' ? t(`Miring dan tegak ${task.times} kali`, `Tilt and straighten ${task.times} times`) : '';
+  const wantLabel = task.kind === 'pose' ? poseLabel(task.pose) : task.kind === 'steady' ? t(`Irama tetap ${task.seconds} detik`, `Steady rhythm for ${task.seconds} seconds`) : task.kind === 'stir' ? t(`${task.laps} putaran melingkar`, `${task.laps} circular rounds`) : task.kind === 'pour' ? t(`Miring dan tegak ${task.times} kali`, `Tilt and straighten ${task.times} times`) : '';
 
   return (
     <div ref={introRef}>
@@ -414,7 +428,7 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
                   </p>
                 </>
               )}
-              {!tapMode && task.kind === 'stir' && <IramaPanel rhythm={rhythm} reference={refRhythm} moving={handFound} />}
+              {!tapMode && (task.kind === 'stir' || task.kind === 'steady') && <IramaPanel rhythm={rhythm} reference={refRhythm} moving={handFound} />}
               {tapMode && task.kind === 'judge' && (
                 <div className="mt-3 grid grid-cols-2 gap-2">
                   <button type="button" onClick={() => completeTask(task.answer === 'aman')} className="flex min-h-[56px] items-center justify-center gap-2 rounded-full bg-forest text-base font-semibold text-coconut">
@@ -451,7 +465,7 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
                 <p className="text-xs font-bold uppercase tracking-wider text-forest">{t('Mengapa', 'Why')}</p>
                 <p className="mt-1 text-base leading-relaxed text-charcoal">{task.why}</p>
               </div>
-              {task.kind === 'stir' && !tapMode && lastRhythm.current && <IramaPanel rhythm={lastRhythm.current} reference={refRhythm} moving final />}
+              {(task.kind === 'stir' || task.kind === 'steady') && !tapMode && lastRhythm.current && <IramaPanel rhythm={lastRhythm.current} reference={refRhythm} moving final />}
               <button type="button" onClick={next} className="mt-3 min-h-[52px] w-full rounded-full bg-forest text-base font-semibold text-coconut">
                 {idx + 1 >= tasks.length ? t('Selesai', 'Finish') : scenario ? t('Situasi berikutnya', 'Next situation') : t('Gerakan berikutnya', 'Next movement')}
               </button>

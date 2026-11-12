@@ -236,7 +236,7 @@ const Validasi: React.FC = () => {
               {s.questTitle} · {s.submittedDate === 'Hari ini' ? t('Hari ini', 'Today') : s.submittedDate}
             </p>
             <p className="mt-2 text-sm leading-relaxed text-charcoal">"{s.reflectionText}"</p>
-            <p className="mt-1 text-xs text-ink-soft">{t('Jawaban alat', 'Tool answer')}: {s.selectedToolAnswer}</p>
+            {s.selectedToolAnswer && <p className="mt-1 text-xs text-ink-soft">{t('Jawaban alat', 'Tool answer')}: {s.selectedToolAnswer}</p>}
             {s.status === 'Menunggu Validasi' ? (
               open === s.id ? (
                 <ValidateForm sub={s} onSave={(i) => { validateSubmission(s.id, i); setOpen(null); showToast(i.status === 'Tervalidasi Mentor' ? t('Pelajar divalidasi dan tercatat di audit.', 'Learner validated and logged in the audit.') : t('Revisi diminta dan tercatat di audit.', 'Revision requested and logged in the audit.')); }} />

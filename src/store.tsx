@@ -111,7 +111,7 @@ const SEED_SUBMISSIONS: LearnerSubmission[] = [
     status: 'Menunggu Validasi', mentorName: 'Pak Parmadi', competencyChecklist: { ...NO_CHECK },
   },
   {
-    id: 'SUB-003', learnerId: 'DEMO', learnerName: 'Kamu (akun demo)', learnerAvatar: '', questId: 'QUEST-03', questTitle: 'Safe Ground, Safe Hands', moduleTitle: 'Keselamatan Kerja & Manajemen Risiko',
+    id: 'SUB-003', learnerId: 'L-03', learnerName: 'Sari (pilot)', learnerAvatar: '', questId: 'QUEST-03', questTitle: 'Safe Ground, Safe Hands', moduleTitle: 'Keselamatan Kerja & Manajemen Risiko',
     submittedDate: 'Hari ini', selectedToolAnswer: 'Jarak aman dari tungku', reflectionText: 'Pelajar tidak memanjat. Mengamati dari darat dan menjaga jarak dari tungku serta gula yang panas.',
     status: 'Menunggu Validasi', mentorName: 'Pak Parmadi', competencyChecklist: { ...NO_CHECK },
   },
@@ -174,6 +174,8 @@ interface Store extends PersistedState {
   toast: string | null;
   showToast: (msg: string) => void;
   completeQuest: (questId: string) => void;
+  /** Pelajar mengirim refleksi setelah bab selesai: masuk antrean validasi mentor dan memberi XP tugas. */
+  submitReflection: (questId: string, text: string) => void;
   checkIn: (recordId: string) => void;
   completeModule: (moduleSlug: string, recordIds: string[], xp: number) => void;
   completeLab: (labId: string, xp: number) => void;
@@ -229,6 +231,38 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, [toast]);
 
   const showToast = useCallback((msg: string) => setToast(msg), []);
+
+  const submitReflection = useCallback((questId: string, text: string) => {
+    setState((s) => {
+      const quest = s.quests.find((q) => q.id === questId);
+      const mod = s.modules.find((m) => m.associatedQuestId === questId);
+      if (!quest || !mod || mod.completionPercent < 100) return s;
+      if (s.submissions.some((x) => x.questId === questId && x.learnerId === 'DEMO' && x.status !== 'Perlu Revisi')) return s;
+      const sub: LearnerSubmission = {
+        id: `SUB-${String(s.submissions.length + 1).padStart(3, '0')}`,
+        learnerId: 'DEMO',
+        learnerName: s.session?.name ?? 'Pelajar',
+        learnerAvatar: '',
+        questId,
+        questTitle: quest.title,
+        moduleTitle: mod.title,
+        submittedDate: 'Hari ini',
+        selectedToolAnswer: '',
+        reflectionText: text,
+        status: 'Menunggu Validasi',
+        mentorName: 'Pak Parmadi',
+        competencyChecklist: { identifiesTools: false, explainsFunctions: false, understandsSequence: false, identifiesGroundHazards: false, understandsSafetyPrinciples: false },
+      };
+      const first = !quest.completed;
+      return {
+        ...s,
+        xp: first ? s.xp + quest.xpReward : s.xp,
+        quests: s.quests.map((q) => (q.id === questId ? { ...q, completed: true, steps: q.steps.map((st) => ({ ...st, completed: true })) } : q)),
+        badges: first ? s.badges.map((b) => ((questId === 'QUEST-01' && b.id === 'BADGE-02') || (questId === 'QUEST-04' && b.id === 'BADGE-04') ? { ...b, unlocked: true, dateAchieved: 'Hari ini' } : b)) : s.badges,
+        submissions: [sub, ...s.submissions.filter((x) => !(x.questId === questId && x.learnerId === 'DEMO'))],
+      };
+    });
+  }, []);
 
   const completeQuest = useCallback((questId: string) => {
     setState((s) => {
@@ -437,8 +471,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           badges: state.badges.map((b) => (BADGE_EN[b.id] ? { ...b, ...BADGE_EN[b.id] } : b)),
         }
       : { records: state.records, modules: state.modules, quests: state.quests, badges: state.badges };
-    return { ...state, ...loc, level: lvl(level) as typeof level, nextLevel: lvl(nextLevel), toast, showToast, completeQuest, checkIn, completeModule, completeLab, signIn, reviewRecord, addBatch, addRecord, addPurchase, setMarketRef, setBatchPricing, validateSubmission, saveAnnotation, approveAnnotation, signOut, finishOnboarding, reset };
-  }, [state, lang, toast, showToast, completeQuest, checkIn, completeModule, completeLab, signIn, reviewRecord, addBatch, addRecord, addPurchase, setMarketRef, setBatchPricing, validateSubmission, saveAnnotation, approveAnnotation, signOut, finishOnboarding, reset]);
+    return { ...state, ...loc, level: lvl(level) as typeof level, nextLevel: lvl(nextLevel), toast, showToast, completeQuest, submitReflection, checkIn, completeModule, completeLab, signIn, reviewRecord, addBatch, addRecord, addPurchase, setMarketRef, setBatchPricing, validateSubmission, saveAnnotation, approveAnnotation, signOut, finishOnboarding, reset };
+  }, [state, lang, toast, showToast, completeQuest, submitReflection, checkIn, completeModule, completeLab, signIn, reviewRecord, addBatch, addRecord, addPurchase, setMarketRef, setBatchPricing, validateSubmission, saveAnnotation, approveAnnotation, signOut, finishOnboarding, reset]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 };
