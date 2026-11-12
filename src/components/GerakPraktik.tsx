@@ -4,7 +4,7 @@ import { Nira } from '../art/Nira';
 import { getPraktik, Task } from '../data/praktik';
 import type { Live } from './Alat3D';
 import { t } from '../i18n';
-import { classifyPose, HAND_CONNECTIONS, loadHandLandmarker, PourTracker, rollDeg, StirTracker } from '../lib/hand';
+import { classifyPose, HAND_CONNECTIONS, loadHandLandmarker, PourTracker, prefetchHandAssets, rollDeg, StirTracker } from '../lib/hand';
 import type { Pose } from '../lib/hand';
 
 const HOLD_MS = 1100;
@@ -31,6 +31,7 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
   const [progress, setProgress] = React.useState(0);
   const [handFound, setHandFound] = React.useState(false);
   const [show3d, setShow3d] = React.useState(true);
+  const [modelReady, setModelReady] = React.useState(false);
   const [seen, setSeen] = React.useState<Pose>('none');
   const [error, setError] = React.useState('');
   const videoRef = React.useRef<HTMLVideoElement>(null);
@@ -51,6 +52,25 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
   const correct = React.useRef(0);
 
   const task: Task | undefined = tasks[Math.min(idx, tasks.length - 1)];
+
+  // Pelacak dimuat di latar belakang begitu kartu praktik terlihat, supaya kamera siap lebih cepat.
+  const introRef = React.useRef<HTMLDivElement>(null);
+  React.useEffect(() => {
+    const el = introRef.current;
+    const conn = (navigator as unknown as { connection?: { saveData?: boolean } }).connection;
+    if (!el || conn?.saveData || !('IntersectionObserver' in window)) return;
+    const io = new IntersectionObserver(
+      (es) => {
+        if (es.some((e) => e.isIntersecting)) {
+          prefetchHandAssets();
+          io.disconnect();
+        }
+      },
+      { threshold: 0.6 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
 
   const stopCamera = React.useCallback(() => {
     cancelAnimationFrame(raf.current);
@@ -98,12 +118,13 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
   const startCamera = async () => {
     setPhase('loading');
     setError('');
+    setModelReady(false);
+    // Unduhan berkas model berjalan selama pelajar memberi izin (tidak memblokir). Inisialisasi model
+    // (berat, memblokir thread) baru dimulai setelah kamera tampil di layar.
+    prefetchHandAssets();
     try {
       if (!navigator.mediaDevices?.getUserMedia) throw new Error(t('Peramban ini tidak mendukung kamera.', 'This browser does not support the camera.'));
-      const [lm, stream] = await Promise.all([
-        loadHandLandmarker(),
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }, audio: false }),
-      ]);
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }, audio: false });
       streamRef.current = stream;
       const v = videoRef.current!;
       v.srcObject = stream;
@@ -117,6 +138,12 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
       setTapMode(false);
       resetTrackers();
       setPhase('play');
+
+      // beri peramban kesempatan menggambar kamera sebelum inisialisasi model yang berat
+      await new Promise<void>((r) => requestAnimationFrame(() => setTimeout(r, 50)));
+      const lm = await loadHandLandmarker();
+      if (!streamRef.current) return; // dimatikan saat model dimuat
+      setModelReady(true);
 
       const loop = () => {
         const video = videoRef.current;
@@ -238,7 +265,7 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
   const wantLabel = task.kind === 'pose' ? poseLabel(task.pose) : task.kind === 'stir' ? t(`${task.laps} putaran melingkar`, `${task.laps} circular rounds`) : task.kind === 'pour' ? t(`Miring dan tegak ${task.times} kali`, `Tilt and straighten ${task.times} times`) : t('Jempol ke atas (aman) atau telapak terbuka (bahaya)', 'Thumbs up (safe) or open palm (unsafe)');
 
   return (
-    <div>
+    <div ref={introRef}>
       {/* video selalu di DOM agar kamera bisa dipasang */}
       <div className={phase === 'play' && !tapMode ? 'mt-1' : 'hidden'}>
         <div className="relative overflow-hidden rounded-2xl bg-deep-forest">
@@ -247,7 +274,14 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
           <div className="absolute left-2 top-2 flex items-center gap-1.5 rounded-full bg-deep-forest/85 px-3 py-1.5 text-xs font-bold text-coconut">
             <span className="h-2 w-2 animate-pulse rounded-full bg-[#E0523A]" /> {t('Kamera aktif · diproses di perangkat', 'Camera on · processed on the device')}
           </div>
-          {!handFound && <div className="absolute inset-x-3 bottom-3 rounded-xl bg-coconut/90 px-3 py-2 text-center text-sm font-semibold text-deep-forest">{t('Tunjukkan satu tanganmu ke kamera', 'Show one hand to the camera')}</div>}
+          {!modelReady ? (
+            <div className="absolute inset-x-3 bottom-3 flex items-center justify-center gap-2 rounded-xl bg-coconut/90 px-3 py-2 text-center text-sm font-semibold text-deep-forest">
+              <span className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-forest border-t-transparent" />
+              {t('Menyiapkan pelacak tangan (sekali saja)...', 'Preparing the hand tracker (one time)...')}
+            </div>
+          ) : (
+            !handFound && <div className="absolute inset-x-3 bottom-3 rounded-xl bg-coconut/90 px-3 py-2 text-center text-sm font-semibold text-deep-forest">{t('Tunjukkan satu tanganmu ke kamera', 'Show one hand to the camera')}</div>
+          )}
         </div>
       </div>
 
@@ -282,8 +316,8 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
       {phase === 'loading' && (
         <div className="py-6 text-center" role="status">
           <Nira mood="think" size={84} className="mx-auto" />
-          <p className="mt-2 text-base font-semibold text-deep-forest">{t('Menyiapkan kamera dan model...', 'Preparing the camera and model...')}</p>
-          <p className="text-sm text-ink-soft">{t('Izinkan kamera saat diminta.', 'Allow the camera when asked.')}</p>
+          <p className="mt-2 text-base font-semibold text-deep-forest">{t('Menunggu izin kamera...', 'Waiting for camera permission...')}</p>
+          <p className="text-sm text-ink-soft">{t('Ketuk Izinkan pada jendela peramban. Kamera tampil begitu diizinkan.', 'Tap Allow in the browser prompt. The camera appears as soon as it is allowed.')}</p>
         </div>
       )}
 
@@ -343,7 +377,7 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
                     <div className="h-full rounded-full bg-forest" style={{ width: `${progress * 100}%` }} />
                   </div>
                   <p role="status" className="mt-2 min-h-[24px] text-sm font-semibold text-ink-soft">
-                    {!handFound ? t('Belum ada tangan terlihat.', 'No hand visible yet.') : progress > 0 ? t('Bagus, lanjutkan...', 'Good, keep going...') : `${t('Terdeteksi', 'Detected')}: ${poseLabel(seen) ?? t('tangan', 'hand')}`}
+                    {!modelReady ? t('Pelacak sedang disiapkan, kamera sudah aktif.', 'The tracker is getting ready; the camera is already on.') : !handFound ? t('Belum ada tangan terlihat.', 'No hand visible yet.') : progress > 0 ? t('Bagus, lanjutkan...', 'Good, keep going...') : `${t('Terdeteksi', 'Detected')}: ${poseLabel(seen) ?? t('tangan', 'hand')}`}
                   </p>
                 </>
               )}
