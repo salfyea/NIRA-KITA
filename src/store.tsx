@@ -43,6 +43,8 @@ interface PersistedState {
 }
 
 export interface Annotation {
+  /** Irama acuan hasil pengukuran kamera (hanya untuk anotasi irama). */
+  rhythm?: { rpm: number; regularity: number };
   text: string;
   author: string;
   approved: boolean;
@@ -129,7 +131,7 @@ interface Store extends PersistedState {
   addBatch: (b: Omit<QrBatch, 'code'>) => QrBatch;
   addRecord: (r: HeritageRecord) => void;
   validateSubmission: (id: string, input: ValidateInput) => void;
-  saveAnnotation: (clipId: string, text: string) => void;
+  saveAnnotation: (clipId: string, text: string, rhythm?: { rpm: number; regularity: number }) => void;
   approveAnnotation: (clipId: string) => void;
   signOut: () => void;
   finishOnboarding: () => void;
@@ -293,10 +295,10 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const saveAnnotation = useCallback((clipId: string, text: string) => {
+  const saveAnnotation = useCallback((clipId: string, text: string, rhythm?: { rpm: number; regularity: number }) => {
     setState((s) => ({
       ...s,
-      annotations: { ...s.annotations, [clipId]: { text, author: s.session?.name ?? 'Mentor', approved: false } },
+      annotations: { ...s.annotations, [clipId]: { text, rhythm, author: s.session?.name ?? 'Mentor', approved: false } },
       audit: audited(s, 'Mentor', 'Menulis anotasi klip', clipId, 'Menunggu persetujuan kurator'),
     }));
     // eslint-disable-next-line react-hooks/exhaustive-deps

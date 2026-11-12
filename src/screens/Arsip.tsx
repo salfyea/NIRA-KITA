@@ -7,6 +7,7 @@ import { getGerakan } from '../data/gerakan';
 import { t } from '../i18n';
 import { HAND_CONNECTIONS, loadHandLandmarker, prefetchHandAssets } from '../lib/hand';
 import { useStore } from '../store';
+import { IramaPanel } from '../components/IramaPanel';
 
 const BAB_PRAKTIK = '/learn/bab/kerajinan-tradisional-transfer-pengetahuan?kartu=praktik';
 
@@ -186,8 +187,21 @@ export const ArsipDetail: React.FC = () => {
         )}
       </Ornate>
 
+      {(g.id === 'mengaduk' || g.id === 'pengaduk-kayu') && (
+        <Ornate className="mt-4 p-4">
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-ink-soft">{t('Irama tangan', 'Hand rhythm')}</p>
+          {annotations['irama-aduk']?.approved && annotations['irama-aduk'].rhythm ? (
+            <IramaPanel rhythm={annotations['irama-aduk'].rhythm as never} moving final />
+          ) : (
+            <p className="mt-1 text-sm leading-relaxed text-ink-soft">
+              {t('Irama perajin belum bisa diukur dari klip ini: tangan terdeteksi di sekitar 10% frame saja (jauh dan tertutup uap). Irama acuan diambil dari rekaman dekat oleh mentor, disetujui kurator, lalu tampil di sini dan di latihan mengaduk.', 'The rhythm of the artisan cannot be measured reliably from this clip: the hand is detected in only about 10% of frames (far away and hidden by steam). The reference rhythm is taken from a close-up recording by a mentor, approved by the curator, and then shown here and in the stirring practice.')}
+            </p>
+          )}
+        </Ornate>
+      )}
+
       {g.practice && (
-        <Link to={BAB_PRAKTIK} className="mt-4 flex min-h-[56px] items-center justify-center gap-2 rounded-full bg-caramel-dark text-lg font-semibold text-coconut">
+        <Link to={`${BAB_PRAKTIK}&tugas=${g.practice}`} className="mt-4 flex min-h-[56px] items-center justify-center gap-2 rounded-full bg-caramel-dark text-lg font-semibold text-coconut">
           <Hand className="h-5 w-5" /> {t('Latih gerakan ini', 'Practise this movement')}
         </Link>
       )}

@@ -5,6 +5,7 @@ import { Ornate } from '../components/ui';
 import { getGerakan } from '../data/gerakan';
 import { t } from '../i18n';
 import { subStatus } from '../data/display';
+import { RekamIrama } from '../components/RekamIrama';
 import { HeritageRecord, KnowledgeCategory, LearnerSubmission } from '../types/jejakNira';
 import { useStore } from '../store';
 import { StaffBar } from './Kurator';
@@ -283,6 +284,19 @@ const Anotasi: React.FC = () => {
   const [drafts, setDrafts] = React.useState<Record<string, string>>({});
   return (
     <ul className="mt-4 space-y-3">
+      <li>
+        <RekamIrama
+          onSave={(r) => {
+            saveAnnotation('irama-aduk', t(`Irama acuan mengaduk: ${Math.round(r.rpm)} putaran per menit, keteraturan ${Math.round(r.regularity * 100)}%.`, `Reference stirring rhythm: ${Math.round(r.rpm)} rounds per minute, steadiness ${Math.round(r.regularity * 100)}%.`), { rpm: r.rpm, regularity: r.regularity });
+            showToast(t('Irama acuan dikirim ke kurator.', 'Reference rhythm sent to the curator.'));
+          }}
+        />
+        {annotations['irama-aduk'] && (
+          <p className={`mt-2 text-xs font-bold ${annotations['irama-aduk'].approved ? 'text-forest' : 'text-caramel-dark'}`}>
+            {annotations['irama-aduk'].text} · {annotations['irama-aduk'].approved ? t('Disetujui kurator', 'Approved by the curator') : t('Menunggu persetujuan kurator', 'Awaiting curator approval')}
+          </p>
+        )}
+      </li>
       <li className="rounded-xl bg-bamboo/40 p-3 text-sm leading-relaxed text-deep-forest">
         {t('Tandai teknik pada klip Arsip Gerakan. Anotasi baru tampil setelah kurator menyetujuinya.', 'Mark technique on the Movement Archive clips. An annotation only appears after the curator approves it.')}
       </li>

@@ -97,7 +97,7 @@ export const Kurator: React.FC = () => {
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-caramel-dark">{t('Anotasi mentor menunggu', 'Mentor annotations pending')} ({pendingNotes.length})</p>
             {pendingNotes.map(([clip, a]) => (
               <div key={clip} className="mt-2 border-t border-bamboo/60 pt-2">
-                <p className="text-sm font-semibold text-deep-forest">{t('Klip', 'Clip')}: {clip}</p>
+                <p className="text-sm font-semibold text-deep-forest">{clip === 'irama-aduk' ? t('Irama acuan mengaduk (hasil ukur kamera)', 'Stirring reference rhythm (camera measurement)') : `${t('Klip', 'Clip')}: ${clip}`}</p>
                 <p className="text-sm leading-relaxed text-charcoal">"{a.text}"</p>
                 <p className="text-xs text-ink-soft">{t('Oleh', 'By')} {a.author}</p>
                 <button type="button" onClick={() => { approveAnnotation(clip); showToast(t('Anotasi disetujui dan tampil di Arsip Gerakan.', 'Annotation approved and shown in the Movement Archive.')); }} className="mt-2 min-h-[44px] rounded-full bg-forest px-5 text-sm font-semibold text-coconut">

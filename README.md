@@ -36,6 +36,9 @@ Stack: Vite + React 19 + TypeScript + Tailwind 4 + react-router-dom v7 + lucide-
 - `src/store.tsx`: state lokal (localStorage, try/catch), termasuk `session` dan `onboarded`.
 - `src/data/`: data awal, kuis mini, helper atribusi.
 
+## Irama Tangan
+`src/lib/irama.ts`: mengukur irama gerak berulang (putaran/menit dan keteraturan) dari lintasan tangan dengan autokorelasi. Diuji dengan data sintetis (galat <2% untuk 30 sampai 90 rpm; menolak gerak acak, diam, atau terlalu pendek). Klip lapangan yang ada TIDAK cukup andal (tangan terdeteksi di 10%, 0%, 0% frame), jadi irama acuan harus direkam mentor dari perajin dengan kamera, disetujui kurator, lalu tampil di Arsip dan latihan mengaduk.
+
 ## PWA (pasang dan offline)
 `public/manifest.webmanifest` + `public/sw.js` (ditulis tangan, tanpa pustaka). Cangkang aplikasi disimpan saat pemasangan; halaman jaringan-dulu; berkas besar (model tangan, WASM, klip, font) disimpan saat pertama dipakai. Di Profil ada tombol Pasang aplikasi dan "Siapkan untuk offline" (±27 MB). Tidak ada data pengguna atau video kamera yang disimpan. Uji: `qa-out` (lihat riwayat PR #20).
 

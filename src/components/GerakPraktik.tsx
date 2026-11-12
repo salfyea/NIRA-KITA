@@ -3,6 +3,10 @@ import { Box, Camera, CameraOff, Check, EyeOff, Hand, Lock, ShieldCheck, Square,
 import { Nira } from '../art/Nira';
 import { getPraktik, Task } from '../data/praktik';
 import type { Live } from './Alat3D';
+import { IramaPanel } from './IramaPanel';
+import { RhythmMeter } from '../lib/irama';
+import type { Rhythm } from '../lib/irama';
+import { useStore } from '../store';
 import { t } from '../i18n';
 import { classifyPose, HAND_CONNECTIONS, loadHandLandmarker, PourTracker, prefetchHandAssets, rollDeg, StirTracker } from '../lib/hand';
 import type { Pose } from '../lib/hand';
@@ -20,7 +24,7 @@ type Phase = 'intro' | 'loading' | 'play' | 'error' | 'done';
  * Praktik gerak di dalam bab: tugas dari data/praktik.ts, dikenali lewat kamera (di perangkat)
  * atau dijalankan dengan ketukan bila kamera tidak dipakai. Bukan penilaian teknik.
  */
-export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, total: number) => void }> = ({ slug, onDone }) => {
+export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, total: number) => void; startTask?: string }> = ({ slug, onDone, startTask }) => {
   const cfg = getPraktik(slug);
   const tasks = cfg?.tasks ?? [];
   const [phase, setPhase] = React.useState<Phase>('intro');
@@ -32,6 +36,13 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
   const [handFound, setHandFound] = React.useState(false);
   const [show3d, setShow3d] = React.useState(true);
   const [modelReady, setModelReady] = React.useState(false);
+  const [rhythm, setRhythm] = React.useState<Rhythm | null>(null);
+  const meter = React.useRef(new RhythmMeter());
+  const rhythmAt = React.useRef(0);
+  const lastRhythm = React.useRef<Rhythm | null>(null);
+  const { annotations } = useStore();
+  const refNote = annotations['irama-aduk'];
+  const refRhythm = refNote?.approved ? refNote.rhythm : undefined;
   const [seen, setSeen] = React.useState<Pose>('none');
   const [error, setError] = React.useState('');
   const videoRef = React.useRef<HTMLVideoElement>(null);
@@ -87,6 +98,9 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
     holdPose.current = '';
     live.current.done = false;
     live.current.stir = 0;
+    meter.current.reset();
+    lastRhythm.current = null;
+    setRhythm(null);
     setPr(0);
   };
 
@@ -129,10 +143,11 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
       const v = videoRef.current!;
       v.srcObject = stream;
       await v.play();
-      idxRef.current = 0;
+      const first = Math.max(0, tasks.findIndex((x) => x.id === startTask));
+      idxRef.current = first;
       stageRef.current = 'do';
       correct.current = 0;
-      setIdx(0);
+      setIdx(first);
       setStage('do');
       setVerdict(null);
       setTapMode(false);
@@ -182,6 +197,13 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
               active = true;
               stir.current.push(now, hand[0].x, hand[0].y);
               live.current.stir = stir.current.angle;
+              meter.current.push(now, ((hand[0].x + hand[9].x) / 2) * canvas.width, ((hand[0].y + hand[9].y) / 2) * canvas.height);
+              if (now - rhythmAt.current > 400) {
+                rhythmAt.current = now;
+                const rr = meter.current.read();
+                if (rr) lastRhythm.current = rr;
+                setRhythm(rr);
+              }
               const pr = Math.min(1, stir.current.laps / t.laps);
               setPr(pr);
               if (pr >= 1) completeTask(null);
@@ -243,10 +265,11 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
   };
 
   const startTap = () => {
-    idxRef.current = 0;
+    const first = Math.max(0, tasks.findIndex((x) => x.id === startTask));
+    idxRef.current = first;
     stageRef.current = 'do';
     correct.current = 0;
-    setIdx(0);
+    setIdx(first);
     setStage('do');
     setVerdict(null);
     setTapMode(true);
@@ -381,6 +404,7 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
                   </p>
                 </>
               )}
+              {!tapMode && task.kind === 'stir' && <IramaPanel rhythm={rhythm} reference={refRhythm} moving={handFound} />}
               {tapMode && task.kind === 'judge' && (
                 <div className="mt-3 grid grid-cols-2 gap-2">
                   <button type="button" onClick={() => completeTask(task.answer === 'aman')} className="flex min-h-[56px] items-center justify-center gap-2 rounded-full bg-forest text-base font-semibold text-coconut">
@@ -417,6 +441,7 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
                 <p className="text-xs font-bold uppercase tracking-wider text-forest">{t('Mengapa', 'Why')}</p>
                 <p className="mt-1 text-base leading-relaxed text-charcoal">{task.why}</p>
               </div>
+              {task.kind === 'stir' && !tapMode && lastRhythm.current && <IramaPanel rhythm={lastRhythm.current} reference={refRhythm} moving final />}
               <button type="button" onClick={next} className="mt-3 min-h-[52px] w-full rounded-full bg-forest text-base font-semibold text-coconut">
                 {idx + 1 >= tasks.length ? t('Selesai', 'Finish') : t('Gerakan berikutnya', 'Next movement')}
               </button>

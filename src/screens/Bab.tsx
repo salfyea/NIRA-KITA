@@ -140,7 +140,7 @@ export const Bab: React.FC = () => {
           <CardShell kind={kind} compact>
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-caramel-dark">{t('Praktik gerak', 'Movement practice')}</p>
             <h2 className="text-2xl leading-tight text-deep-forest">{t('Coba dengan tanganmu', 'Try it with your hands')}</h2>
-            <GerakPraktik slug={slug} onDone={() => undefined} />
+            <GerakPraktik slug={slug} startTask={params.get('tugas') ?? undefined} onDone={() => undefined} />
           </CardShell>
         )}
 
