@@ -9,6 +9,7 @@ import { useTour } from '../tour/TourContext';
 import { getTour } from '../data/tour';
 import { LangToggle, t } from '../i18n';
 import { OfflinePill } from '../lib/pwa';
+import { PartnerLogos } from '../art/Partners';
 
 const getTabs = () => [
   { to: '/learn', label: t('Perjalanan', 'Journey'), Icon: Route, end: true },
@@ -78,7 +79,7 @@ const SidePanel: React.FC = () => {
     navigate(path);
   };
   return (
-    <aside className="hidden max-w-sm flex-col justify-center gap-6 pr-10 lg:flex">
+    <aside className="no-scrollbar hidden max-h-[calc(100dvh-48px)] max-w-sm flex-col justify-start gap-6 overflow-y-auto py-2 pr-10 lg:flex">
       <div>
         <p className="text-xs font-bold uppercase tracking-[0.2em] text-caramel-dark">{t('Prototipe konsep', 'Concept prototype')}</p>
         <Logo className="mt-3" size={72} />
@@ -86,6 +87,7 @@ const SidePanel: React.FC = () => {
         <p className="mt-3 text-base leading-relaxed text-ink-soft">
           {t('Jejak pengetahuan, warisan masa depan. Platform belajar dan pelestarian pengetahuan gula kelapa Cilongok, dengan persetujuan komunitas di setiap langkah.', 'Trail of knowledge, heritage for the future. A learning and preservation platform for the coconut sugar knowledge of Cilongok, with community consent at every step.')}
         </p>
+        <PartnerLogos className="mt-4" height={30} />
       </div>
       <div className="rounded-2xl border border-caramel/40 bg-coconut p-4">
         <p className="text-xs font-bold uppercase tracking-[0.16em] text-caramel-dark">{t('Tur untuk juri · ±4 menit', 'Judges\' tour · ~4 minutes')}</p>
@@ -168,7 +170,7 @@ const SidePanel: React.FC = () => {
       </div>
       )}
       <p className="text-xs leading-relaxed text-ink-soft">
-        {t('Data ilustratif. Seluruh pembelajaran berbasis darat.', 'Illustrative data. All learning is ground-based.')}
+        {t('Seluruh pembelajaran berbasis darat.', 'All learning is ground-based.')}
       </p>
       <button
         type="button"

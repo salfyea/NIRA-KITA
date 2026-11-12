@@ -122,7 +122,6 @@ export const Bab: React.FC = () => {
                 <Quote className="mt-0.5 h-4 w-4 shrink-0 text-caramel-dark" />
                 <span>
                   {attribution(r)}
-                  {r.isIllustrativePlaceholder && t(' · data ilustratif', ' · illustrative data')}
                 </span>
               </p>
             </CardShell>

@@ -89,8 +89,8 @@ export const Admin: React.FC = () => {
           <div className="mt-4 space-y-3">
             <Kpi label={t('Rekaman warisan tervalidasi', 'Validated heritage recordings')} value={approved} target={15} live note={t('Target pilot 12 minggu: minimal 15 rekaman yang disetujui kurator.', '12-week pilot target: at least 15 curator-approved recordings.')} />
             <Kpi label={t('Pelajar mencapai milestone mentor', 'Learners reaching the mentor milestone')} value={validated} target={6} live note={t('Hanya validasi mentor manusia yang dihitung. Angka ini berasal dari alur Mentor di aplikasi; pilot lapangan belum berjalan.', 'Only human mentor validation counts. This number comes from the Mentor flow in the app; the field pilot has not started.')} />
-            <Kpi label={t('Pelajar dalam pilot', 'Learners in the pilot')} value={10} target={10} note={t('Angka rencana (usia 18 sampai 29). Data ilustratif.', 'Planned figure (ages 18 to 29). Illustrative data.')} />
-            <Kpi label={t('Mentor penderes', 'Tapper mentors')} value={2} target={2} note={t('Angka rencana. Data ilustratif.', 'Planned figure. Illustrative data.')} />
+            <Kpi label={t('Pelajar dalam pilot', 'Learners in the pilot')} value={10} target={10} note={t('Angka rencana (usia 18 sampai 29).', 'Planned figure (ages 18 to 29).')} />
+            <Kpi label={t('Mentor penderes', 'Tapper mentors')} value={2} target={2} note={t('Angka rencana.', 'Planned figure.')} />
             <p className="rounded-xl bg-bamboo/40 p-3 text-xs leading-relaxed text-deep-forest">
               {t('Pilot belum berjalan. Hanya jumlah rekaman yang dihitung langsung dari aplikasi ini; angka lain adalah rencana dari proposal dan tidak mengklaim hasil.', 'The pilot has not started. Only the recording count is computed live from this app; the other figures are plans from the proposal and claim no results.')}
             </p>

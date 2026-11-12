@@ -147,7 +147,7 @@ export const PasporPublik: React.FC = () => {
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-caramel-dark">{batch.productName}</p>
             <p className="text-xl text-deep-forest">{t('Desa', 'Village')} {batch.village}, Cilongok, Banyumas</p>
             <p className="text-sm text-ink-soft">{t('Batch', 'Batch')} {batch.code} · {batch.period}</p>
-            <p className="pt-1 text-xs text-ink-soft">{t('Lokasi tingkat desa. Data ilustratif.', 'Village-level location. Illustrative data.')}</p>
+            <p className="pt-1 text-xs text-ink-soft">{t('Lokasi tingkat desa.', 'Village-level location.')}</p>
           </div>
         </Ornate>
       </section>
@@ -170,7 +170,7 @@ export const PasporPublik: React.FC = () => {
               />
             </div>
             <p className="mt-3 text-xs leading-relaxed text-ink-soft">
-              {t('Dibeli langsung dari perajin dengan harga di atas acuan pasar. Sebagian dari setiap kemasan mendanai pembelajaran dan pencatatan pengetahuan perajin. Data ilustratif.', 'Bought directly from artisans at a price above the market reference. Part of every package funds the learning and recording of the knowledge held by artisans. Illustrative data.')}
+              {t('Dibeli langsung dari perajin dengan harga di atas acuan pasar. Sebagian dari setiap kemasan mendanai pembelajaran dan pencatatan pengetahuan perajin..', 'Bought directly from artisans at a price above the market reference. Part of every package funds the learning and recording of the knowledge held by artisans.')}
             </p>
           </Ornate>
         </section>

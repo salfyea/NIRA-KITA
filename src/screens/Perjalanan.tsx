@@ -110,7 +110,7 @@ export const Perjalanan: React.FC = () => {
           <span className="shrink-0 rounded-full bg-caramel-dark px-3 py-1.5 text-xs font-bold text-coconut">{t('Buka', 'Open')}</span>
         </Link>
         <p className="flex items-center gap-1.5 text-xs font-semibold text-deep-forest/80">
-          <Sparkles className="h-3.5 w-3.5" /> {t('Data ilustratif. Seluruh pembelajaran berbasis darat.', 'Illustrative data. All learning is ground-based.')}
+          <Sparkles className="h-3.5 w-3.5" /> {t('Seluruh pembelajaran berbasis darat.', 'All learning is ground-based.')}
         </p>
       </section>
       </div>

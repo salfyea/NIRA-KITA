@@ -42,7 +42,7 @@ const Mitra: React.FC = () => {
           </div>
         ))}
       </div>
-      <p className="mt-2 text-xs leading-relaxed text-ink-soft">{t('Pembelian langsung dari kelompok perajin, tanpa tengkulak. Angka di sini ilustratif sampai kelompok sungguhan terdaftar.', 'Direct purchase from artisan groups, without middlemen. Figures here are illustrative until real groups are registered.')}</p>
+      <p className="mt-2 text-xs leading-relaxed text-ink-soft">{t('Pembelian langsung dari kelompok perajin, tanpa tengkulak.', 'Direct purchase from artisan groups, without middlemen.')}</p>
       <ul className="mt-3 space-y-3">
         {partners.map((p) => (
           <li key={p.id}>

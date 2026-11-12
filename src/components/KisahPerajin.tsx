@@ -107,7 +107,6 @@ export const KisahPerajin: React.FC<{ record: HeritageRecord }> = ({ record: r }
 
       <div className="flex flex-wrap items-center gap-2">
         <ApprovalChip record={r} />
-        {r.isIllustrativePlaceholder && <span className="text-xs text-ink-soft">{t('Data ilustratif', 'Illustrative data')}</span>}
       </div>
     </div>
   );
