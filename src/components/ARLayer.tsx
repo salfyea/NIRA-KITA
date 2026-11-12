@@ -77,7 +77,7 @@ const rigPongkor = (): Rig => {
   sap.position.y = 0.45;
   const bowlG = new Group();
   bowlG.add(b, sap);
-  bowlG.rotation.x = -1.0;
+  bowlG.rotation.x = 1.05; // miring ke arah kamera supaya bagian dalam (nira) terlihat
   root.add(bowlG);
 
   const held = new Group();
@@ -145,7 +145,7 @@ const rigKain = (): Rig => {
   const sap = sapSurface(1.1);
   sap.position.y = 0.45;
   bowlG.add(sap);
-  bowlG.rotation.x = -1.0;
+  bowlG.rotation.x = 1.05; // miring ke arah kamera supaya bagian dalam (nira) terlihat
   root.add(bowlG);
 
   const cloth = new Group();
@@ -226,7 +226,7 @@ const rigAduk = (): Rig => {
   });
   swirl.position.y = 0.6;
   wok.add(swirl);
-  wok.rotation.x = -0.95;
+  wok.rotation.x = 1.0;
   root.add(wok);
 
   const stick = new Mesh(new CylinderGeometry(1, 1, 1, 10), mat(0x8a5a2b, 0.8));
@@ -249,11 +249,11 @@ const rigAduk = (): Rig => {
       }
       ex += (p.cx - ex) * Math.min(1, dt * 1.6);
       ey += (p.cy - ey) * Math.min(1, dt * 1.6);
-      const wr = 0.25 * W;
+      const wr = 0.19 * W;
       const ws = wr / 1.34;
       wok.scale.setScalar(ws);
       const wx = 0.5 * W;
-      const wy = 0.84 * H;
+      const wy = 0.86 * H;
       wok.position.set(wx, -wy, 0);
       const ox = (p.cx - ex) * 0.55;
       const oy = (p.cy - ey) * 0.4;
