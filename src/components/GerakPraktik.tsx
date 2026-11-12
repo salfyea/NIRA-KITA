@@ -17,6 +17,10 @@ const poseLabel = (p: string): string | undefined =>
   ({ fist: t('Genggam', 'Fist'), open: t('Telapak terbuka', 'Open palm'), pinch: t('Jepit', 'Pinch'), point: t('Telunjuk', 'Point'), thumbsUp: t('Jempol ke atas', 'Thumbs up') } as Record<string, string>)[p];
 
 const Alat3D = React.lazy(() => import('./Alat3D'));
+const ARLayer = React.lazy(() => import('./ARLayer'));
+
+/** Gerakan yang alatnya menempel di tangan pada gambar kamera (AR). */
+const AR_TASKS = ['pegang-pongkor', 'tuang', 'jepit-kotoran', 'aduk'];
 
 type Phase = 'intro' | 'loading' | 'play' | 'error' | 'done';
 
@@ -53,7 +57,7 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
   const stageRef = React.useRef<'do' | 'why'>('do');
   const holdStart = React.useRef<number | null>(null);
   const holdPose = React.useRef<string>('');
-  const live = React.useRef<Live>({ ts: 0, roll: 0, stir: 0, progress: 0, done: false });
+  const live = React.useRef<Live>({ ts: 0, roll: 0, stir: 0, progress: 0, done: false, lm: null });
   const setPr = (v: number) => {
     live.current.progress = v;
     setProgress(v);
@@ -168,6 +172,7 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
           const now = performance.now();
           const res = lm.detectForVideo(video, now);
           const hand = res.landmarks?.[0];
+          live.current.lm = hand ?? null;
           if (hand) {
             live.current.ts = now;
             live.current.roll = rollDeg(hand);
@@ -284,6 +289,7 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
   if (!cfg || !task) return null;
 
   const prop3d = task.prop;
+  const arTask = !tapMode && !!prop3d && AR_TASKS.includes(task.id);
   const hintText = task.kind === 'judge' ? task.scenario : task.hint;
   const wantLabel = task.kind === 'pose' ? poseLabel(task.pose) : task.kind === 'stir' ? t(`${task.laps} putaran melingkar`, `${task.laps} circular rounds`) : task.kind === 'pour' ? t(`Miring dan tegak ${task.times} kali`, `Tilt and straighten ${task.times} times`) : t('Jempol ke atas (aman) atau telapak terbuka (bahaya)', 'Thumbs up (safe) or open palm (unsafe)');
 
@@ -294,8 +300,18 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
         <div className="relative overflow-hidden rounded-2xl bg-deep-forest">
           <video ref={videoRef} playsInline muted className="block w-full -scale-x-100" />
           <canvas ref={canvasRef} className="absolute inset-0 h-full w-full -scale-x-100" />
+          {arTask && show3d && prop3d && (
+            <React.Suspense fallback={null}>
+              <ARLayer prop={prop3d} live={live} className="pointer-events-none absolute inset-0 -scale-x-100" />
+            </React.Suspense>
+          )}
+          {arTask && (
+            <button type="button" aria-label={show3d ? t('Sembunyikan alat', 'Hide the tool') : t('Tampilkan alat', 'Show the tool')} onClick={() => setShow3d((v) => !v)} className="absolute right-2 top-2 flex min-h-[44px] items-center gap-1.5 rounded-full bg-deep-forest/85 px-3 text-xs font-bold text-coconut">
+              {show3d ? <EyeOff className="h-4 w-4" /> : <Box className="h-4 w-4" />} {t('Alat', 'Tool')}
+            </button>
+          )}
           <div className="absolute left-2 top-2 flex items-center gap-1.5 rounded-full bg-deep-forest/85 px-3 py-1.5 text-xs font-bold text-coconut">
-            <span className="h-2 w-2 animate-pulse rounded-full bg-[#E0523A]" /> {t('Kamera aktif · diproses di perangkat', 'Camera on · processed on the device')}
+            <span className="h-2 w-2 animate-pulse rounded-full bg-[#E0523A]" /> {t('Kamera aktif · di perangkat', 'Camera on · on device')}
           </div>
           {!modelReady ? (
             <div className="absolute inset-x-3 bottom-3 flex items-center justify-center gap-2 rounded-xl bg-coconut/90 px-3 py-2 text-center text-sm font-semibold text-deep-forest">
@@ -357,7 +373,7 @@ export const GerakPraktik: React.FC<{ slug: string; onDone: (correct: number, to
         </div>
       )}
 
-      {phase === 'play' && prop3d && (
+      {phase === 'play' && prop3d && !arTask && (
         show3d ? (
           <div className={`relative mt-2 overflow-hidden rounded-2xl border border-bamboo ${tapMode ? 'h-56' : 'h-44'}`}>
             <React.Suspense fallback={<div className="flex h-full items-center justify-center bg-bamboo/30 text-sm text-ink-soft">{t('Memuat alat 3D...', 'Loading the 3D tool...')}</div>}>

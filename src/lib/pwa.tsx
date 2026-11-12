@@ -102,7 +102,7 @@ export const OfflineCard: React.FC = () => {
     setState('busy');
     setN(0);
     try {
-      await import('../components/Alat3D'); // potongan kode 3D ikut tersimpan
+      await Promise.all([import('../components/Alat3D'), import('../components/ARLayer')]); // potongan kode 3D ikut tersimpan
       for (const u of all) {
         const r = await fetch(u);
         if (!r.ok) throw new Error(u);
