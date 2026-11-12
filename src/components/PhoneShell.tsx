@@ -65,7 +65,7 @@ const roleOfPath = (p: string): RoleKey | null =>
 
 /** Panel kiri di desktop: konteks ekosistem lima peran supaya juri tidak melihat satu aplikasi saja. */
 const SidePanel: React.FC = () => {
-  const { reset, session, signIn } = useStore();
+  const { reset, session, signIn, signOut } = useStore();
   const tour = useTour();
   const TOUR = getTour();
   const navigate = useNavigate();
@@ -113,6 +113,22 @@ const SidePanel: React.FC = () => {
           <button type="button" onClick={tour.stop} className="mt-3 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-full border-2 border-bamboo text-sm font-semibold text-deep-forest">
             <LogOut className="h-4 w-4" /> {t('Keluar dari tur', 'Exit the tour')}
           </button>
+          <div className="mt-2 grid grid-cols-2 gap-2">
+            <button type="button" onClick={() => tour.go(0)} className="min-h-[44px] rounded-full text-sm font-semibold text-deep-forest underline decoration-bamboo underline-offset-4">
+              {t('Mulai ulang tur', 'Restart the tour')}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                tour.stop();
+                signOut();
+                navigate('/masuk', { replace: true });
+              }}
+              className="min-h-[44px] rounded-full text-sm font-semibold text-deep-forest underline decoration-bamboo underline-offset-4"
+            >
+              {t('Kembali ke awal', 'Back to the start')}
+            </button>
+          </div>
           </>
         ) : (
           <>

@@ -16,6 +16,7 @@ Stack: Vite + React 19 + TypeScript + Tailwind 4 + react-router-dom v7 + lucide-
 | `/learn/profil` | **Profil**: level, XP, lencana, setel ulang demo, keluar |
 | `/learn/arsip`, `/learn/arsip/:id` | **Arsip Gerakan**: klip lapangan perajin, tombol kerangka tangan (MediaPipe di perangkat), tautan ke latihan |
 | `/learn/bab/:slug` (kartu Praktik gerak) | Praktik gerak per modul (menuang, menjepit, mengaduk dengan alat AR di tangan; Modul 3 dan 4 memakai kartu skenario tanpa kamera) |
+| `/learn/peta` | Peta ilustrasi vektor Cilongok (Gunung Slamet, sungai, sawah berteras, kebun kelapa, tiga desa) yang bisa diketuk, dengan unduhan PNG 2340x3840 dan SVG untuk poster |
 | `/learn/lab` | **Lab Pengetahuan**: Lab Dapur (eksperimen bebas) dan Peta Istilah (mencocokkan istilah dan fungsi), +40 XP sekali per eksperimen |
 | `/kode-undangan` | Kode `KURATOR-2026` membuka `/kurator`, `ADMIN-2026` membuka `/admin`, `MENTOR-2026` membuka `/mentor` |
 | `/mentor` | **Mentor** (`MENTOR-2026`): unggah rekaman dengan izin narasumber, validasi pelajar (satu-satunya yang membuka lencana mentor), anotasi klip |
