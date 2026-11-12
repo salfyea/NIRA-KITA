@@ -21,7 +21,7 @@ const getTabs = () => [
 const TabBar: React.FC = () => (
   <nav
     aria-label={t('Navigasi utama', 'Main navigation')}
-    className="absolute inset-x-3 bottom-[max(12px,env(safe-area-inset-bottom))] z-30 rounded-[30px] border border-bamboo/80 bg-coconut/90 p-1.5 shadow-[0_16px_34px_-12px_rgba(16,38,30,0.55),0_2px_6px_rgba(16,38,30,0.08)] backdrop-blur-xl"
+    className="absolute inset-x-3 bottom-[max(12px,env(safe-area-inset-bottom))] z-30 rounded-[30px] border border-bamboo/80 bg-coconut/[0.98] p-1.5 shadow-[0_16px_34px_-12px_rgba(16,38,30,0.55),0_2px_6px_rgba(16,38,30,0.08)]"
   >
     <ul className="grid grid-cols-4 gap-1">
       {getTabs().map(({ to, label, Icon, end }) => (
@@ -207,6 +207,13 @@ export const PhoneShell: React.FC = () => {
             <Outlet />
           </div>
         </div>
+        {showTabs && (
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-28"
+            style={{ background: `linear-gradient(to top, ${pathname === '/learn' ? '#86AB74' : pathname === '/learn/peta' ? '#F4E8CB' : '#F7F3E9'} 0%, ${pathname === '/learn' ? 'rgba(134,171,116,0.85)' : pathname === '/learn/peta' ? 'rgba(244,232,203,0.85)' : 'rgba(247,243,233,0.85)'} 45%, transparent 100%)` }}
+          />
+        )}
         {showTabs && <TabBar />}
         <div id="phone-overlay" className="pointer-events-none absolute inset-0 z-50" />
       </div>
