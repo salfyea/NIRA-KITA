@@ -88,7 +88,7 @@ const VillageMark: React.FC<{ v: (typeof VILLAGES)[number]; done: boolean; selec
 
 /** Ilustrasi peta Cilongok: vektor murni supaya bisa diunduh untuk poster. */
 const MapArt = React.forwardRef<SVGSVGElement, { collected: string[]; sel: string | null; onSelect: (id: string) => void }>(({ collected, sel, onSelect }, ref) => (
-  <svg ref={ref} xmlns="http://www.w3.org/2000/svg" viewBox={`0 0 ${W} ${H}`} role="group" aria-label={t('Peta ilustrasi Cilongok dengan tiga desa', 'Illustrated map of Cilongok with three villages')} className="block h-auto w-full">
+  <svg ref={ref} xmlns="http://www.w3.org/2000/svg" viewBox={`0 0 ${W} ${H}`} role="group" preserveAspectRatio="xMidYMid meet" aria-label={t('Peta ilustrasi Cilongok dengan tiga desa', 'Illustrated map of Cilongok with three villages')} className="block h-full w-full">
     <defs>
       <linearGradient id="pt-sky" x1="0" y1="0" x2="0" y2="1">
         <stop offset="0" stopColor="#F4C98A" />
@@ -395,8 +395,8 @@ export const Peta: React.FC = () => {
   };
 
   return (
-    <div className="relative h-full min-h-[560px] overflow-y-auto bg-[#F4E8CB]">
-      <div className="px-2 pt-2">
+    <div className="relative flex h-full min-h-[560px] flex-col overflow-hidden bg-[#F4E8CB]">
+      <div className="min-h-0 flex-1 px-2 pt-2">
         <MapArt
           ref={svgRef}
           collected={collected}
@@ -408,19 +408,16 @@ export const Peta: React.FC = () => {
         />
       </div>
 
-      <div className="px-4 pb-24 pt-3">
-        <p className="text-center text-xs font-semibold text-ink-soft">{t('Ketuk penanda desa untuk membuka kisahnya.', 'Tap a village marker to open its story.')}</p>
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          <button type="button" onClick={savePng} disabled={busy} className="flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-forest text-sm font-semibold text-coconut disabled:opacity-60">
-            <Download className="h-4 w-4" /> {busy ? t('Menyiapkan...', 'Preparing...') : t('Unduh poster (PNG)', 'Download poster (PNG)')}
+      <div className="shrink-0 px-3 pb-2 pt-1.5">
+        <div className="grid grid-cols-2 gap-2">
+          <button type="button" onClick={savePng} disabled={busy} className="flex min-h-[44px] items-center justify-center gap-1.5 rounded-full bg-forest text-[13px] font-semibold text-coconut disabled:opacity-60">
+            <Download className="h-4 w-4" /> {busy ? t('Menyiapkan...', 'Preparing...') : t('Poster PNG', 'Poster PNG')}
           </button>
-          <button type="button" onClick={saveSvg} className="flex min-h-[48px] items-center justify-center gap-2 rounded-full border-2 border-bamboo text-sm font-semibold text-deep-forest">
-            <Download className="h-4 w-4" /> {t('Berkas vektor (SVG)', 'Vector file (SVG)')}
+          <button type="button" onClick={saveSvg} className="flex min-h-[44px] items-center justify-center gap-1.5 rounded-full border-2 border-bamboo text-[13px] font-semibold text-deep-forest">
+            <Download className="h-4 w-4" /> {t('Vektor SVG', 'Vector SVG')}
           </button>
         </div>
-        <p className="mt-2 text-center text-[11px] leading-snug text-ink-soft">
-          {t('PNG beresolusi tinggi (2340 × 3840) dan SVG vektor untuk poster. Simulasi: lokasi kasar tingkat desa, bukan pelacakan langsung.', 'High-resolution PNG (2340 × 3840) and a vector SVG for posters. A simulation: rough village-level location, not live tracking.')}
-        </p>
+        <p className="mt-1.5 text-center text-[11px] leading-tight text-ink-soft">{t('Ketuk desa untuk membuka kisahnya · simulasi, bukan pelacakan langsung', 'Tap a village to open its story · a simulation, not live tracking')}</p>
       </div>
 
       {/* bottom sheet desa */}
