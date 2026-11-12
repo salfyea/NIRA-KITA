@@ -11,13 +11,13 @@ import { GerakPraktik } from '../components/GerakPraktik';
 import { attribution } from '../data/attribution';
 import { isLearnerVisible, useStore } from '../store';
 
-const CardShell: React.FC<{ kind: SceneKind; children: React.ReactNode; scene?: React.ReactNode }> = ({ kind, children, scene }) => (
+const CardShell: React.FC<{ kind: SceneKind; children: React.ReactNode; scene?: React.ReactNode; compact?: boolean }> = ({ kind, children, scene, compact }) => (
   <section className="no-scrollbar h-full w-full shrink-0 snap-center overflow-y-auto">
-    <div className="relative h-[40%] min-h-[220px] overflow-hidden rounded-b-[32px]">
+    <div className={`relative overflow-hidden rounded-b-[32px] ${compact ? 'h-[84px]' : 'h-[40%] min-h-[220px]'}`}>
       <Scene kind={kind} className="absolute inset-0 h-full w-full" />
       {scene}
     </div>
-    <div className="px-6 pb-6 pt-4">{children}</div>
+    <div className={`px-6 pb-6 ${compact ? 'pt-3' : 'pt-4'}`}>{children}</div>
   </section>
 );
 
@@ -137,7 +137,7 @@ export const Bab: React.FC = () => {
         </CardShell>
 
         {hasPraktik && (
-          <CardShell kind={kind}>
+          <CardShell kind={kind} compact>
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-caramel-dark">{t('Praktik gerak', 'Movement practice')}</p>
             <h2 className="text-2xl leading-tight text-deep-forest">{t('Coba dengan tanganmu', 'Try it with your hands')}</h2>
             <GerakPraktik slug={slug} onDone={() => undefined} />

@@ -67,6 +67,11 @@ export class StirTracker {
   get laps() {
     return Math.abs(this.total) / (2 * Math.PI);
   }
+
+  /** Sudut putar kumulatif bertanda, radian (untuk menggerakkan model 3D). */
+  get angle() {
+    return this.total;
+  }
 }
 
 /** Menghitung gerakan menuang: tangan miring lebih dari 55 derajat, lalu kembali tegak. */
