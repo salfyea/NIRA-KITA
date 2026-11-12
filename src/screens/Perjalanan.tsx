@@ -1,21 +1,21 @@
 import React from 'react';
+import { flushSync } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
-import { Check, FlaskConical, Hand, Lock, Sparkles } from 'lucide-react';
-import { Scene, SLUG_SCENE } from '../art/Scene';
-import { Nira } from '../art/Nira';
+import { Download, FlaskConical, Hand, Lock, Sparkles } from 'lucide-react';
+import { SLUG_SCENE, Scene } from '../art/Scene';
+import { JH, JW, JalurArt, Station, pathFor, stationPoints } from '../art/JalurArt';
 import { ProgressBar, Sheet } from '../components/ui';
+import { download, lengthsAtY, standaloneSvg, svgToPng } from '../lib/exportSvg';
 import { useStore } from '../store';
 import { LangToggle, t } from '../i18n';
-
-const W = 390;
-const ROW = 200;
-const TOP = 110;
-const XS = [0.3, 0.68, 0.32, 0.66];
 
 export const Perjalanan: React.FC = () => {
   const { session, level, nextLevel, xp, modules, quests } = useStore();
   const navigate = useNavigate();
   const [openSlug, setOpenSlug] = React.useState<string | null>(null);
+  const [poster, setPoster] = React.useState(false);
+  const [busy, setBusy] = React.useState(false);
+  const svgRef = React.useRef<SVGSVGElement>(null);
 
   const activeIdx = Math.max(
     0,
@@ -29,14 +29,34 @@ export const Perjalanan: React.FC = () => {
     return 'open';
   };
 
-  const H = TOP + (modules.length - 1) * ROW + 190;
-  const pts = modules.map((_, i) => ({ x: XS[i % XS.length] * W, y: TOP + i * ROW + 60 }));
-  const d = pts.reduce((acc, p, i) => {
-    if (i === 0) return `M${W / 2} 0 C${W / 2} 40 ${p.x} 30 ${p.x} ${p.y}`;
-    const q = pts[i - 1];
-    const my = (q.y + p.y) / 2;
-    return `${acc} C${q.x} ${my} ${p.x} ${my} ${p.x} ${p.y}`;
-  }, '');
+  const stations: Station[] = modules.map((m, i) => ({ id: m.id, slug: m.slug, kind: SLUG_SCENE[m.slug] ?? 'identitas', number: m.number, title: m.title, status: status(i) }));
+
+  // Bagian jalan yang sudah dilalui: sampai stasiun terakhir yang selesai atau sedang berjalan.
+  const lastReached = stations.reduce((acc, st, i) => (st.status === 'done' || st.status === 'active' ? i : acc), -1);
+  const doneLength = React.useMemo(() => {
+    if (lastReached < 0) return null;
+    const ys = stationPoints(modules.length).map((p) => p.y);
+    return lengthsAtY(pathFor(modules.length), ys)[lastReached] ?? null;
+  }, [lastReached, modules.length]);
+
+  /** Poster selalu tampil lengkap berwarna (tanpa gembok), apa pun progres pelajar. */
+  const exportWith = async (fn: (svg: SVGSVGElement) => Promise<void> | void) => {
+    if (!svgRef.current || busy) return;
+    setBusy(true);
+    try {
+      flushSync(() => setPoster(true));
+      await fn(svgRef.current);
+    } finally {
+      flushSync(() => setPoster(false));
+      setBusy(false);
+    }
+  };
+  const savePng = () =>
+    exportWith(async (svg) => {
+      const blob = await svgToPng(svg, JW, JH, 5);
+      if (blob) download(blob, 'jalur-belajar-nira.png');
+    });
+  const saveSvg = () => exportWith((svg) => download(new Blob([standaloneSvg(svg, JW * 4, JH * 4)], { type: 'image/svg+xml' }), 'jalur-belajar-nira.svg'));
 
   const sel = modules.find((m) => m.slug === openSlug);
   const selQuest = sel ? quests.find((q) => q.id === sel.associatedQuestId) : undefined;
@@ -45,14 +65,13 @@ export const Perjalanan: React.FC = () => {
 
   return (
     <div className="bg-cream">
-      <header className="relative overflow-hidden px-5 pb-4 pt-6">
-        <LangToggle className="absolute right-4 top-4 z-10" />
-        <p className="text-sm font-semibold text-ink-soft">{t('Halo', 'Hello')}, {session?.name}</p>
-        <h1 className="text-[28px] leading-tight text-deep-forest">{t('Perjalananmu', 'Your journey')}</h1>
-        <div className="mt-3 flex items-center gap-3 rounded-2xl border border-bamboo bg-coconut px-3 py-2.5">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-caramel/15 text-sm font-bold text-caramel-dark">
-            {level.level}
-          </span>
+      <header className="relative px-5 pb-2 pt-5">
+        <LangToggle className="absolute right-4 top-3 z-10" />
+        <p className="pr-28 text-sm font-semibold text-ink-soft">
+          {t('Halo', 'Hello')}, {session?.name}
+        </p>
+        <div className="mt-2 flex items-center gap-3 rounded-2xl border border-bamboo bg-coconut px-3 py-2.5">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-caramel/15 text-sm font-bold text-caramel-dark">{level.level}</span>
           <div className="min-w-0 flex-1">
             <div className="flex items-baseline justify-between gap-2">
               <p className="truncate text-sm font-semibold text-deep-forest">{level.indonesianName}</p>
@@ -63,68 +82,18 @@ export const Perjalanan: React.FC = () => {
         </div>
       </header>
 
-      <div className="relative mx-auto" style={{ width: '100%', aspectRatio: `${W} / ${H}` }}>
-        <svg viewBox={`0 0 ${W} ${H}`} className="absolute inset-0 h-full w-full" aria-hidden>
-          <path d={d} fill="none" stroke="#DCCDB2" strokeWidth="16" strokeLinecap="round" />
-          <path d={d} fill="none" stroke="#FFFDF8" strokeWidth="3" strokeLinecap="round" strokeDasharray="2 12" />
-          {pts.map((p, i) =>
-            i % 2 === 0 ? (
-              <g key={i} opacity="0.9">
-                <circle cx={p.x < W / 2 ? W - 44 : 44} cy={p.y + 20} r="6" fill="#A9B7A0" />
-                <circle cx={p.x < W / 2 ? W - 56 : 56} cy={p.y + 26} r="4" fill="#A9B7A0" />
-              </g>
-            ) : null,
-          )}
-        </svg>
-
-        {modules.map((m, i) => {
-          const st = status(i);
-          const p = pts[i];
-          const kind = SLUG_SCENE[m.slug] ?? 'identitas';
-          return (
-            <div
-              key={m.id}
-              className="absolute -translate-x-1/2 text-center"
-              style={{ left: `${(p.x / W) * 100}%`, top: `calc(${(p.y / H) * 100}% - 42px)` }}
-            >
-              <button
-                type="button"
-                onClick={() => setOpenSlug(m.slug)}
-                aria-label={`${m.number}: ${m.title}${st === 'locked' ? t(', terkunci', ', locked') : ''}`}
-                className={`relative flex h-[84px] w-[84px] items-center justify-center rounded-full p-1 shadow-lg ${
-                  st === 'active' ? 'bg-caramel' : st === 'done' ? 'bg-forest' : 'bg-bamboo'
-                }`}
-              >
-                {st === 'active' && <span className="marker-ring absolute inset-0 rounded-full border-2 border-caramel" />}
-                <span className={`block h-full w-full overflow-hidden rounded-full border-2 border-coconut ${st === 'locked' ? 'opacity-50 grayscale' : ''}`}>
-                  <Scene kind={kind} className="h-full w-full" />
-                </span>
-                {st === 'done' && (
-                  <span className="absolute -right-1 -top-1 flex h-7 w-7 items-center justify-center rounded-full bg-forest text-coconut ring-2 ring-cream">
-                    <Check className="h-4 w-4" />
-                  </span>
-                )}
-                {st === 'locked' && (
-                  <span className="absolute inset-0 flex items-center justify-center">
-                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-deep-forest/80 text-coconut">
-                      <Lock className="h-4 w-4" />
-                    </span>
-                  </span>
-                )}
-              </button>
-              <p className={`mx-auto mt-1.5 w-[120px] text-xs font-bold ${st === 'locked' ? 'text-ink-soft' : 'text-deep-forest'}`}>
-                {m.number.replace('MODUL ', t('Modul ', 'Module '))}
-                <span className="block text-[12px] font-semibold leading-tight text-ink-soft">{m.title.split(' & ')[0]}</span>
-              </p>
-              {st === 'active' && (
-                <div className="pointer-events-none absolute left-1/2 -top-1.5" style={{ marginLeft: p.x < W / 2 ? 50 : -114 }}>
-                  <Nira mood="wave" size={64} />
-                </div>
-              )}
-            </div>
-          );
-        })}
+      <div className="px-2 pt-1">
+        <JalurArt ref={svgRef} stations={stations} poster={poster} doneLength={doneLength} onOpen={setOpenSlug} />
       </div>
+      <div className="grid grid-cols-2 gap-2 px-4 pb-1 pt-3">
+        <button type="button" onClick={savePng} disabled={busy} className="flex min-h-[44px] items-center justify-center gap-1.5 rounded-full bg-forest text-[13px] font-semibold text-coconut disabled:opacity-60">
+          <Download className="h-4 w-4" /> {busy ? t('Menyiapkan...', 'Preparing...') : t('Poster PNG', 'Poster PNG')}
+        </button>
+        <button type="button" onClick={saveSvg} disabled={busy} className="flex min-h-[44px] items-center justify-center gap-1.5 rounded-full border-2 border-bamboo text-[13px] font-semibold text-deep-forest disabled:opacity-60">
+          <Download className="h-4 w-4" /> {t('Vektor SVG', 'Vector SVG')}
+        </button>
+      </div>
+      <p className="px-4 pb-4 pt-1 text-center text-[11px] leading-tight text-ink-soft">{t('Ketuk modul untuk membukanya. Poster selalu tampil lengkap berwarna.', 'Tap a module to open it. The poster always shows every module in full colour.')}</p>
 
       <section className="space-y-3 px-5 pb-6">
         <Link to="/learn/lab" className="flex min-h-[64px] items-center gap-3 rounded-2xl border border-bamboo bg-coconut p-3 shadow-[0_6px_16px_-10px_rgba(24,56,44,0.5)]">

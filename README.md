@@ -11,6 +11,7 @@ Stack: Vite + React 19 + TypeScript + Tailwind 4 + react-router-dom v7 + lucide-
 | `/learn` | **Perjalanan**: jalur berkelok, 4 bab, bottom sheet, kartu "segera hadir" |
 | `/learn/bab/:slug` | Pembaca bab (kartu geser, kuis mini, hadiah), tanpa tab bar |
 | `/learn/misi/:id` | Detail misi |
+| `/learn` | **Jalur Belajar**: lanskap vektor dengan empat stasiun modul yang bisa diketuk (selesai, aktif, terkunci), jalan yang berwarna sesuai progres, dan unduhan poster PNG/SVG yang selalu tampil lengkap berwarna |
 | `/learn/peta` | **Peta** miring bergaya game, check-in terpandu (simulasi) |
 | `/learn/koleksi`, `/learn/koleksi/:id` | **Koleksi**: kartu dan glosarium, detail |
 | `/learn/profil` | **Profil**: level, XP, lencana, setel ulang demo, keluar |

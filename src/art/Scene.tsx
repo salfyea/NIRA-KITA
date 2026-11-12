@@ -23,10 +23,11 @@ export const SLUG_SCENE: Record<string, SceneKind> = {
  * langit bergradien, tiga lapis bukit, kabut, cahaya matahari, dan detail kecil.
  * Penderes hanya digambar sebagai siluet jauh tanpa wajah; tidak ada adegan memanjat untuk pelajar.
  */
-export const Scene: React.FC<{ kind: SceneKind; className?: string; label?: string }> = ({
+export const Scene: React.FC<{ kind: SceneKind; className?: string; label?: string; svgProps?: React.SVGProps<SVGSVGElement> }> = ({
   kind,
   className = '',
   label,
+  svgProps,
 }) => {
   const id = useId().replace(/:/g, '');
   const u = (n: string) => `${n}${id}`;
@@ -465,6 +466,7 @@ export const Scene: React.FC<{ kind: SceneKind; className?: string; label?: stri
       role="img"
       aria-label={label ?? t(`Ilustrasi adegan ${kind}`, `Scene illustration: ${kind}`)}
       className={className}
+      {...svgProps}
     >
       {defs}
       <rect width="390" height="300" fill={ref('sky')} />
