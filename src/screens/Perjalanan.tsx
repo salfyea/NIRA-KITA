@@ -1,12 +1,32 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, FlaskConical, Hand, Lock, Sparkles } from 'lucide-react';
+import { ArrowRight, Lock } from 'lucide-react';
+import { Nira, NiraMood } from '../art/Nira';
+import { LeafArrow } from '../art/Organic';
 import { SLUG_SCENE, Scene } from '../art/Scene';
 import { JalurArt, Station, pathFor, stationPoints } from '../art/JalurArt';
 import { ProgressBar, Sheet } from '../components/ui';
 import { lengthsAtY } from '../lib/pathLength';
 import { isModuleLocked, useStore } from '../store';
 import { LangToggle, t } from '../i18n';
+
+/** Kartu tautan dengan Nira yang menyembul di sudut, menggantikan kartu ikon generik. */
+const MascotCard: React.FC<{ to: string; mood: NiraMood; tint: string; title: string; text: string }> = ({ to, mood, tint, title, text }) => (
+  <Link
+    to={to}
+    className="relative block min-h-[92px] rounded-[26px_34px_28px_34px] border border-white/70 py-4 pl-[104px] pr-5 shadow-[0_14px_26px_-16px_rgba(16,38,30,0.65)]"
+    style={{ background: tint }}
+  >
+    <span className="pointer-events-none absolute -top-6 left-3">
+      <Nira mood={mood} size={84} float={false} />
+    </span>
+    <span className="block font-serif text-[21px] leading-tight text-deep-forest">{title}</span>
+    <span className="mt-0.5 block text-[13px] leading-snug text-ink-soft">{text}</span>
+    <span className="mt-2 inline-flex items-center gap-1.5 text-sm font-bold text-forest">
+      {t('Buka', 'Open')} <LeafArrow className="h-5 w-5" />
+    </span>
+  </Link>
+);
 
 export const Perjalanan: React.FC = () => {
   const { session, level, nextLevel, xp, modules, quests } = useStore();
@@ -88,30 +108,10 @@ export const Perjalanan: React.FC = () => {
         <JalurArt stations={stations} doneLength={doneLength} onOpen={setOpenSlug} />
       </div>
       <div style={{ background: 'linear-gradient(#BBD1A2 0%, #A3C28B 40%, #86AB74 100%)' }}>
-      <section className="space-y-3 px-5 pb-28 pt-2">
-        <Link to="/learn/lab" className="flex min-h-[64px] items-center gap-3 rounded-2xl border border-bamboo bg-coconut p-3 shadow-[0_6px_16px_-10px_rgba(24,56,44,0.5)]">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-forest text-coconut">
-            <FlaskConical className="h-5 w-5" />
-          </span>
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold text-deep-forest">{t('Lab Pengetahuan', 'Knowledge Lab')}</p>
-            <p className="text-xs text-ink-soft">{t('Bereksperimen di dapur dan menautkan istilah.', 'Experiment in the kitchen and link terms together.')}</p>
-          </div>
-          <span className="shrink-0 rounded-full bg-forest px-3 py-1.5 text-xs font-bold text-coconut">{t('Buka', 'Open')}</span>
-        </Link>
-        <Link to="/learn/arsip" className="flex min-h-[64px] items-center gap-3 rounded-2xl border border-bamboo bg-coconut p-3 shadow-[0_6px_16px_-10px_rgba(24,56,44,0.5)]">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-caramel-dark text-coconut">
-            <Hand className="h-5 w-5" />
-          </span>
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold text-deep-forest">{t('Arsip Gerakan', 'Movement Archive')}</p>
-            <p className="text-xs text-ink-soft">{t('Rekaman gerak perajin, dengan kerangka tangan.', 'Recordings of artisans at work, with hand tracking.')}</p>
-          </div>
-          <span className="shrink-0 rounded-full bg-caramel-dark px-3 py-1.5 text-xs font-bold text-coconut">{t('Buka', 'Open')}</span>
-        </Link>
-        <p className="flex items-center gap-1.5 text-xs font-semibold text-deep-forest/80">
-          <Sparkles className="h-3.5 w-3.5" /> {t('Seluruh pembelajaran berbasis darat.', 'All learning is ground-based.')}
-        </p>
+      <section className="space-y-7 px-5 pb-28 pt-8">
+        <MascotCard to="/learn/lab" mood="cheer" tint="#E7EFD3" title={t('Lab Pengetahuan', 'Knowledge Lab')} text={t('Bereksperimen di dapur dan menautkan istilah.', 'Experiment in the kitchen and link terms together.')} />
+        <MascotCard to="/learn/arsip" mood="wave" tint="#FAE6C8" title={t('Arsip Gerakan', 'Movement Archive')} text={t('Rekaman gerak perajin, dengan kerangka tangan.', 'Recordings of artisans at work, with hand tracking.')} />
+        <p className="text-center font-serif text-sm italic text-deep-forest/80">{t('Seluruh pembelajaran berbasis darat.', 'All learning is ground-based.')}</p>
       </section>
       </div>
 
