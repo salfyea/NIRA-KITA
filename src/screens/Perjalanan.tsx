@@ -91,12 +91,11 @@ export const Perjalanan: React.FC = () => {
         </div>
       </header>
 
-      <div className="px-2 pt-1">
+      <div className="pt-1">
         <JalurArt stations={stations} doneLength={doneLength} onOpen={setOpenSlug} />
       </div>
-      <div className="pb-4" />
-
-      <section className="space-y-3 px-5 pb-6">
+      <div style={{ background: 'linear-gradient(#BBD1A2 0%, #A3C28B 40%, #86AB74 100%)' }}>
+      <section className="space-y-3 px-5 pb-28 pt-2">
         <Link to="/learn/lab" className="flex min-h-[64px] items-center gap-3 rounded-2xl border border-bamboo bg-coconut p-3 shadow-[0_6px_16px_-10px_rgba(24,56,44,0.5)]">
           <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-forest text-coconut">
             <FlaskConical className="h-5 w-5" />
@@ -117,10 +116,11 @@ export const Perjalanan: React.FC = () => {
           </div>
           <span className="shrink-0 rounded-full bg-caramel-dark px-3 py-1.5 text-xs font-bold text-coconut">{t('Buka', 'Open')}</span>
         </Link>
-        <p className="flex items-center gap-1.5 text-xs text-ink-soft">
+        <p className="flex items-center gap-1.5 text-xs font-semibold text-deep-forest/80">
           <Sparkles className="h-3.5 w-3.5" /> {t('Data ilustratif. Seluruh pembelajaran berbasis darat.', 'Illustrative data. All learning is ground-based.')}
         </p>
       </section>
+      </div>
 
       <Sheet open={!!sel} onClose={() => setOpenSlug(null)} title={sel?.title ?? ''}>
         {sel && (

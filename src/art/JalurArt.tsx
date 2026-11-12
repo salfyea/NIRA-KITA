@@ -138,10 +138,6 @@ export const JalurArt = React.forwardRef<SVGSVGElement, { stations: Station[]; d
           <stop offset="0.5" stopColor="#B6CF8E" />
           <stop offset="1" stopColor="#7BA36A" />
         </radialGradient>
-        <linearGradient id="jl-fade" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#F7F3E9" stopOpacity="0" />
-          <stop offset="1" stopColor="#F7F3E9" stopOpacity="1" />
-        </linearGradient>
         <filter id="jl-grey">
           <feColorMatrix type="saturate" values="0" />
         </filter>
@@ -178,10 +174,8 @@ export const JalurArt = React.forwardRef<SVGSVGElement, { stations: Station[]; d
       </defs>
 
       {/* bukit lembut di dasar halaman */}
-      <path d={`M-10 ${JH - 190} C70 ${JH - 230} 150 ${JH - 170} 230 ${JH - 205} S350 ${JH - 230} 400 ${JH - 200} V${JH + 10} H-10Z`} fill="#CFDDB8" opacity="0.55" />
-      <path d={`M-10 ${JH - 120} C80 ${JH - 150} 170 ${JH - 100} 260 ${JH - 130} S360 ${JH - 140} 400 ${JH - 118} V${JH + 10} H-10Z`} fill="#B9CFA0" opacity="0.6" />
-
-      <rect x="0" y={JH - 70} width={JW} height="70" fill="url(#jl-fade)" />
+      <path d={`M-10 ${JH - 190} C70 ${JH - 230} 150 ${JH - 170} 230 ${JH - 205} S350 ${JH - 230} 400 ${JH - 200} V${JH + 10} H-10Z`} fill="#D3E0BC" />
+      <path d={`M-10 ${JH - 120} C80 ${JH - 150} 170 ${JH - 100} 260 ${JH - 130} S360 ${JH - 140} 400 ${JH - 118} V${JH + 10} H-10Z`} fill="#BBD1A2" />
 
       {/* kebun kelapa di tepi */}
       {PALMS.map(([x, y, s], i) => (

@@ -203,7 +203,7 @@ export const PhoneShell: React.FC = () => {
         <Toast message={toast} />
         <TourOverlay />
         <OfflinePill />
-        <div ref={scrollRef} className={`no-scrollbar relative flex-1 overflow-y-auto ${showTabs ? (pathname === '/learn/peta' ? 'pb-[72px]' : 'pb-24') : ''}`}>
+        <div ref={scrollRef} className={`no-scrollbar relative flex-1 overflow-y-auto ${showTabs ? (pathname === '/learn/peta' ? 'pb-[72px]' : pathname === '/learn' ? '' : 'pb-24') : ''}`}>
           <div key={pathname} className={`screen-enter ${showTabs && pathname !== '/learn/peta' ? '' : 'h-full'}`}>
             <Outlet />
           </div>
