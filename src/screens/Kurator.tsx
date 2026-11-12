@@ -121,8 +121,8 @@ export const Kurator: React.FC = () => {
                   {r.contributorName} · {locLabel(r.location.replace(', Cilongok, Banyumas', ''))}
                 </span>
                 <span className="mt-2 flex flex-wrap gap-1.5 text-[11px] font-bold">
-                  <span className={`rounded-full px-2 py-0.5 ${r.consent.internalLearning ? 'bg-forest/10 text-forest' : 'bg-bamboo/60 text-ink-soft'}`}>{t('Izin pelajar', 'Learner permission')} {r.consent.internalLearning ? '✓' : '✗'}</span>
-                  <span className={`rounded-full px-2 py-0.5 ${r.consent.publicQrPage ? 'bg-forest/10 text-forest' : 'bg-bamboo/60 text-ink-soft'}`}>{t('Izin QR publik', 'Public QR permission')} {r.consent.publicQrPage ? '✓' : '✗'}</span>
+                  <span className={`rounded-full px-2 py-0.5 ${r.consent.internalLearning ? 'bg-forest/10 text-forest' : 'bg-bamboo/60 text-ink-soft'}`}>{t('Izin pelajar', 'Learner permission')} {r.consent.internalLearning ? t('ya', 'yes') : t('belum', 'not yet')}</span>
+                  <span className={`rounded-full px-2 py-0.5 ${r.consent.publicQrPage ? 'bg-forest/10 text-forest' : 'bg-bamboo/60 text-ink-soft'}`}>{t('Izin QR publik', 'Public QR permission')} {r.consent.publicQrPage ? t('ya', 'yes') : t('belum', 'not yet')}</span>
                   <span className="rounded-full bg-coconut px-2 py-0.5 text-deep-forest ring-1 ring-bamboo">{scopeLabel(r.visibility)}</span>
                 </span>
               </Ornate>
