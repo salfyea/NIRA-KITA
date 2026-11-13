@@ -48,10 +48,11 @@ const TabBar: React.FC = () => (
   </nav>
 );
 
-type RoleKey = 'learner' | 'visitor' | 'mentor' | 'curator' | 'admin' | 'enterprise';
+type RoleKey = 'learner' | 'visitor' | 'buyer' | 'mentor' | 'curator' | 'admin' | 'enterprise';
 const getRoles = (): { key: RoleKey; label: string; desc: string; Icon: typeof BookOpen; path: string }[] => [
   { key: 'learner', label: t('Pelajar', 'Learner'), desc: t('Perjalanan, peta, koleksi, praktik gerak', 'Journey, map, collection, movement practice'), Icon: BookOpen, path: '/learn' },
   { key: 'visitor', label: t('Pengunjung QR', 'QR visitor'), desc: t('Paspor warisan dan game dari kemasan', 'Heritage passport and game from the package'), Icon: QrCode, path: '/p/NK-001' },
+  { key: 'buyer', label: t('Pembeli', 'Buyer'), desc: t('Toko NIRA: harga bertingkat dan pesan', 'NIRA Shop: tiered price and ordering'), Icon: Store, path: '/toko' },
   { key: 'mentor', label: 'Mentor', desc: t('Unggah dengan izin, validasi pelajar, anotasi', 'Consented upload, learner validation, annotation'), Icon: UserCheck, path: '/mentor' },
   { key: 'curator', label: t('Kurator', 'Curator'), desc: t('Persetujuan budaya dan visibilitas', 'Cultural approval and visibility'), Icon: ShieldCheck, path: '/kurator' },
   { key: 'admin', label: 'Admin', desc: t('Capaian pilot, batch QR, audit', 'Pilot progress, QR batches, audit'), Icon: Users, path: '/admin' },
@@ -59,7 +60,7 @@ const getRoles = (): { key: RoleKey; label: string; desc: string; Icon: typeof B
 ];
 
 const roleOfPath = (p: string): RoleKey | null =>
-  p.startsWith('/learn') ? 'learner' : p.startsWith('/p/') ? 'visitor' : p.startsWith('/mentor') ? 'mentor' : p.startsWith('/kurator') ? 'curator' : p.startsWith('/admin') ? 'admin' : p.startsWith('/enterprise') ? 'enterprise' : null;
+  p.startsWith('/learn') ? 'learner' : p.startsWith('/toko') ? 'buyer' : p.startsWith('/p/') ? 'visitor' : p.startsWith('/mentor') ? 'mentor' : p.startsWith('/kurator') ? 'curator' : p.startsWith('/admin') ? 'admin' : p.startsWith('/enterprise') ? 'enterprise' : null;
 
 /** Panel kiri di desktop: konteks ekosistem lima peran supaya juri tidak melihat satu aplikasi saja. */
 const SidePanel: React.FC = () => {
@@ -140,7 +141,7 @@ const SidePanel: React.FC = () => {
       </div>
       {!tour.active && (
       <div>
-        <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-ink-soft">{t('Enam peran dalam satu ekosistem', 'Six roles in one ecosystem')}</p>
+        <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-ink-soft">{t('Tujuh peran dalam satu ekosistem', 'Seven roles in one ecosystem')}</p>
         <ul className="space-y-1.5">
           {getRoles().map(({ key, label, desc, Icon, path }) => {
             const active = current === key;

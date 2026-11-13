@@ -15,6 +15,7 @@ import { EnterpriseHome, EnterpriseOrders } from './screens/EnterprisePages';
 import { RequireRole, StaffShell } from './staff/StaffShell';
 import { t } from './i18n';
 import { QuestDetail } from './screens/Misi';
+import { Toko, TokoPesanan } from './screens/Toko';
 import { Peta } from './screens/Peta';
 import { Splash } from './screens/Splash';
 import { Onboarding } from './screens/Onboarding';
@@ -73,6 +74,8 @@ export const App: React.FC = () => (
       <Route path="/masuk" element={<Masuk />} />
       <Route path="/kode-undangan" element={<KodeUndangan />} />
       <Route path="/p/:code" element={<PasporPublik />} />
+      <Route path="/toko" element={<Toko />} />
+      <Route path="/toko/pesanan/:id" element={<TokoPesanan />} />
       <Route path="/tur" element={<TurStart />} />
       <Route element={<RequireSession />}>
         <Route path="/learn" element={<Perjalanan />} />

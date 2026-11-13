@@ -12,6 +12,7 @@ import { useStore } from '../store';
 import { loadVisitor, saveVisitor } from '../lib/visitor';
 import { LangToggle, t } from '../i18n';
 import { COLORS, StackBar } from '../components/StackBar';
+import { LeafArrow } from '../art/Organic';
 import { rupiah, splitPack } from '../lib/finance';
 import { HeritageRecord } from '../types/jejakNira';
 
@@ -227,6 +228,17 @@ export const PasporPublik: React.FC = () => {
             <MasakGula key={round} onFinish={onFinish} />
           )}
         </Ornate>
+      </section>
+
+      {/* 4b. beli */}
+      <section className="mt-8 px-6">
+        <Link to="/toko" className="btn-sticker flex min-h-[56px] items-center justify-between gap-3 rounded-[30px_34px_28px_34px] bg-caramel-dark px-6 text-coconut">
+          <span>
+            <span className="block font-serif text-xl leading-tight">{t('Suka gulanya? Pesan langsung', 'Like the sugar? Order directly')}</span>
+            <span className="block text-xs text-coconut/85">{t('Dari koperasi perajin, harga adil.', 'From the artisan cooperative, at a fair price.')}</span>
+          </span>
+          <LeafArrow className="h-6 w-6 shrink-0" />
+        </Link>
       </section>
 
       {/* 5. ajakan lembut */}

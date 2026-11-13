@@ -78,6 +78,10 @@ export interface Order {
   channel: 'langsung' | 'reseller';
   kg: number;
   status: OrderStatus;
+  /** Pesanan dari Toko pembeli menyertakan kontak dan alamat; pesanan yang dicatat koperasi tidak. */
+  contact?: string;
+  address?: string;
+  source?: 'toko' | 'koperasi';
 }
 
 export interface Annotation {
@@ -207,7 +211,7 @@ interface Store extends PersistedState {
   addBatch: (b: Omit<QrBatch, 'code'>) => QrBatch;
   addRecord: (r: HeritageRecord) => void;
   addPurchase: (p: { partnerId: string; kg: number; pricePerKg: number }) => void;
-  addOrder: (o: { buyer: string; kg: number }) => void;
+  addOrder: (o: { buyer: string; kg: number; contact?: string; address?: string; source?: 'toko' | 'koperasi' }) => string;
   advanceOrder: (id: string) => void;
   setMarketRef: (v: number) => void;
   setBatchPricing: (code: string, pricing: NonNullable<QrBatch['pricing']>) => void;
@@ -437,13 +441,14 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const addOrder = useCallback((o: { buyer: string; kg: number }) => {
+  const addOrder = useCallback((o: { buyer: string; kg: number; contact?: string; address?: string; source?: 'toko' | 'koperasi' }): string => {
+    const id = `ORD-${String(stateRef.current.orders.length + 1).padStart(3, '0')}`;
     setState((s) => {
-      const id = `ORD-${String(s.orders.length + 1).padStart(3, '0')}`;
       const channel: Order['channel'] = o.kg >= 30 ? 'reseller' : 'langsung';
-      const rec: Order = { id, date: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }), buyer: o.buyer, channel, kg: o.kg, status: 'Baru' };
+      const rec: Order = { id, date: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }), buyer: o.buyer, channel, kg: o.kg, status: 'Baru', contact: o.contact, address: o.address, source: o.source ?? 'koperasi' };
       return { ...s, orders: [rec, ...s.orders], audit: audited(s, 'Enterprise', 'Mencatat pesanan', id, `${o.buyer}: ${o.kg} kg (${channel})`) };
     });
+    return id;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

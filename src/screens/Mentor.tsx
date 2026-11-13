@@ -340,21 +340,21 @@ const Head: React.FC<{ title: string; text: string }> = ({ title, text }) => (
 );
 
 export const MentorRekam: React.FC = () => (
-  <div className="px-4 pt-4 lg:px-0 lg:pt-0">
+  <div className="px-4 pt-4">
     <Head title={t('Rekam cerita', 'Record a story')} text={t('Langkah demi langkah: izin narasumber lebih dulu, lalu cerita. Rekaman baru Privat sampai disetujui kurator.', 'Step by step: the source\'s consent first, then the story. New recordings stay Private until the curator approves.')} />
     <Unggah />
   </div>
 );
 
 export const MentorValidasi: React.FC = () => (
-  <div className="px-4 pt-4 lg:px-0 lg:pt-0">
+  <div className="px-4 pt-4">
     <Head title={t('Validasi pelajar', 'Validate learners')} text={t('Baca refleksi pelajar, centang kompetensi yang sudah terlihat, lalu validasi atau minta revisi.', 'Read the learners\' reflections, tick the competencies you saw, then validate or ask for a revision.')} />
     <Validasi />
   </div>
 );
 
 export const MentorAnotasi: React.FC = () => (
-  <div className="px-4 pt-4 lg:px-0 lg:pt-0">
+  <div className="px-4 pt-4">
     <Head title={t('Anotasi klip dan irama acuan', 'Clip annotations and reference rhythm')} text={t('Tandai teknik pada klip, atau rekam irama mengaduk perajin sebagai acuan bagi pelajar.', 'Mark technique on clips, or record an artisan\'s stirring rhythm as a reference for learners.')} />
     <Anotasi />
   </div>
@@ -367,7 +367,7 @@ export const MentorHome: React.FC = () => {
   const validated = submissions.filter((s) => s.status === 'Tervalidasi Mentor').length;
   const notes = Object.keys(annotations).length;
   return (
-    <div className="px-4 pt-4 lg:px-0 lg:pt-0">
+    <div className="px-4 pt-4">
       <div className="flex items-center gap-4 rounded-[28px_36px_28px_36px] p-5" style={{ background: 'linear-gradient(120deg, #F3E3CC, #FBF1DC)' }}>
         <RoleMascot role="mentor" size={96} mood="wave" />
         <div className="min-w-0">
@@ -385,7 +385,7 @@ export const MentorHome: React.FC = () => {
         <LeafArrow className="h-7 w-7 shrink-0" />
       </Link>
 
-      <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-3">
+      <div className="mt-4 grid grid-cols-2 gap-3">
         <Link to="/mentor/validasi" className="surface rounded-[22px_28px_22px_28px] p-4">
           <span className="block font-serif text-[34px] leading-none text-deep-forest">{waiting}</span>
           <span className="mt-1 block text-sm font-semibold text-deep-forest">{t('Pelajar menunggu validasi', 'Learners awaiting validation')}</span>
@@ -394,7 +394,7 @@ export const MentorHome: React.FC = () => {
           <span className="block font-serif text-[34px] leading-none text-deep-forest">{notes}</span>
           <span className="mt-1 block text-sm font-semibold text-deep-forest">{t('Anotasi klip dan irama', 'Clip and rhythm notes')}</span>
         </Link>
-        <div className="surface col-span-2 rounded-[22px_28px_22px_28px] p-4 lg:col-span-1">
+        <div className="surface col-span-2 rounded-[22px_28px_22px_28px] p-4">
           <span className="block font-serif text-[34px] leading-none text-forest">{validated}</span>
           <span className="mt-1 block text-sm font-semibold text-deep-forest">{t('Pelajar yang sudah kamu validasi', 'Learners you have validated')}</span>
         </div>

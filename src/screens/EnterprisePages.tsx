@@ -145,9 +145,11 @@ export const EnterpriseOrders: React.FC = () => {
               </div>
               <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-charcoal">
                 <span className="rounded-full bg-bamboo/50 px-2.5 py-0.5 text-xs font-bold text-deep-forest">{o.channel === 'reseller' ? 'Reseller' : t('Langsung', 'Direct')}</span>
+                {o.source === 'toko' && <span className="rounded-full bg-forest/10 px-2.5 py-0.5 text-xs font-bold text-forest">{t('Dari Toko', 'From the Shop')}</span>}
                 <span>{o.kg} kg × {rupiah(unitPrice(o.channel))}</span>
                 <b className="text-deep-forest">{rupiah(orderTotal(o))}</b>
               </div>
+              {(o.contact || o.address) && <p className="mt-1 text-xs leading-snug text-ink-soft">{o.contact}{o.contact && o.address ? ' · ' : ''}{o.address}</p>}
               {o.status !== 'Selesai' && (
                 <button type="button" onClick={() => { advanceOrder(o.id); showToast(t(`${o.id}: ${NEXT_ACTION(o.status)}.`, `${o.id}: ${NEXT_ACTION(o.status)}.`)); }} className="mt-3 min-h-[44px] rounded-full bg-forest px-5 text-sm font-semibold text-coconut">
                   {NEXT_ACTION(o.status)}

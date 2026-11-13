@@ -51,6 +51,44 @@ export const StaffShell: React.FC<{ role: StaffRole; items: NavItem[] }> = ({ ro
   const linkCls = (active: boolean) =>
     `relative flex min-h-[46px] items-center justify-between gap-2 rounded-2xl px-4 text-[15px] font-semibold transition-colors ${active ? 'bg-coconut text-deep-forest shadow-[0_6px_14px_-8px_rgba(0,0,0,0.5)]' : 'text-coconut/85 hover:bg-white/10'}`;
 
+  if (role === 'mentor') {
+    // Mentor bekerja di lapangan lewat ponsel: selalu tampil dalam bingkai ponsel, tanpa sidebar desktop.
+    return (
+      <div className="paper flex min-h-dvh items-center justify-center md:p-6">
+        <div className="relative flex h-dvh w-full flex-col overflow-hidden bg-cream md:h-[min(844px,calc(100dvh-48px))] md:w-[390px] md:rounded-[46px] md:border-[10px] md:border-night md:shadow-[0_40px_80px_-30px_rgba(16,38,30,0.6)]">
+          <header className="flex shrink-0 items-center gap-3 px-4 py-3 text-coconut" style={{ background: c.accent }}>
+            <RoleMascot role={role} size={48} />
+            <div className="min-w-0 flex-1">
+              <p className="font-serif text-xl leading-tight">{c.label}</p>
+              <p className="truncate text-xs text-coconut/80">{session?.name}</p>
+            </div>
+            <LangToggle tone="dark" />
+            <button type="button" onClick={out} className="min-h-[44px] px-2 text-sm font-semibold underline decoration-coconut/40 decoration-2 underline-offset-[5px]">
+              {t('Keluar', 'Exit')}
+            </button>
+          </header>
+          <div className="no-scrollbar relative flex-1 overflow-y-auto pb-28">
+            <Outlet />
+          </div>
+          <nav aria-label={c.label} className="absolute inset-x-3 bottom-3 z-30 rounded-[30px] bg-coconut/[0.98] p-1.5 shadow-[0_16px_34px_-12px_rgba(16,38,30,0.55),0_2px_6px_rgba(16,38,30,0.08)]">
+            <ul className="grid gap-1" style={{ gridTemplateColumns: `repeat(${items.length}, minmax(0, 1fr))` }}>
+              {items.map((it) => (
+                <li key={it.to}>
+                  <NavLink to={it.to} end={it.end} className={({ isActive }) => `flex min-h-[52px] items-center justify-center rounded-[22px] px-1 text-[13px] font-semibold ${isActive ? 'text-coconut' : 'text-ink-soft'}`} style={({ isActive }) => (isActive ? { background: c.accent } : undefined)}>
+                    {it.label}
+                  </NavLink>
+                </li>
+              ))}
+            </ul>
+          </nav>
+          <Toast message={toast} />
+          <TourOverlay />
+          <div id="phone-overlay" className="pointer-events-none absolute inset-0 z-50" />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="paper min-h-dvh lg:grid lg:grid-cols-[280px_1fr]" style={{ ['--accent' as string]: c.accent, ['--accent-soft' as string]: c.accentSoft }}>
       {/* sidebar desktop */}
