@@ -6,6 +6,7 @@ import { COLORS, StackBar } from '../components/StackBar';
 import { BUY_PRICE, PRESERVE_PCT, PRICE, channelOf, quote, rupiah } from '../lib/finance';
 import { ORDER_FLOW, OrderStatus, useStore } from '../store';
 import { LangToggle, t } from '../i18n';
+import { PAYMENT, waLink } from '../data/payment';
 
 const field =
   'mt-1 min-h-[50px] w-full rounded-[16px_20px_16px_20px] border border-bamboo bg-coconut px-4 text-base text-charcoal shadow-[inset_0_2px_4px_rgba(24,56,44,0.06)] placeholder:text-ink-soft/80 focus:border-caramel focus:outline-none focus:ring-2 focus:ring-caramel/30';
@@ -186,6 +187,34 @@ export const TokoPesanan: React.FC = () => {
               </li>
             ))}
           </ol>
+          {(() => {
+            const total = o.kg * (o.channel === 'reseller' ? PRICE.reseller : PRICE.direct);
+            const msg = t(`Halo, saya ${o.buyer}. Pesanan ${o.id}: ${o.kg} kg gula kelapa cetak (${o.channel === 'reseller' ? 'harga reseller' : 'harga langsung'}), total ${rupiah(total)}. Alamat: ${o.address ?? '-'}. Mohon konfirmasi pembayaran dan pengiriman.`, `Hello, I am ${o.buyer}. Order ${o.id}: ${o.kg} kg molded coconut sugar (${o.channel === 'reseller' ? 'reseller price' : 'direct price'}), total ${rupiah(total)}. Address: ${o.address ?? '-'}. Please confirm payment and delivery.`);
+            return (
+              <section className="surface mt-4 rounded-[26px_34px_26px_34px] p-5">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="font-serif text-xl text-deep-forest">{t('Pembayaran', 'Payment')}</p>
+                  <span className={`rounded-full px-3 py-1 text-xs font-bold ${o.paid ? 'bg-forest/10 text-forest' : 'bg-caramel/15 text-caramel-dark'}`}>{o.paid ? t('Sudah dibayar', 'Paid') : t('Menunggu pembayaran', 'Awaiting payment')}</span>
+                </div>
+                {!o.paid && (
+                  <>
+                    <dl className="mt-3 space-y-1.5 text-sm text-charcoal">
+                      <div className="flex justify-between gap-3"><dt className="text-ink-soft">{t('Jumlah transfer', 'Amount to transfer')}</dt><dd className="font-bold text-deep-forest">{rupiah(total)}</dd></div>
+                      <div className="flex justify-between gap-3"><dt className="text-ink-soft">{t('Bank', 'Bank')}</dt><dd className="font-semibold">{PAYMENT.bank}</dd></div>
+                      <div className="flex justify-between gap-3"><dt className="text-ink-soft">{t('Nomor rekening', 'Account number')}</dt><dd className="font-semibold">{PAYMENT.account}</dd></div>
+                      <div className="flex justify-between gap-3"><dt className="text-ink-soft">{t('Atas nama', 'Account name')}</dt><dd className="text-right font-semibold">{PAYMENT.holder}</dd></div>
+                      <div className="flex justify-between gap-3"><dt className="text-ink-soft">{t('Berita transfer', 'Transfer note')}</dt><dd className="font-bold text-caramel-dark">{o.id}</dd></div>
+                    </dl>
+                    <a href={waLink(msg)} target="_blank" rel="noopener noreferrer" className="btn-sticker mt-4 flex min-h-[54px] items-center justify-center gap-2 rounded-[28px_32px_26px_32px] bg-forest text-base font-semibold text-coconut">
+                      {t('Konfirmasi lewat WhatsApp', 'Confirm on WhatsApp')} <LeafArrow className="h-5 w-5" />
+                    </a>
+                    <p className="mt-2 text-center text-xs text-ink-soft">{t(`Setelah transfer, kirim bukti lewat WhatsApp (${PAYMENT.whatsappLabel}). Koperasi menandai pesanan sudah dibayar.`, `After transferring, send the proof on WhatsApp (${PAYMENT.whatsappLabel}). The cooperative marks the order as paid.`)}</p>
+                  </>
+                )}
+                <p className="mt-3 rounded-xl bg-bamboo/40 p-2.5 text-[11px] leading-snug text-deep-forest">{t('Nomor dan rekening di atas adalah CONTOH untuk prototipe. Pembayaran sungguhan lewat gateway adalah target produksi.', 'The number and account above are EXAMPLES for the prototype. Real payment through a gateway is a production target.')}</p>
+              </section>
+            );
+          })()}
           <p className="mt-4 text-center text-xs leading-relaxed text-ink-soft">{t('Koperasi akan menghubungi kontakmu. Simpan kode pesanan ini untuk melacak.', 'The cooperative will contact you. Keep this order code to track it.')}</p>
         </>
       )}

@@ -51,10 +51,11 @@ export const EnterpriseHome: React.FC = () => {
       </div>
 
       <h2 className="mt-6 text-xl text-deep-forest">{t('Perlu tindakan', 'Needs action')}</h2>
-      <div className="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-3">
         <Tile to="/enterprise/pesanan?status=Baru" n={s.count('Baru')} label={t('Pesanan baru', 'New orders')} hint={t('Belum dikemas', 'Not packed yet')} warn={s.count('Baru') > 0} />
         <Tile to="/enterprise/pesanan?status=Dikemas" n={s.count('Dikemas')} label={t('Siap dikirim', 'Ready to ship')} hint={t('Sudah dikemas', 'Already packed')} />
         <Tile to="/enterprise/mitra" n={`${s.stock} kg`} label={t('Stok tersedia', 'Stock available')} hint={lowStock ? t('Menipis: catat pembelian baru', 'Running low: record a new purchase') : t('Cukup', 'Enough')} warn={lowStock} />
+        <Tile to="/enterprise/pesanan" n={orders.filter((o) => !o.paid).length} label={t('Belum dibayar', 'Unpaid')} hint={t('Cocokkan transfer', 'Match the transfer')} warn={orders.some((o) => !o.paid)} />
         <Tile to="/enterprise/pesanan?status=Dikirim" n={s.count('Dikirim')} label={t('Dalam pengiriman', 'In transit')} hint={t('Menunggu diterima', 'Awaiting delivery')} />
       </div>
 
@@ -105,7 +106,7 @@ export const EnterpriseHome: React.FC = () => {
 
 /** Pesanan: tab status ala Seller Centre, tombol aksi berikutnya per pesanan, dan form catat pesanan. */
 export const EnterpriseOrders: React.FC = () => {
-  const { orders, addOrder, advanceOrder, showToast } = useStore();
+  const { orders, addOrder, advanceOrder, markPaid, showToast } = useStore();
   const [params, setParams] = useSearchParams();
   const status = (params.get('status') as OrderStatus | null) ?? null;
   const [buyer, setBuyer] = React.useState('');
@@ -145,11 +146,17 @@ export const EnterpriseOrders: React.FC = () => {
               </div>
               <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-charcoal">
                 <span className="rounded-full bg-bamboo/50 px-2.5 py-0.5 text-xs font-bold text-deep-forest">{o.channel === 'reseller' ? 'Reseller' : t('Langsung', 'Direct')}</span>
+                <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${o.paid ? 'bg-forest/10 text-forest' : 'bg-[#9E4F37]/10 text-[#9E4F37]'}`}>{o.paid ? t('Sudah dibayar', 'Paid') : t('Belum dibayar', 'Unpaid')}</span>
                 {o.source === 'toko' && <span className="rounded-full bg-forest/10 px-2.5 py-0.5 text-xs font-bold text-forest">{t('Dari Toko', 'From the Shop')}</span>}
                 <span>{o.kg} kg × {rupiah(unitPrice(o.channel))}</span>
                 <b className="text-deep-forest">{rupiah(orderTotal(o))}</b>
               </div>
               {(o.contact || o.address) && <p className="mt-1 text-xs leading-snug text-ink-soft">{o.contact}{o.contact && o.address ? ' · ' : ''}{o.address}</p>}
+              {!o.paid && (
+                <button type="button" onClick={() => { markPaid(o.id); showToast(t(`${o.id} ditandai sudah dibayar.`, `${o.id} marked as paid.`)); }} className="mr-2 mt-3 min-h-[44px] rounded-full border-2 border-forest px-5 text-sm font-semibold text-forest">
+                  {t('Tandai sudah dibayar', 'Mark as paid')}
+                </button>
+              )}
               {o.status !== 'Selesai' && (
                 <button type="button" onClick={() => { advanceOrder(o.id); showToast(t(`${o.id}: ${NEXT_ACTION(o.status)}.`, `${o.id}: ${NEXT_ACTION(o.status)}.`)); }} className="mt-3 min-h-[44px] rounded-full bg-forest px-5 text-sm font-semibold text-coconut">
                   {NEXT_ACTION(o.status)}

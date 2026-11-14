@@ -82,6 +82,8 @@ export interface Order {
   contact?: string;
   address?: string;
   source?: 'toko' | 'koperasi';
+  /** Koperasi menandai sudah dibayar setelah transfer dicocokkan. */
+  paid?: boolean;
 }
 
 export interface Annotation {
@@ -118,11 +120,11 @@ const SEED_PURCHASES: Purchase[] = [
 ];
 
 const SEED_ORDERS: Order[] = [
-  { id: 'ORD-001', date: '18 Mei 2026', buyer: 'Toko Oleh-oleh Purwokerto', channel: 'reseller', kg: 40, status: 'Dikemas' },
-  { id: 'ORD-002', date: '19 Mei 2026', buyer: 'Ibu Sari', channel: 'langsung', kg: 3, status: 'Baru' },
-  { id: 'ORD-003', date: '19 Mei 2026', buyer: 'Kedai Kopi Nira', channel: 'reseller', kg: 30, status: 'Baru' },
-  { id: 'ORD-004', date: '15 Mei 2026', buyer: 'Pak Budi', channel: 'langsung', kg: 5, status: 'Dikirim' },
-  { id: 'ORD-005', date: '10 Mei 2026', buyer: 'Warung Gula Jawa', channel: 'reseller', kg: 35, status: 'Selesai' },
+  { id: 'ORD-001', date: '18 Mei 2026', buyer: 'Toko Oleh-oleh Purwokerto', channel: 'reseller', kg: 40, status: 'Dikemas', paid: true },
+  { id: 'ORD-002', date: '19 Mei 2026', buyer: 'Ibu Sari', channel: 'langsung', kg: 3, status: 'Baru', paid: false },
+  { id: 'ORD-003', date: '19 Mei 2026', buyer: 'Kedai Kopi Nira', channel: 'reseller', kg: 30, status: 'Baru', paid: false },
+  { id: 'ORD-004', date: '15 Mei 2026', buyer: 'Pak Budi', channel: 'langsung', kg: 5, status: 'Dikirim', paid: true },
+  { id: 'ORD-005', date: '10 Mei 2026', buyer: 'Warung Gula Jawa', channel: 'reseller', kg: 35, status: 'Selesai', paid: true },
 ];
 
 const SEED_SUBMISSIONS: LearnerSubmission[] = [
@@ -213,6 +215,7 @@ interface Store extends PersistedState {
   addPurchase: (p: { partnerId: string; kg: number; pricePerKg: number }) => void;
   addOrder: (o: { buyer: string; kg: number; contact?: string; address?: string; source?: 'toko' | 'koperasi' }) => string;
   advanceOrder: (id: string) => void;
+  markPaid: (id: string) => void;
   setMarketRef: (v: number) => void;
   setBatchPricing: (code: string, pricing: NonNullable<QrBatch['pricing']>) => void;
   validateSubmission: (id: string, input: ValidateInput) => void;
@@ -445,7 +448,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const id = `ORD-${String(stateRef.current.orders.length + 1).padStart(3, '0')}`;
     setState((s) => {
       const channel: Order['channel'] = o.kg >= 30 ? 'reseller' : 'langsung';
-      const rec: Order = { id, date: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }), buyer: o.buyer, channel, kg: o.kg, status: 'Baru', contact: o.contact, address: o.address, source: o.source ?? 'koperasi' };
+      const rec: Order = { id, date: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }), buyer: o.buyer, channel, kg: o.kg, status: 'Baru', paid: false, contact: o.contact, address: o.address, source: o.source ?? 'koperasi' };
       return { ...s, orders: [rec, ...s.orders], audit: audited(s, 'Enterprise', 'Mencatat pesanan', id, `${o.buyer}: ${o.kg} kg (${channel})`) };
     });
     return id;
@@ -459,6 +462,15 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const next = ORDER_FLOW[ORDER_FLOW.indexOf(o.status) + 1];
       if (!next) return s;
       return { ...s, orders: s.orders.map((x) => (x.id === id ? { ...x, status: next } : x)), audit: audited(s, 'Enterprise', 'Memajukan pesanan', id, `${o.status} → ${next}`) };
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const markPaid = useCallback((id: string) => {
+    setState((s) => {
+      const o = s.orders.find((x) => x.id === id);
+      if (!o || o.paid) return s;
+      return { ...s, orders: s.orders.map((x) => (x.id === id ? { ...x, paid: true } : x)), audit: audited(s, 'Enterprise', 'Menandai dibayar', id, o.buyer) };
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -522,8 +534,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           badges: state.badges.map((b) => (BADGE_EN[b.id] ? { ...b, ...BADGE_EN[b.id] } : b)),
         }
       : { records: state.records, modules: state.modules, quests: state.quests, badges: state.badges };
-    return { ...state, ...loc, level: lvl(level) as typeof level, nextLevel: lvl(nextLevel), toast, showToast, completeQuest, submitReflection, checkIn, completeModule, completeLab, signIn, reviewRecord, addBatch, addRecord, addPurchase, addOrder, advanceOrder, setMarketRef, setBatchPricing, validateSubmission, saveAnnotation, approveAnnotation, signOut, finishOnboarding, reset };
-  }, [state, lang, toast, showToast, completeQuest, submitReflection, checkIn, completeModule, completeLab, signIn, reviewRecord, addBatch, addRecord, addPurchase, addOrder, advanceOrder, setMarketRef, setBatchPricing, validateSubmission, saveAnnotation, approveAnnotation, signOut, finishOnboarding, reset]);
+    return { ...state, ...loc, level: lvl(level) as typeof level, nextLevel: lvl(nextLevel), toast, showToast, completeQuest, submitReflection, checkIn, completeModule, completeLab, signIn, reviewRecord, addBatch, addRecord, addPurchase, addOrder, advanceOrder, markPaid, setMarketRef, setBatchPricing, validateSubmission, saveAnnotation, approveAnnotation, signOut, finishOnboarding, reset };
+  }, [state, lang, toast, showToast, completeQuest, submitReflection, checkIn, completeModule, completeLab, signIn, reviewRecord, addBatch, addRecord, addPurchase, addOrder, advanceOrder, markPaid, setMarketRef, setBatchPricing, validateSubmission, saveAnnotation, approveAnnotation, signOut, finishOnboarding, reset]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 };
