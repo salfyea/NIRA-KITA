@@ -6,6 +6,7 @@ export type Prop3D = 'pongkor' | 'wajan' | 'kain' | 'pohon' | 'tungku' | 'kemasa
 export type Task =
   | { kind: 'pose'; id: string; prop?: Prop3D; title: string; hint: string; why: string; pose: 'fist' | 'open' | 'pinch' | 'point' | 'thumbsUp' }
   | { kind: 'stir'; id: string; prop?: Prop3D; title: string; hint: string; why: string; laps: number }
+  | { kind: 'steady'; id: string; prop?: Prop3D; title: string; hint: string; why: string; seconds: number }
   | { kind: 'pour'; id: string; prop?: Prop3D; title: string; hint: string; why: string; times: number }
   | { kind: 'judge'; id: string; prop?: Prop3D; title: string; scenario: string; answer: 'aman' | 'bahaya'; why: string };
 
@@ -33,6 +34,15 @@ export const getPraktik = (slug: string): Praktik | undefined => {
           title: t('Tunjuk dan sebut', 'Point and name'),
           hint: t('Acungkan telunjuk, lalu sebutkan satu alat yang kamu kenal: pongkor, wajan, atau bathok.', 'Raise your index finger and name a tool you know: pongkor, wajan (wok), or bathok (shell mold).'),
           why: t('Menyebut alat dengan nama aslinya adalah langkah pertama menjaga istilah lokal tetap hidup.', 'Naming a tool by its real name is the first step in keeping local terms alive.'),
+        },
+        {
+          kind: 'pose',
+          id: 'tadah',
+          prop: 'pongkor',
+          pose: 'open',
+          title: t('Tadah nira', 'Catch the sap'),
+          hint: t('Buka telapak tanganmu dan tahan, seperti menampung tetesan nira yang jatuh.', 'Open your palm and hold it, as if catching the dripping sap.'),
+          why: t('Nira menetes pelan dari mayang ke pongkor. Penampungnya harus bersih dan stabil agar tidak ada yang terbuang.', 'Sap drips slowly from the flower stalk into the pongkor. The container must be clean and steady so nothing is wasted.'),
         },
         {
           kind: 'pose',
@@ -82,6 +92,15 @@ export const getPraktik = (slug: string): Praktik | undefined => {
             'The reduced sap is stirred continuously while it cooks. Inconsistent manual stirring is named as a quality problem, so a patient rhythm is a skill.',
           ),
         },
+        {
+          kind: 'steady',
+          id: 'aduk-tetap',
+          prop: 'wajan',
+          seconds: 6,
+          title: t('Aduk dengan irama tetap', 'Stir at a steady rhythm'),
+          hint: t('Putar tanganmu dengan tempo yang sama selama 6 detik. Kamera mengukur keteraturan iramamu.', 'Move your hand at the same tempo for 6 seconds. The camera measures how steady your rhythm is.'),
+          why: t('Pengadukan manual yang tidak konsisten disebut sebagai salah satu masalah mutu. Tempo yang tetap adalah keahlian yang sulit ditulis, dan baru terlihat saat diukur.', 'Inconsistent manual stirring is named as a quality problem. A steady tempo is the skill that is hard to write down, and it only shows when measured.'),
+        },
       ],
     },
     'keselamatan-kerja-manajemen-risiko': {
@@ -110,6 +129,15 @@ export const getPraktik = (slug: string): Praktik | undefined => {
           title: t('Situasi 2', 'Situation 2'),
           scenario: t('Pelajar duduk di jarak aman dari tungku sambil mendengarkan penjelasan perajin.', 'A learner sits at a safe distance from the stove while listening to the artisan explain.'),
           why: t('Aman. Mengamati dari jarak aman dengan pendampingan perajin adalah cara belajar yang kami pakai.', 'Safe. Observing from a safe distance with an artisan’s guidance is the way we learn.'),
+        },
+        {
+          kind: 'judge',
+          id: 's4',
+          answer: 'bahaya',
+          prop: 'tungku',
+          title: t('Situasi 4', 'Situation 4'),
+          scenario: t('Lantai dapur licin karena nira tumpah, tetapi kamu tetap berjalan cepat membawa wajan kecil.', 'The kitchen floor is slippery from spilled sap, yet you keep walking fast carrying a small wok.'),
+          why: t('Bahaya. Lantai licin dan benda panas adalah kombinasi yang sering berujung luka. Bersihkan dulu, dan biarkan perajin yang membawa wajan.', 'Unsafe. A slippery floor and hot objects are a combination that often ends in injury. Clean up first, and let the artisan carry the wok.'),
         },
         {
           kind: 'judge',
@@ -145,6 +173,15 @@ export const getPraktik = (slug: string): Praktik | undefined => {
           title: t('Situasi 2', 'Situation 2'),
           scenario: t('Menampilkan kisah perajin di halaman QR setelah ada izin dan persetujuan kurator.', 'Showing an artisan’s story on the QR page after permission and curator approval.'),
           why: t('Boleh. Inilah alur NIRA KITA: izin kontributor, lalu persetujuan kurator, baru tampil ke pembeli.', 'Allowed. This is the NIRA KITA flow: contributor consent, then curator approval, and only then shown to buyers.'),
+        },
+        {
+          kind: 'judge',
+          id: 'k4',
+          answer: 'aman',
+          prop: 'kemasan',
+          title: t('Situasi 4', 'Situation 4'),
+          scenario: t('Perajin memilih ditulis sebagai "Kelompok Pernasidi" saja, dan kemasan memakai nama itu.', 'The artisan chooses to be credited only as "Pernasidi Group", and the pack uses that name.'),
+          why: t('Boleh. Atribusi mengikuti pilihan narasumber: nama lengkap, inisial komunitas, atau anonim.', 'Allowed. Attribution follows the choice of the source: full name, community initials, or anonymous.'),
         },
         {
           kind: 'judge',

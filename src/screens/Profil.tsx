@@ -6,6 +6,7 @@ import { Ornate, ProgressBar } from '../components/ui';
 import { useStore } from '../store';
 import { LangToggle, t } from '../i18n';
 import { InstallCard, OfflineCard } from '../lib/pwa';
+import { PartnerLogos } from '../art/Partners';
 
 export const Profil: React.FC = () => {
   const { session, level, nextLevel, xp, badges, reset, signOut, showToast } = useStore();
@@ -63,8 +64,9 @@ export const Profil: React.FC = () => {
 
       <h2 className="mt-6 text-[22px] text-deep-forest">{t('Tentang aplikasi', 'About the app')}</h2>
       <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-        {t('NIRA KITA adalah prototipe konsep untuk belajar dan melestarikan pengetahuan gula kelapa Cilongok, Banyumas. Data bersifat ilustratif, peta hanyalah simulasi tingkat desa, dan seluruh pembelajaran berbasis darat.', 'NIRA KITA is a concept prototype for learning and preserving the coconut sugar knowledge of Cilongok, Banyumas. Data is illustrative, the map is only a village-level simulation, and all learning is ground-based.')}
+        {t('NIRA KITA adalah prototipe konsep untuk belajar dan melestarikan pengetahuan gula kelapa Cilongok, Banyumas. Peta hanyalah simulasi tingkat desa, dan seluruh pembelajaran berbasis darat.', 'NIRA KITA is a concept prototype for learning and preserving the coconut sugar knowledge of Cilongok, Banyumas. The map is only a village-level simulation, and all learning is ground-based.')}
       </p>
+      <PartnerLogos className="mt-5" />
 
       <h2 className="mt-6 text-[22px] text-deep-forest">{t('Pasang aplikasi', 'Install the app')}</h2>
       <InstallCard />

@@ -41,6 +41,7 @@ interface PersistedState {
   /** NIRA Enterprise: mitra, catatan pembelian, dan harga acuan pasar (Rp per kg). */
   partners: Partner[];
   purchases: Purchase[];
+  orders: Order[];
   marketRef: number;
   session: Session | null;
   onboarded: boolean;
@@ -64,6 +65,25 @@ export interface Purchase {
   kg: number;
   pricePerKg: number;
   marketRef: number; // harga acuan pasar saat dicatat
+}
+
+export type OrderStatus = 'Baru' | 'Dikemas' | 'Dikirim' | 'Selesai';
+export const ORDER_FLOW: OrderStatus[] = ['Baru', 'Dikemas', 'Dikirim', 'Selesai'];
+
+/** Pesanan NIRA Enterprise. Saluran ditentukan dari jumlah: reseller hanya bila memenuhi minimal order. */
+export interface Order {
+  id: string;
+  date: string;
+  buyer: string;
+  channel: 'langsung' | 'reseller';
+  kg: number;
+  status: OrderStatus;
+  /** Pesanan dari Toko pembeli menyertakan kontak dan alamat; pesanan yang dicatat koperasi tidak. */
+  contact?: string;
+  address?: string;
+  source?: 'toko' | 'koperasi';
+  /** Koperasi menandai sudah dibayar setelah transfer dicocokkan. */
+  paid?: boolean;
 }
 
 export interface Annotation {
@@ -99,6 +119,14 @@ const SEED_PURCHASES: Purchase[] = [
   { id: 'PUR-003', date: '16 Mei 2026', partnerId: 'MIT-01', kg: 110, pricePerKg: 20500, marketRef: 16000 },
 ];
 
+const SEED_ORDERS: Order[] = [
+  { id: 'ORD-001', date: '18 Mei 2026', buyer: 'Toko Oleh-oleh Purwokerto', channel: 'reseller', kg: 40, status: 'Dikemas', paid: true },
+  { id: 'ORD-002', date: '19 Mei 2026', buyer: 'Ibu Sari', channel: 'langsung', kg: 3, status: 'Baru', paid: false },
+  { id: 'ORD-003', date: '19 Mei 2026', buyer: 'Kedai Kopi Nira', channel: 'reseller', kg: 30, status: 'Baru', paid: false },
+  { id: 'ORD-004', date: '15 Mei 2026', buyer: 'Pak Budi', channel: 'langsung', kg: 5, status: 'Dikirim', paid: true },
+  { id: 'ORD-005', date: '10 Mei 2026', buyer: 'Warung Gula Jawa', channel: 'reseller', kg: 35, status: 'Selesai', paid: true },
+];
+
 const SEED_SUBMISSIONS: LearnerSubmission[] = [
   {
     id: 'SUB-001', learnerId: 'L-01', learnerName: 'Rani (pilot)', learnerAvatar: '', questId: 'QUEST-02', questTitle: 'The Alchemy of Warm Sap', moduleTitle: 'Kerajinan Tradisional & Transfer Pengetahuan',
@@ -111,7 +139,7 @@ const SEED_SUBMISSIONS: LearnerSubmission[] = [
     status: 'Menunggu Validasi', mentorName: 'Pak Parmadi', competencyChecklist: { ...NO_CHECK },
   },
   {
-    id: 'SUB-003', learnerId: 'DEMO', learnerName: 'Kamu (akun demo)', learnerAvatar: '', questId: 'QUEST-03', questTitle: 'Safe Ground, Safe Hands', moduleTitle: 'Keselamatan Kerja & Manajemen Risiko',
+    id: 'SUB-003', learnerId: 'L-03', learnerName: 'Sari (pilot)', learnerAvatar: '', questId: 'QUEST-03', questTitle: 'Safe Ground, Safe Hands', moduleTitle: 'Keselamatan Kerja & Manajemen Risiko',
     submittedDate: 'Hari ini', selectedToolAnswer: 'Jarak aman dari tungku', reflectionText: 'Pelajar tidak memanjat. Mengamati dari darat dan menjaga jarak dari tungku serta gula yang panas.',
     status: 'Menunggu Validasi', mentorName: 'Pak Parmadi', competencyChecklist: { ...NO_CHECK },
   },
@@ -131,6 +159,7 @@ const initialState = (): PersistedState => ({
   annotations: {},
   partners: SEED_PARTNERS,
   purchases: SEED_PURCHASES,
+  orders: SEED_ORDERS,
   marketRef: 16000,
   session: null,
   onboarded: false,
@@ -174,6 +203,8 @@ interface Store extends PersistedState {
   toast: string | null;
   showToast: (msg: string) => void;
   completeQuest: (questId: string) => void;
+  /** Pelajar mengirim refleksi setelah bab selesai: masuk antrean validasi mentor dan memberi XP tugas. */
+  submitReflection: (questId: string, text: string) => void;
   checkIn: (recordId: string) => void;
   completeModule: (moduleSlug: string, recordIds: string[], xp: number) => void;
   completeLab: (labId: string, xp: number) => void;
@@ -182,6 +213,9 @@ interface Store extends PersistedState {
   addBatch: (b: Omit<QrBatch, 'code'>) => QrBatch;
   addRecord: (r: HeritageRecord) => void;
   addPurchase: (p: { partnerId: string; kg: number; pricePerKg: number }) => void;
+  addOrder: (o: { buyer: string; kg: number; contact?: string; address?: string; source?: 'toko' | 'koperasi' }) => string;
+  advanceOrder: (id: string) => void;
+  markPaid: (id: string) => void;
   setMarketRef: (v: number) => void;
   setBatchPricing: (code: string, pricing: NonNullable<QrBatch['pricing']>) => void;
   validateSubmission: (id: string, input: ValidateInput) => void;
@@ -229,6 +263,38 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, [toast]);
 
   const showToast = useCallback((msg: string) => setToast(msg), []);
+
+  const submitReflection = useCallback((questId: string, text: string) => {
+    setState((s) => {
+      const quest = s.quests.find((q) => q.id === questId);
+      const mod = s.modules.find((m) => m.associatedQuestId === questId);
+      if (!quest || !mod || mod.completionPercent < 100) return s;
+      if (s.submissions.some((x) => x.questId === questId && x.learnerId === 'DEMO' && x.status !== 'Perlu Revisi')) return s;
+      const sub: LearnerSubmission = {
+        id: `SUB-${String(s.submissions.length + 1).padStart(3, '0')}`,
+        learnerId: 'DEMO',
+        learnerName: s.session?.name ?? 'Pelajar',
+        learnerAvatar: '',
+        questId,
+        questTitle: quest.title,
+        moduleTitle: mod.title,
+        submittedDate: 'Hari ini',
+        selectedToolAnswer: '',
+        reflectionText: text,
+        status: 'Menunggu Validasi',
+        mentorName: 'Pak Parmadi',
+        competencyChecklist: { identifiesTools: false, explainsFunctions: false, understandsSequence: false, identifiesGroundHazards: false, understandsSafetyPrinciples: false },
+      };
+      const first = !quest.completed;
+      return {
+        ...s,
+        xp: first ? s.xp + quest.xpReward : s.xp,
+        quests: s.quests.map((q) => (q.id === questId ? { ...q, completed: true, steps: q.steps.map((st) => ({ ...st, completed: true })) } : q)),
+        badges: first ? s.badges.map((b) => ((questId === 'QUEST-01' && b.id === 'BADGE-02') || (questId === 'QUEST-04' && b.id === 'BADGE-04') ? { ...b, unlocked: true, dateAchieved: 'Hari ini' } : b)) : s.badges,
+        submissions: [sub, ...s.submissions.filter((x) => !(x.questId === questId && x.learnerId === 'DEMO'))],
+      };
+    });
+  }, []);
 
   const completeQuest = useCallback((questId: string) => {
     setState((s) => {
@@ -378,6 +444,37 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const addOrder = useCallback((o: { buyer: string; kg: number; contact?: string; address?: string; source?: 'toko' | 'koperasi' }): string => {
+    const id = `ORD-${String(stateRef.current.orders.length + 1).padStart(3, '0')}`;
+    setState((s) => {
+      const channel: Order['channel'] = o.kg >= 30 ? 'reseller' : 'langsung';
+      const rec: Order = { id, date: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }), buyer: o.buyer, channel, kg: o.kg, status: 'Baru', paid: false, contact: o.contact, address: o.address, source: o.source ?? 'koperasi' };
+      return { ...s, orders: [rec, ...s.orders], audit: audited(s, 'Enterprise', 'Mencatat pesanan', id, `${o.buyer}: ${o.kg} kg (${channel})`) };
+    });
+    return id;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const advanceOrder = useCallback((id: string) => {
+    setState((s) => {
+      const o = s.orders.find((x) => x.id === id);
+      if (!o) return s;
+      const next = ORDER_FLOW[ORDER_FLOW.indexOf(o.status) + 1];
+      if (!next) return s;
+      return { ...s, orders: s.orders.map((x) => (x.id === id ? { ...x, status: next } : x)), audit: audited(s, 'Enterprise', 'Memajukan pesanan', id, `${o.status} → ${next}`) };
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const markPaid = useCallback((id: string) => {
+    setState((s) => {
+      const o = s.orders.find((x) => x.id === id);
+      if (!o || o.paid) return s;
+      return { ...s, orders: s.orders.map((x) => (x.id === id ? { ...x, paid: true } : x)), audit: audited(s, 'Enterprise', 'Menandai dibayar', id, o.buyer) };
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const setMarketRef = useCallback((v: number) => {
     setState((s) => (v > 0 ? { ...s, marketRef: v } : s));
   }, []);
@@ -437,8 +534,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           badges: state.badges.map((b) => (BADGE_EN[b.id] ? { ...b, ...BADGE_EN[b.id] } : b)),
         }
       : { records: state.records, modules: state.modules, quests: state.quests, badges: state.badges };
-    return { ...state, ...loc, level: lvl(level) as typeof level, nextLevel: lvl(nextLevel), toast, showToast, completeQuest, checkIn, completeModule, completeLab, signIn, reviewRecord, addBatch, addRecord, addPurchase, setMarketRef, setBatchPricing, validateSubmission, saveAnnotation, approveAnnotation, signOut, finishOnboarding, reset };
-  }, [state, lang, toast, showToast, completeQuest, checkIn, completeModule, completeLab, signIn, reviewRecord, addBatch, addRecord, addPurchase, setMarketRef, setBatchPricing, validateSubmission, saveAnnotation, approveAnnotation, signOut, finishOnboarding, reset]);
+    return { ...state, ...loc, level: lvl(level) as typeof level, nextLevel: lvl(nextLevel), toast, showToast, completeQuest, submitReflection, checkIn, completeModule, completeLab, signIn, reviewRecord, addBatch, addRecord, addPurchase, addOrder, advanceOrder, markPaid, setMarketRef, setBatchPricing, validateSubmission, saveAnnotation, approveAnnotation, signOut, finishOnboarding, reset };
+  }, [state, lang, toast, showToast, completeQuest, submitReflection, checkIn, completeModule, completeLab, signIn, reviewRecord, addBatch, addRecord, addPurchase, addOrder, advanceOrder, markPaid, setMarketRef, setBatchPricing, validateSubmission, saveAnnotation, approveAnnotation, signOut, finishOnboarding, reset]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 };

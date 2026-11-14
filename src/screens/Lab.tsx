@@ -130,7 +130,7 @@ const LabDapur: React.FC<{ onTried: () => void }> = ({ onTried }) => {
       <p className="text-sm leading-relaxed text-ink-soft">
         {t('Ubah pengaturan di bawah dan lihat akibatnya pada nira. Tidak ada skor dan tidak ada batas waktu, silakan bereksperimen.', 'Change the settings below and see what happens to the sap. There is no score and no time limit, so experiment freely.')}
       </p>
-      <div className="no-scrollbar -mx-5 mt-3 flex gap-2 overflow-x-auto px-5 pb-1">
+      <div className="no-scrollbar -mx-5 mt-3 flex gap-2 overflow-x-auto px-5 pb-1 [mask-image:linear-gradient(to_right,transparent_0,#000_18px,#000_calc(100%-34px),transparent_100%)]">
         {getPresets().map((p) => (
           <button
             key={p.name}

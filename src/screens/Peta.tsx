@@ -1,5 +1,5 @@
 import React from 'react';
-import { Download, X } from 'lucide-react';
+import { Download, ExternalLink, X } from 'lucide-react';
 import { Nira } from '../art/Nira';
 import { Scene, SLUG_SCENE } from '../art/Scene';
 import { ApprovalChip } from '../components/ui';
@@ -14,6 +14,8 @@ const VILLAGES = [
 ];
 const W = 390;
 const H = 640;
+/** Pencarian Google Maps berdasarkan nama (tanpa koordinat buatan): pengguna sendiri yang membukanya. */
+const gmaps = (q: string) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
 const km = (n: number) => t(`sekitar ${n} km`, `about ${n} km`);
 
 const SERIF = "'DM Serif Display', Georgia, 'Times New Roman', serif";
@@ -356,6 +358,7 @@ export const Peta: React.FC = () => {
   const [sel, setSel] = React.useState<string | null>(null);
   const [revealed, setRevealed] = React.useState<string | null>(null);
   const [busy, setBusy] = React.useState(false);
+  const [about, setAbout] = React.useState(false);
   const svgRef = React.useRef<SVGSVGElement>(null);
 
   const spot = VILLAGES.find((v) => v.id === sel);
@@ -404,6 +407,7 @@ export const Peta: React.FC = () => {
           onSelect={(id) => {
             setSel(id);
             setRevealed(null);
+            setAbout(false);
           }}
         />
       </div>
@@ -417,8 +421,41 @@ export const Peta: React.FC = () => {
             <Download className="h-4 w-4" /> {t('Vektor SVG', 'Vector SVG')}
           </button>
         </div>
-        <p className="mt-1.5 text-center text-[11px] leading-tight text-ink-soft">{t('Ketuk desa untuk membuka kisahnya · simulasi, bukan pelacakan langsung', 'Tap a village to open its story · a simulation, not live tracking')}</p>
+        <p className="mt-1.5 text-center text-[11px] leading-tight text-ink-soft">{t('Ketuk desa untuk membuka kisahnya', 'Tap a village to open its story')}</p>
+        <button type="button" onClick={() => { setAbout(true); setSel(null); }} className="mx-auto flex min-h-[44px] items-center px-3 text-sm font-semibold text-forest underline decoration-caramel decoration-2 underline-offset-[5px]">
+          {t('Baca cerita peta ini', 'Read the story of this map')}
+        </button>
       </div>
+
+
+      {/* cerita peta */}
+      {about && (
+        <div className="sheet-enter absolute inset-x-0 bottom-0 z-30 max-h-[82%] overflow-y-auto rounded-t-[28px] bg-cream p-5 pb-8 shadow-[0_-12px_30px_-12px_rgba(16,38,30,0.5)]">
+          <button type="button" onClick={() => setAbout(false)} aria-label={t('Tutup', 'Close')} className="absolute right-2 top-2 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-cream/90 text-deep-forest">
+            <X className="h-5 w-5" />
+          </button>
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-caramel-dark">{t('Cerita peta', 'The story of the map')}</p>
+          <h3 className="mt-1 pr-10 text-xl leading-tight text-deep-forest">{t('Tiga desa di lereng selatan Gunung Slamet', 'Three villages on the southern slope of Mount Slamet')}</h3>
+          <p className="mt-2 text-sm leading-relaxed text-charcoal">
+            {t('Cilongok, di Banyumas, terletak di lereng selatan Gunung Slamet. Di sini penderes menyadap nira kelapa setiap fajar, dan perajin memasaknya menjadi gula kelapa di dapur tungku kayu.', 'Cilongok, in Banyumas, lies on the southern slope of Mount Slamet. Here, tappers collect coconut sap at dawn, and artisans cook it into coconut sugar in wood-fired kitchens.')}
+          </p>
+          <ul className="mt-3 space-y-2 text-sm leading-relaxed text-charcoal">
+            <li>
+              <b className="text-deep-forest">Pernasidi</b> · {t('merawat pongkor agar nira pagi tetap segar.', 'keeping the pongkor clean so the morning sap stays fresh.')}
+            </li>
+            <li>
+              <b className="text-deep-forest">Panembangan</b> · {t('membaca karamel di atas tungku kayu.', 'reading the caramel over a wood-fired stove.')}
+            </li>
+            <li>
+              <b className="text-deep-forest">Karangtengah</b> · {t('bekerja dengan aman, seluruhnya dari darat.', 'working safely, entirely from the ground.')}
+            </li>
+          </ul>
+          <p className="mt-3 text-sm leading-relaxed text-ink-soft">{t('Ketuk sebuah desa untuk membuka kisahnya. Lokasinya hanya sebatas tingkat desa; tidak ada pelacakan posisimu.', 'Tap a village to open its story. Locations are village-level only; your position is never tracked.')}</p>
+          <a href={gmaps('Cilongok, Banyumas, Jawa Tengah')} target="_blank" rel="noopener noreferrer" className="mt-4 flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-forest text-sm font-semibold text-coconut">
+            <ExternalLink className="h-4 w-4" /> {t('Lihat Cilongok di Google Maps', 'See Cilongok on Google Maps')}
+          </a>
+        </div>
+      )}
 
       {/* bottom sheet desa */}
       {spot && (
@@ -474,6 +511,9 @@ export const Peta: React.FC = () => {
               ) : (
                 <p className="mt-2 text-sm text-ink-soft">{t('Belum ada cerita yang disetujui kurator untuk desa ini.', 'No curator-approved story for this village yet.')}</p>
               )}
+              <a href={gmaps(`${spot.village}, Cilongok, Banyumas, Jawa Tengah`)} target="_blank" rel="noopener noreferrer" className="mt-2 flex min-h-[48px] items-center justify-center gap-2 rounded-full border-2 border-bamboo text-sm font-semibold text-deep-forest">
+                <ExternalLink className="h-4 w-4" /> {t(`Buka ${spot.village} di Google Maps`, `Open ${spot.village} in Google Maps`)}
+              </a>
             </>
           )}
         </div>

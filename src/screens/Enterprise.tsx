@@ -5,7 +5,6 @@ import { Ornate } from '../components/ui';
 import { PRESETS, PRICE, Assumptions, Pricing, quote, rupiah, simulate, splitPack } from '../lib/finance';
 import { useStore } from '../store';
 import type { QrBatch } from '../data/batches';
-import { StaffBar } from './Kurator';
 import { COLORS, StackBar } from '../components/StackBar';
 import { t } from '../i18n';
 
@@ -42,7 +41,7 @@ const Mitra: React.FC = () => {
           </div>
         ))}
       </div>
-      <p className="mt-2 text-xs leading-relaxed text-ink-soft">{t('Pembelian langsung dari kelompok perajin, tanpa tengkulak. Angka di sini ilustratif sampai kelompok sungguhan terdaftar.', 'Direct purchase from artisan groups, without middlemen. Figures here are illustrative until real groups are registered.')}</p>
+      <p className="mt-2 text-xs leading-relaxed text-ink-soft">{t('Pembelian langsung dari kelompok perajin, tanpa tengkulak.', 'Direct purchase from artisan groups, without middlemen.')}</p>
       <ul className="mt-3 space-y-3">
         {partners.map((p) => (
           <li key={p.id}>
@@ -134,7 +133,7 @@ const Pembelian: React.FC = () => {
           const partner = partners.find((x) => x.id === p.partnerId);
           const diff = p.pricePerKg - p.marketRef;
           return (
-            <li key={p.id} className="rounded-xl border border-bamboo bg-coconut p-3 text-sm">
+            <li key={p.id} className="rounded-xl surface p-3 text-sm">
               <div className="flex justify-between gap-2">
                 <b className="text-deep-forest">{partner?.name ?? p.partnerId}</b>
                 <span className="shrink-0 text-xs text-ink-soft">{p.date}</span>
@@ -345,34 +344,32 @@ const Simulasi: React.FC = () => {
   );
 };
 
-export const Enterprise: React.FC = () => {
-  const [tab, setTab] = React.useState<'mitra' | 'pembelian' | 'harga' | 'simulasi'>('mitra');
-  const tabs = [
-    ['mitra', t('Mitra', 'Partners')],
-    ['pembelian', t('Pembelian', 'Purchases')],
-    ['harga', t('Harga QR', 'QR price')],
-    ['simulasi', t('Simulasi', 'Simulation')],
-  ] as const;
-  return (
-    <div className="min-h-full bg-cream pb-10">
-      <StaffBar current="enterprise" />
-      <div className="px-5 pt-4">
-        <h1 className="text-[28px] leading-tight text-deep-forest">NIRA Enterprise</h1>
-        <p className="mt-1 text-sm leading-relaxed text-ink-soft">
-          {t('Pemberdayaan ekonomi: kemitraan petani, pengadaan adil, produk bernilai budaya, dan margin yang menopang Jejak Nira.', 'Economic empowerment: farmer partnerships, fair procurement, culturally valuable products, and margin that sustains Jejak Nira.')}
-        </p>
-        <div className="mt-4 grid grid-cols-4 rounded-full border border-bamboo bg-coconut p-1" role="tablist">
-          {tabs.map(([k, label]) => (
-            <button key={k} type="button" role="tab" aria-selected={tab === k} onClick={() => setTab(k)} className={`min-h-[44px] rounded-full text-[13px] font-semibold ${tab === k ? 'bg-forest text-coconut' : 'text-ink-soft'}`}>
-              {label}
-            </button>
-          ))}
-        </div>
-        {tab === 'mitra' && <Mitra />}
-        {tab === 'pembelian' && <Pembelian />}
-        {tab === 'harga' && <Harga />}
-        {tab === 'simulasi' && <Simulasi />}
-      </div>
-    </div>
-  );
-};
+const Head: React.FC<{ title: string; text: string }> = ({ title, text }) => (
+  <div>
+    <h1 className="font-serif text-[30px] leading-tight text-deep-forest">{title}</h1>
+    <p className="mt-1 text-sm leading-relaxed text-ink-soft">{text}</p>
+  </div>
+);
+
+export const EnterprisePartners: React.FC = () => (
+  <div className="px-4 pt-4 lg:px-0 lg:pt-0">
+    <Head title={t('Mitra dan pembelian', 'Partners and purchases')} text={t('Kelompok perajin yang bermitra dan pembelian langsung dari mereka, dengan premi di atas harga acuan.', 'The artisan groups you partner with and direct purchases from them, with a premium over the reference price.')} />
+    <Mitra />
+    <h2 className="mt-8 text-xl text-deep-forest">{t('Catatan pembelian', 'Purchase records')}</h2>
+    <Pembelian />
+  </div>
+);
+
+export const EnterprisePrice: React.FC = () => (
+  <div className="px-4 pt-4 lg:px-0 lg:pt-0">
+    <Head title={t('Harga dan kemasan', 'Pricing and packaging')} text={t('Daftar harga jual dan pembagian harga tiap batch yang tampil ke pembeli di halaman QR.', 'The selling price list and the price split of each batch shown to buyers on the QR page.')} />
+    <Harga />
+  </div>
+);
+
+export const EnterpriseFinance: React.FC = () => (
+  <div className="px-4 pt-4 lg:px-0 lg:pt-0">
+    <Head title={t('Keuangan', 'Finance')} text={t('Simulasi yang menunjukkan bagaimana dana pelestarian menopang Jejak Nira.', 'A simulation of how the preservation fund sustains Jejak Nira.')} />
+    <Simulasi />
+  </div>
+);

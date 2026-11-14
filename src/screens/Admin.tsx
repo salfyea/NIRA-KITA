@@ -5,9 +5,9 @@ import QRCode from 'qrcode';
 import { Ornate, ProgressBar } from '../components/ui';
 import { HeritageRecord } from '../types/jejakNira';
 import { useStore } from '../store';
+import { RoleMascot } from '../art/RoleMascot';
 import { t } from '../i18n';
 import { auditAction, auditNote, auditRole, auditStamp } from '../data/display';
-import { StaffBar } from './Kurator';
 
 /** Hanya rekaman yang disetujui, berizin publik, dan diizinkan tampil di QR yang boleh ditautkan ke batch. */
 const eligible = (r: HeritageRecord) => r.reviewStatus === 'Approved' && r.visibility === 'public' && r.consent.publicQrPage;
@@ -42,10 +42,10 @@ const Kpi: React.FC<{ label: string; value: number; target: number; note: string
   </Ornate>
 );
 
-export const Admin: React.FC = () => {
-  const { records, batches, audit, submissions, addBatch, showToast } = useStore();
+export const Admin: React.FC<{ view: 'ringkasan' | 'batch' | 'audit' | 'pengguna' }> = ({ view }) => {
+  const { records, batches, audit, submissions, modules, addBatch, showToast } = useStore();
   const validated = submissions.filter((x) => x.status === 'Tervalidasi Mentor').length;
-  const [tab, setTab] = React.useState<'ringkasan' | 'batch' | 'audit'>('ringkasan');
+  const tab = view;
   const [product, setProduct] = React.useState('Gula Kelapa Cetak');
   const [village, setVillage] = React.useState(VILLAGES[0]);
   const [period, setPeriod] = React.useState('Nov 2026');
@@ -68,29 +68,40 @@ export const Admin: React.FC = () => {
   };
 
   return (
-    <div className="min-h-full bg-cream pb-10">
-      <StaffBar current="admin" />
-      <div className="px-5 pt-4">
-        <h1 className="text-[28px] leading-tight text-deep-forest">{t('Koordinasi program', 'Programme coordination')}</h1>
-        <p className="mt-1 text-sm leading-relaxed text-ink-soft">{t('Pantau capaian pilot, buat batch QR untuk kemasan, dan tinjau catatan audit tata kelola.', 'Track pilot progress, create QR batches for packaging, and review the governance audit log.')}</p>
-        <div className="mt-4 grid grid-cols-3 rounded-full border border-bamboo bg-coconut p-1" role="tablist">
-          {([
-            ['ringkasan', t('Capaian', 'Progress')],
-            ['batch', t('Batch QR', 'QR batches')],
-            ['audit', 'Audit'],
-          ] as const).map(([k, t]) => (
-            <button key={k} type="button" role="tab" aria-selected={tab === k} onClick={() => setTab(k)} className={`min-h-[44px] rounded-full text-sm font-semibold ${tab === k ? 'bg-forest text-coconut' : 'text-ink-soft'}`}>
-              {t}
-            </button>
-          ))}
-        </div>
-
+    <div className="px-4 pt-4 lg:px-0 lg:pt-0">
+      <div>
+        <h1 className="font-serif text-[30px] leading-tight text-deep-forest">{{ ringkasan: t('Capaian pilot', 'Pilot progress'), batch: t('Batch QR', 'QR batches'), audit: t('Catatan audit', 'Audit log'), pengguna: t('Pengguna dan peran', 'Users and roles') }[view]}</h1>
+        <p className="mt-1 text-sm leading-relaxed text-ink-soft">{{ ringkasan: t('Pantau capaian terhadap target pilot 12 minggu.', 'Track progress against the 12-week pilot target.'), batch: t('Buat batch kemasan dengan kode QR yang bisa dipindai, hanya dari rekaman yang sudah disetujui.', 'Create packaging batches with scannable QR codes, from approved recordings only.'), audit: t('Setiap keputusan tata kelola tercatat di sini.', 'Every governance decision is logged here.'), pengguna: t('Siapa yang punya akses ke ruang kerja mana.', 'Who has access to which workspace.') }[view]}</p>
+      </div>
         {tab === 'ringkasan' && (
           <div className="mt-4 space-y-3">
+            <div className="surface flex items-center gap-4 rounded-[28px_36px_28px_36px] p-5">
+              <RoleMascot role="admin" size={84} mood="think" />
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.16em] text-ink-soft">{t('Pilot 12 minggu', '12-week pilot')}</p>
+                <p className="font-serif text-[26px] leading-tight text-deep-forest">{t('Belum dimulai', 'Not started yet')}</p>
+                <p className="text-sm text-ink-soft">{t('Angka di bawah berasal dari aplikasi ini, bukan dari lapangan.', 'The figures below come from this app, not from the field.')}</p>
+              </div>
+            </div>
+            <div className="surface rounded-3xl p-5">
+              <p className="text-sm font-bold text-deep-forest">{t('Corong pelajar (dari aplikasi ini)', 'Learner funnel (from this app)')}</p>
+              {[
+                [t('Modul selesai', 'Modules completed'), modules.filter((m) => m.completionPercent >= 100).length, modules.length],
+                [t('Refleksi dikirim ke mentor', 'Reflections sent to a mentor'), submissions.length, Math.max(submissions.length, 1)],
+                [t('Divalidasi mentor', 'Validated by a mentor'), validated, Math.max(submissions.length, 1)],
+              ].map(([label, n, of]) => (
+                <div key={String(label)} className="mt-3">
+                  <div className="flex justify-between text-sm"><span className="text-charcoal">{label}</span><b className="text-deep-forest">{n}</b></div>
+                  <div className="mt-1 h-2.5 overflow-hidden rounded-full bg-bamboo/50"><div className="h-full rounded-full bg-forest" style={{ width: `${Math.min(100, (Number(n) / Number(of)) * 100)}%` }} /></div>
+                </div>
+              ))}
+            </div>
+            <div className="grid gap-3 lg:grid-cols-2">
             <Kpi label={t('Rekaman warisan tervalidasi', 'Validated heritage recordings')} value={approved} target={15} live note={t('Target pilot 12 minggu: minimal 15 rekaman yang disetujui kurator.', '12-week pilot target: at least 15 curator-approved recordings.')} />
             <Kpi label={t('Pelajar mencapai milestone mentor', 'Learners reaching the mentor milestone')} value={validated} target={6} live note={t('Hanya validasi mentor manusia yang dihitung. Angka ini berasal dari alur Mentor di aplikasi; pilot lapangan belum berjalan.', 'Only human mentor validation counts. This number comes from the Mentor flow in the app; the field pilot has not started.')} />
-            <Kpi label={t('Pelajar dalam pilot', 'Learners in the pilot')} value={10} target={10} note={t('Angka rencana (usia 18 sampai 29). Data ilustratif.', 'Planned figure (ages 18 to 29). Illustrative data.')} />
-            <Kpi label={t('Mentor penderes', 'Tapper mentors')} value={2} target={2} note={t('Angka rencana. Data ilustratif.', 'Planned figure. Illustrative data.')} />
+            <Kpi label={t('Pelajar dalam pilot', 'Learners in the pilot')} value={10} target={10} note={t('Angka rencana (usia 18 sampai 29).', 'Planned figure (ages 18 to 29).')} />
+            <Kpi label={t('Mentor penderes', 'Tapper mentors')} value={2} target={2} note={t('Angka rencana.', 'Planned figure.')} />
+            </div>
             <p className="rounded-xl bg-bamboo/40 p-3 text-xs leading-relaxed text-deep-forest">
               {t('Pilot belum berjalan. Hanya jumlah rekaman yang dihitung langsung dari aplikasi ini; angka lain adalah rencana dari proposal dan tidak mengklaim hasil.', 'The pilot has not started. Only the recording count is computed live from this app; the other figures are plans from the proposal and claim no results.')}
             </p>
@@ -174,6 +185,29 @@ export const Admin: React.FC = () => {
           </div>
         )}
 
+        {tab === 'pengguna' && (
+          <ul className="mt-4 grid gap-3 lg:grid-cols-2">
+            {([
+              ['mentor', 'Mentor', 'MENTOR-2026', t('Unggah rekaman dengan izin, validasi pelajar, anotasi klip.', 'Upload recordings with consent, validate learners, annotate clips.')],
+              ['curator', t('Kurator', 'Curator'), 'KURATOR-2026', t('Menyetujui rekaman dan menentukan visibilitas.', 'Approves recordings and sets visibility.')],
+              ['enterprise', 'Enterprise', 'ENTERPRISE-2026', t('Mitra, pesanan, harga QR, dan keuangan.', 'Partners, orders, QR price, and finance.')],
+              ['admin', 'Admin', 'ADMIN-2026', t('Super admin: capaian, batch QR, audit, dan pengguna.', 'Super admin: progress, QR batches, audit, and users.')],
+            ] as const).map(([role, label, code, text]) => (
+              <li key={code} className="surface flex items-center gap-4 rounded-[22px_28px_22px_28px] p-4">
+                <RoleMascot role={role} size={72} />
+                <div className="min-w-0">
+                  <p className="font-serif text-xl text-deep-forest">{label}</p>
+                  <p className="text-sm leading-snug text-ink-soft">{text}</p>
+                  <p className="mt-1 text-xs font-bold text-caramel-dark">{t('Kode undangan demo', 'Demo invite code')}: {code}</p>
+                </div>
+              </li>
+            ))}
+            <li className="rounded-xl bg-bamboo/40 p-3 text-xs leading-relaxed text-deep-forest lg:col-span-2">
+              {t('Prototipe: peran disimulasikan lewat kode undangan. Pada produksi, undangan dikirim per orang dan bisa dinonaktifkan oleh super admin.', 'Prototype: roles are simulated with invite codes. In production, invitations are sent per person and can be deactivated by the super admin.')}
+            </li>
+          </ul>
+        )}
+
         {tab === 'audit' && (
           <ol className="mt-4 space-y-2">
             {audit.map((a) => (
@@ -191,7 +225,6 @@ export const Admin: React.FC = () => {
             ))}
           </ol>
         )}
-      </div>
     </div>
   );
 };

@@ -42,6 +42,12 @@ Stack: Vite + React 19 + TypeScript + Tailwind 4 + react-router-dom v7 + lucide-
 ## Modul berurutan
 Modul hanya terbuka bila semua modul sebelumnya selesai (`isModuleLocked` di `src/store.tsx`, satu sumber kebenaran). Berlaku di Jalur Belajar, tautan langsung `/learn/bab/:slug` (dialihkan dengan pesan), dan tombol "Latih gerakan ini" di Arsip. Tur juri boleh melompat. Data tersimpan lama yang tidak konsisten dirapikan saat dimuat.
 
+## Ruang kerja staf
+Empat ruang kerja terpisah (`src/staff/StaffShell.tsx`), masing-masing dengan cangkang, navigasi, warna aksen, dan maskot sendiri; tidak ada pengalih peran di dalamnya, dan sesi hanya boleh membuka ruang kerja perannya (`RequireRole`). Desktop: sidebar. Ponsel: bilah mengambang. Enterprise `/enterprise` (Beranda gaya Seller Centre, Pesanan dengan tab status, Mitra, Harga QR, Keuangan), Kurator `/kurator` (kotak masuk dengan lama menunggu, Anotasi, Arsip, detail dengan pratinjau), Mentor `/mentor` (Hari ini, Rekam, Validasi, Anotasi), Admin `/admin` (Ringkasan dengan corong, Batch QR, Audit, Pengguna). Pesanan, stok, dan dana pelestarian adalah data contoh di perangkat.
+
+## Toko NIRA (pembeli)
+`/toko` dan `/toko/pesanan/:id`: halaman publik tanpa login. Harga bertingkat (langsung Rp35.000/kg, reseller Rp30.000/kg mulai 30 kg) mengikuti jumlah, rincian ke mana uang pergi, form pesan (nama, kontak, alamat), kode pesanan, dan lacak status. Pesanan masuk ke tab Pesanan di Enterprise (chip "Dari Toko"); saat koperasi memprosesnya, status di halaman lacak ikut berubah. Prototipe tanpa server: pesanan tersimpan di peramban yang sama dan tidak ada pembayaran sungguhan. Mentor dirancang ponsel-saja (selalu dalam bingkai ponsel).
+
 ## NIRA Enterprise
 Sayap ekonomi dari model sosial-bisnis NIRA KITA: Jejak Nira (pelestarian dan pembelajaran) didanai oleh nilai produknya. `src/lib/finance.ts` berisi hitungan simulasi (omzet, laba, premi, titik impas, honor mentor yang terdanai) dan pembagian harga kemasan; harga jual dari tim (langsung Rp35.000/kg; reseller Rp30.000/kg, minimal 30 kg), sedangkan harga beli, harga acuan, biaya, porsi reseller, dan dana pelestarian masih ASUMSI contoh yang bisa diubah dan ditandai ilustratif sampai koperasi mengisi angka sebenarnya. Dana pelestarian dipotong dari omzet lebih dulu (bukan dari sisa laba). Pembelian dan pengaturan harga masuk catatan audit.
 

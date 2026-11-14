@@ -15,6 +15,9 @@ const AUDIT_ACTION: Record<string, string> = {
   'Menyetujui anotasi klip': 'Approved clip annotation',
   'Mencatat pembelian': 'Recorded purchase',
   'Mengatur harga batch': 'Set batch price',
+  'Mencatat pesanan': 'Recorded order',
+  'Memajukan pesanan': 'Advanced order',
+  'Menandai dibayar': 'Marked as paid',
 };
 const AUDIT_NOTE: Record<string, string> = {
   'Publik (halaman QR)': 'Public (QR page)',

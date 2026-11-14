@@ -9,6 +9,7 @@ import { useTour } from '../tour/TourContext';
 import { getTour } from '../data/tour';
 import { LangToggle, t } from '../i18n';
 import { OfflinePill } from '../lib/pwa';
+import { PartnerLogos } from '../art/Partners';
 
 const getTabs = () => [
   { to: '/learn', label: t('Perjalanan', 'Journey'), Icon: Route, end: true },
@@ -20,26 +21,23 @@ const getTabs = () => [
 const TabBar: React.FC = () => (
   <nav
     aria-label={t('Navigasi utama', 'Main navigation')}
-    className="absolute inset-x-0 bottom-0 z-30 border-t border-bamboo bg-coconut/95 px-2 pb-[max(10px,env(safe-area-inset-bottom))] pt-2 backdrop-blur-md"
+    className="absolute inset-x-3 bottom-[max(12px,env(safe-area-inset-bottom))] z-30 rounded-[30px] bg-coconut/[0.98] p-1.5 shadow-[0_16px_34px_-12px_rgba(16,38,30,0.55),0_2px_6px_rgba(16,38,30,0.08)]"
   >
-    <ul className="grid grid-cols-4">
+    <ul className="grid grid-cols-4 gap-1">
       {getTabs().map(({ to, label, Icon, end }) => (
         <li key={to}>
           <NavLink
             to={to}
             end={end}
             className={({ isActive }) =>
-              `relative flex flex-col items-center gap-1 rounded-xl px-1 py-1.5 text-[11px] font-semibold transition-colors ${
-                isActive ? 'text-deep-forest' : 'text-ink-soft hover:text-deep-forest'
+              `flex min-h-[52px] flex-col items-center justify-center gap-0.5 rounded-[22px] px-1 text-[11px] font-semibold transition-colors ${
+                isActive ? 'bg-forest text-coconut shadow-[0_4px_10px_-4px_rgba(16,38,30,0.6)]' : 'text-ink-soft hover:text-deep-forest'
               }`
             }
           >
             {({ isActive }) => (
               <>
-                <span
-                  className={`absolute -top-2 h-[3px] w-8 rounded-full bg-caramel transition-opacity ${isActive ? 'opacity-100' : 'opacity-0'}`}
-                />
-                <Icon className={`h-[22px] w-[22px] ${isActive ? 'text-caramel-dark' : ''}`} strokeWidth={isActive ? 2.3 : 1.9} />
+                <Icon className="h-[21px] w-[21px]" strokeWidth={isActive ? 2.3 : 1.9} />
                 {label}
               </>
             )}
@@ -50,10 +48,11 @@ const TabBar: React.FC = () => (
   </nav>
 );
 
-type RoleKey = 'learner' | 'visitor' | 'mentor' | 'curator' | 'admin' | 'enterprise';
+type RoleKey = 'learner' | 'visitor' | 'buyer' | 'mentor' | 'curator' | 'admin' | 'enterprise';
 const getRoles = (): { key: RoleKey; label: string; desc: string; Icon: typeof BookOpen; path: string }[] => [
   { key: 'learner', label: t('Pelajar', 'Learner'), desc: t('Perjalanan, peta, koleksi, praktik gerak', 'Journey, map, collection, movement practice'), Icon: BookOpen, path: '/learn' },
   { key: 'visitor', label: t('Pengunjung QR', 'QR visitor'), desc: t('Paspor warisan dan game dari kemasan', 'Heritage passport and game from the package'), Icon: QrCode, path: '/p/NK-001' },
+  { key: 'buyer', label: t('Pembeli', 'Buyer'), desc: t('Toko NIRA: harga bertingkat dan pesan', 'NIRA Shop: tiered price and ordering'), Icon: Store, path: '/toko' },
   { key: 'mentor', label: 'Mentor', desc: t('Unggah dengan izin, validasi pelajar, anotasi', 'Consented upload, learner validation, annotation'), Icon: UserCheck, path: '/mentor' },
   { key: 'curator', label: t('Kurator', 'Curator'), desc: t('Persetujuan budaya dan visibilitas', 'Cultural approval and visibility'), Icon: ShieldCheck, path: '/kurator' },
   { key: 'admin', label: 'Admin', desc: t('Capaian pilot, batch QR, audit', 'Pilot progress, QR batches, audit'), Icon: Users, path: '/admin' },
@@ -61,7 +60,7 @@ const getRoles = (): { key: RoleKey; label: string; desc: string; Icon: typeof B
 ];
 
 const roleOfPath = (p: string): RoleKey | null =>
-  p.startsWith('/learn') ? 'learner' : p.startsWith('/p/') ? 'visitor' : p.startsWith('/mentor') ? 'mentor' : p.startsWith('/kurator') ? 'curator' : p.startsWith('/admin') ? 'admin' : p.startsWith('/enterprise') ? 'enterprise' : null;
+  p.startsWith('/learn') ? 'learner' : p.startsWith('/toko') ? 'buyer' : p.startsWith('/p/') ? 'visitor' : p.startsWith('/mentor') ? 'mentor' : p.startsWith('/kurator') ? 'curator' : p.startsWith('/admin') ? 'admin' : p.startsWith('/enterprise') ? 'enterprise' : null;
 
 /** Panel kiri di desktop: konteks ekosistem lima peran supaya juri tidak melihat satu aplikasi saja. */
 const SidePanel: React.FC = () => {
@@ -81,7 +80,7 @@ const SidePanel: React.FC = () => {
     navigate(path);
   };
   return (
-    <aside className="hidden max-w-sm flex-col justify-center gap-6 pr-10 lg:flex">
+    <aside className="no-scrollbar hidden max-h-[calc(100dvh-48px)] max-w-sm flex-col justify-start gap-6 overflow-y-auto py-2 pr-10 lg:flex">
       <div>
         <p className="text-xs font-bold uppercase tracking-[0.2em] text-caramel-dark">{t('Prototipe konsep', 'Concept prototype')}</p>
         <Logo className="mt-3" size={72} />
@@ -89,6 +88,7 @@ const SidePanel: React.FC = () => {
         <p className="mt-3 text-base leading-relaxed text-ink-soft">
           {t('Jejak pengetahuan, warisan masa depan. Platform belajar dan pelestarian pengetahuan gula kelapa Cilongok, dengan persetujuan komunitas di setiap langkah.', 'Trail of knowledge, heritage for the future. A learning and preservation platform for the coconut sugar knowledge of Cilongok, with community consent at every step.')}
         </p>
+        <PartnerLogos className="mt-4" height={30} />
       </div>
       <div className="rounded-2xl border border-caramel/40 bg-coconut p-4">
         <p className="text-xs font-bold uppercase tracking-[0.16em] text-caramel-dark">{t('Tur untuk juri · ±4 menit', 'Judges\' tour · ~4 minutes')}</p>
@@ -141,7 +141,7 @@ const SidePanel: React.FC = () => {
       </div>
       {!tour.active && (
       <div>
-        <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-ink-soft">{t('Enam peran dalam satu ekosistem', 'Six roles in one ecosystem')}</p>
+        <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-ink-soft">{t('Tujuh peran dalam satu ekosistem', 'Seven roles in one ecosystem')}</p>
         <ul className="space-y-1.5">
           {getRoles().map(({ key, label, desc, Icon, path }) => {
             const active = current === key;
@@ -171,7 +171,7 @@ const SidePanel: React.FC = () => {
       </div>
       )}
       <p className="text-xs leading-relaxed text-ink-soft">
-        {t('Data ilustratif. Seluruh pembelajaran berbasis darat.', 'Illustrative data. All learning is ground-based.')}
+        {t('Seluruh pembelajaran berbasis darat.', 'All learning is ground-based.')}
       </p>
       <button
         type="button"
@@ -203,11 +203,18 @@ export const PhoneShell: React.FC = () => {
         <Toast message={toast} />
         <TourOverlay />
         <OfflinePill />
-        <div ref={scrollRef} className={`no-scrollbar relative flex-1 overflow-y-auto ${showTabs ? (pathname === '/learn/peta' ? 'pb-[72px]' : pathname === '/learn' ? '' : 'pb-24') : ''}`}>
+        <div ref={scrollRef} className={`no-scrollbar relative flex-1 overflow-y-auto ${showTabs ? (pathname === '/learn/peta' ? 'pb-[92px]' : pathname === '/learn' ? '' : 'pb-28') : ''}`}>
           <div key={pathname} className={`screen-enter ${showTabs && pathname !== '/learn/peta' ? '' : 'h-full'}`}>
             <Outlet />
           </div>
         </div>
+        {showTabs && (
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-28"
+            style={{ background: `linear-gradient(to top, ${pathname === '/learn' ? '#86AB74' : pathname === '/learn/peta' ? '#F4E8CB' : '#F7F3E9'} 0%, ${pathname === '/learn' ? 'rgba(134,171,116,0.85)' : pathname === '/learn/peta' ? 'rgba(244,232,203,0.85)' : 'rgba(247,243,233,0.85)'} 45%, transparent 100%)` }}
+          />
+        )}
         {showTabs && <TabBar />}
         <div id="phone-overlay" className="pointer-events-none absolute inset-0 z-50" />
       </div>

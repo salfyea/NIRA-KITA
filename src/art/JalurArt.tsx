@@ -54,7 +54,8 @@ const Palm: React.FC<{ x: number; y: number; s: number }> = ({ x, y, s }) => <us
 const Medallion: React.FC<{ s: Station; x: number; y: number; onOpen: () => void }> = ({ s, x, y, onOpen }) => {
   const st: Status = s.status;
   const R = 44;
-  const ring = st === 'active' ? '#B87943' : st === 'done' ? '#234B3A' : '#D2C7AA';
+  // Satu aturan warna: hijau = selesai, cokelat = sedang dipelajari, pucat = terkunci.
+  const rim = st === 'done' ? '#234B3A' : st === 'locked' ? '#E3D8BE' : '#FFFDF8';
   const cid = `jl-clip-${s.id}`;
   const label = s.number.replace('MODUL ', t('MODUL ', 'MODULE '));
   const title = s.title.split(' & ')[0];
@@ -70,28 +71,27 @@ const Medallion: React.FC<{ s: Station; x: number; y: number; onOpen: () => void
       style={{ cursor: 'pointer', outline: 'none' }}
     >
       <clipPath id={cid}>
-        <circle cx={x} cy={y} r={R - 5} />
+        <circle cx={x} cy={y} r={R - 4} />
       </clipPath>
       <ellipse cx={x} cy={y + R + 4} rx={R * 0.85} ry={7} fill="#18382C" opacity="0.14" />
+      {/* denyut: cincin tipis yang membesar dan memudar, hanya pada modul aktif */}
       {st === 'active' && (
-        <circle cx={x} cy={y} r={R + 12} fill="none" stroke="#B87943" strokeWidth="2.5">
-          <animate attributeName="r" values={`${R + 9};${R + 20};${R + 9}`} dur="2.4s" repeatCount="indefinite" />
-          <animate attributeName="opacity" values="0.75;0.05;0.75" dur="2.4s" repeatCount="indefinite" />
+        <circle cx={x} cy={y} r={R + 10} fill="none" stroke="#B87943" strokeWidth="2.5">
+          <animate attributeName="r" values={`${R + 10};${R + 22};${R + 10}`} dur="2.4s" repeatCount="indefinite" />
+          <animate attributeName="opacity" values="0.7;0;0.7" dur="2.4s" repeatCount="indefinite" />
         </circle>
       )}
-      {/* cincin kemajuan modul */}
+      {/* kemajuan: satu busur cokelat di atas jalur pucat, tanpa cincin lain */}
       {showPct && (
         <>
-          <circle cx={x} cy={y} r={R + 8} fill="none" stroke="#E7DCC2" strokeWidth="5" />
-          <circle cx={x} cy={y} r={R + 8} fill="none" stroke="#4C9B45" strokeWidth="5" strokeLinecap="round" pathLength="100" strokeDasharray={`${s.percent} 100`} transform={`rotate(-90 ${x} ${y})`} />
+          <circle cx={x} cy={y} r={R + 7} fill="none" stroke="#EADFC8" strokeWidth="5" />
+          <circle cx={x} cy={y} r={R + 7} fill="none" stroke="#B87943" strokeWidth="5" strokeLinecap="round" pathLength="100" strokeDasharray={`${s.percent} 100`} transform={`rotate(-90 ${x} ${y})`} />
         </>
       )}
-      <circle cx={x} cy={y} r={R + 3} fill="#FFFDF8" />
-      <circle cx={x} cy={y} r={R} fill={ring} />
-      <g clipPath={`url(#${cid})`} filter={st === 'locked' ? 'url(#jl-grey)' : undefined} opacity={st === 'locked' ? 0.65 : 1}>
+      <circle cx={x} cy={y} r={R} fill={rim} />
+      <g clipPath={`url(#${cid})`} filter={st === 'locked' ? 'url(#jl-grey)' : undefined} opacity={st === 'locked' ? 0.6 : 1}>
         <Scene kind={s.kind} svgProps={{ x: x - 60, y: y - 46, width: 120, height: 92, 'aria-hidden': true, role: undefined }} />
       </g>
-      <circle cx={x} cy={y} r={R - 5} fill="none" stroke="#FFFDF8" strokeWidth="2.5" />
       {st === 'done' && (
         <g>
           <circle cx={x + 33} cy={y - 33} r={12.5} fill="#234B3A" stroke="#FFFDF8" strokeWidth="3" />
@@ -100,7 +100,7 @@ const Medallion: React.FC<{ s: Station; x: number; y: number; onOpen: () => void
       )}
       {showPct && (
         <g>
-          <rect x={x + 18} y={y + 24} width={32} height={17} rx={8.5} fill="#4C9B45" stroke="#FFFDF8" strokeWidth="2.4" />
+          <rect x={x + 18} y={y + 24} width={32} height={17} rx={8.5} fill="#8F5A2C" stroke="#FFFDF8" strokeWidth="2.4" />
           <text x={x + 34} y={y + 36.4} textAnchor="middle" fontFamily={SANS} fontSize="10" fontWeight="700" fill="#FFFDF8">
             {s.percent}%
           </text>

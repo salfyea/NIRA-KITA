@@ -6,6 +6,7 @@ import { Frond, LeafArrow, Swash, WaveEdge } from '../art/Organic';
 import { useStore } from '../store';
 import { useTour } from '../tour/TourContext';
 import { LangToggle, t } from '../i18n';
+import { PartnerLogos } from '../art/Partners';
 
 const field =
   'mt-1 min-h-[50px] w-full rounded-[16px_20px_16px_20px] border border-bamboo bg-coconut px-4 text-base text-charcoal shadow-[inset_0_2px_4px_rgba(24,56,44,0.06)] placeholder:text-ink-soft/80 focus:border-caramel focus:outline-none focus:ring-2 focus:ring-caramel/30';
@@ -83,6 +84,8 @@ export const Masuk: React.FC = () => {
         <button type="button" onClick={() => tour.start(0)} className="mx-auto mt-1 flex min-h-[54px] w-full items-center justify-center gap-2 rounded-[30px_26px_32px_26px] border-2 border-dashed border-caramel-dark text-base font-semibold text-caramel-dark">
           {t('Juri atau tamu? Mulai tur 4 menit', 'Judge or guest? Start the 4-minute tour')}
         </button>
+
+        <PartnerLogos className="mt-6" height={30} />
       </div>
     </div>
   );

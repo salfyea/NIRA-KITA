@@ -1,13 +1,32 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, FlaskConical, Hand, Lock, Sparkles } from 'lucide-react';
-import { Nira } from '../art/Nira';
+import { ArrowRight, Lock } from 'lucide-react';
+import { Nira, NiraMood } from '../art/Nira';
+import { LeafArrow } from '../art/Organic';
 import { SLUG_SCENE, Scene } from '../art/Scene';
 import { JalurArt, Station, pathFor, stationPoints } from '../art/JalurArt';
 import { ProgressBar, Sheet } from '../components/ui';
 import { lengthsAtY } from '../lib/pathLength';
 import { isModuleLocked, useStore } from '../store';
 import { LangToggle, t } from '../i18n';
+
+/** Kartu tautan dengan Nira yang menyembul di sudut, menggantikan kartu ikon generik. */
+const MascotCard: React.FC<{ to: string; mood: NiraMood; tint: string; title: string; text: string }> = ({ to, mood, tint, title, text }) => (
+  <Link
+    to={to}
+    className="relative block min-h-[92px] rounded-[26px_34px_28px_34px] py-4 pl-[104px] pr-5 shadow-[0_14px_26px_-16px_rgba(16,38,30,0.65)]"
+    style={{ background: tint }}
+  >
+    <span className="pointer-events-none absolute -top-6 left-3">
+      <Nira mood={mood} size={84} float={false} />
+    </span>
+    <span className="block font-serif text-[21px] leading-tight text-deep-forest">{title}</span>
+    <span className="mt-0.5 block text-[13px] leading-snug text-ink-soft">{text}</span>
+    <span className="mt-2 inline-flex items-center gap-1.5 text-sm font-bold text-forest">
+      {t('Buka', 'Open')} <LeafArrow className="h-5 w-5" />
+    </span>
+  </Link>
+);
 
 export const Perjalanan: React.FC = () => {
   const { session, level, nextLevel, xp, modules, quests } = useStore();
@@ -45,11 +64,6 @@ export const Perjalanan: React.FC = () => {
     <div className="bg-cream">
       <header className="px-5 pb-1 pt-5">
         <div className="flex items-center gap-3">
-          <span className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-coconut bg-gradient-to-b from-[#FBE9C9] to-[#DCE6C4] shadow-sm">
-            <span className="mt-2">
-              <Nira mood="happy" size={40} float={false} />
-            </span>
-          </span>
           <div className="min-w-0 flex-1">
             <p className="text-xs font-semibold text-ink-soft">{t('Halo,', 'Hello,')}</p>
             <p className="truncate font-serif text-[22px] leading-tight text-deep-forest">{session?.name}</p>
@@ -57,9 +71,8 @@ export const Perjalanan: React.FC = () => {
           <LangToggle className="shrink-0" />
         </div>
 
-        <div className="mt-4 rounded-3xl border border-bamboo bg-coconut p-4 shadow-[0_8px_22px_-14px_rgba(24,56,44,0.55)]">
+        <div className="mt-4 rounded-3xl surface p-4">
           <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-caramel/15 font-serif text-xl text-caramel-dark">{level.level}</span>
             <div className="min-w-0 flex-1">
               <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-caramel-dark">{t('Level', 'Level')} {level.level}</p>
               <p className="truncate text-base font-semibold leading-tight text-deep-forest">{level.indonesianName}</p>
@@ -95,30 +108,10 @@ export const Perjalanan: React.FC = () => {
         <JalurArt stations={stations} doneLength={doneLength} onOpen={setOpenSlug} />
       </div>
       <div style={{ background: 'linear-gradient(#BBD1A2 0%, #A3C28B 40%, #86AB74 100%)' }}>
-      <section className="space-y-3 px-5 pb-28 pt-2">
-        <Link to="/learn/lab" className="flex min-h-[64px] items-center gap-3 rounded-2xl border border-bamboo bg-coconut p-3 shadow-[0_6px_16px_-10px_rgba(24,56,44,0.5)]">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-forest text-coconut">
-            <FlaskConical className="h-5 w-5" />
-          </span>
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold text-deep-forest">{t('Lab Pengetahuan', 'Knowledge Lab')}</p>
-            <p className="text-xs text-ink-soft">{t('Bereksperimen di dapur dan menautkan istilah.', 'Experiment in the kitchen and link terms together.')}</p>
-          </div>
-          <span className="shrink-0 rounded-full bg-forest px-3 py-1.5 text-xs font-bold text-coconut">{t('Buka', 'Open')}</span>
-        </Link>
-        <Link to="/learn/arsip" className="flex min-h-[64px] items-center gap-3 rounded-2xl border border-bamboo bg-coconut p-3 shadow-[0_6px_16px_-10px_rgba(24,56,44,0.5)]">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-caramel-dark text-coconut">
-            <Hand className="h-5 w-5" />
-          </span>
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold text-deep-forest">{t('Arsip Gerakan', 'Movement Archive')}</p>
-            <p className="text-xs text-ink-soft">{t('Rekaman gerak perajin, dengan kerangka tangan.', 'Recordings of artisans at work, with hand tracking.')}</p>
-          </div>
-          <span className="shrink-0 rounded-full bg-caramel-dark px-3 py-1.5 text-xs font-bold text-coconut">{t('Buka', 'Open')}</span>
-        </Link>
-        <p className="flex items-center gap-1.5 text-xs font-semibold text-deep-forest/80">
-          <Sparkles className="h-3.5 w-3.5" /> {t('Data ilustratif. Seluruh pembelajaran berbasis darat.', 'Illustrative data. All learning is ground-based.')}
-        </p>
+      <section className="space-y-7 px-5 pb-28 pt-8">
+        <MascotCard to="/learn/lab" mood="cheer" tint="#E7EFD3" title={t('Lab Pengetahuan', 'Knowledge Lab')} text={t('Bereksperimen di dapur dan menautkan istilah.', 'Experiment in the kitchen and link terms together.')} />
+        <MascotCard to="/learn/arsip" mood="wave" tint="#FAE6C8" title={t('Arsip Gerakan', 'Movement Archive')} text={t('Rekaman gerak perajin, dengan kerangka tangan.', 'Recordings of artisans at work, with hand tracking.')} />
+        <p className="text-center font-serif text-sm italic text-deep-forest/80">{t('Seluruh pembelajaran berbasis darat.', 'All learning is ground-based.')}</p>
       </section>
       </div>
 
@@ -147,15 +140,18 @@ export const Perjalanan: React.FC = () => {
                     onClick={() => navigate(`/learn/bab/${sel.slug}`)}
                     className="min-h-[52px] rounded-full bg-forest text-base font-semibold text-coconut"
                   >
-                    {sel.completionPercent >= 100 ? t('Baca lagi', 'Read again') : t('Mulai bab', 'Start chapter')}
+                    {sel.completionPercent >= 100 ? t('Baca lagi', 'Read again') : sel.completionPercent > 0 ? t('Lanjutkan belajar', 'Keep learning') : t('Mulai belajar', 'Start learning')}
                   </button>
-                  {selQuest && (
+                  {selQuest && sel.completionPercent >= 100 && (
                     <Link
                       to={`/learn/misi/${selQuest.id}`}
                       className="flex min-h-[52px] items-center justify-center rounded-full border-2 border-caramel-dark text-base font-semibold text-caramel-dark"
                     >
-                      {t('Misi', 'Quest')}: {selQuest.title}
+                      {t('Tugas refleksi untuk mentor', 'Reflection task for the mentor')}
                     </Link>
+                  )}
+                  {selQuest && sel.completionPercent < 100 && (
+                    <p className="text-center text-xs leading-snug text-ink-soft">{t('Setelah bab selesai, ada tugas refleksi singkat yang dibaca mentor.', 'After the chapter, a short reflection task is read by a mentor.')}</p>
                   )}
                 </div>
               </>

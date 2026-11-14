@@ -7,6 +7,14 @@ export const PRICE = { direct: 35000, reseller: 30000, resellerMinKg: 30 };
 
 export type Channel = 'langsung' | 'reseller';
 
+/** Persentase dana pelestarian dari omzet. Masih asumsi tim, bukan angka final. */
+export const PRESERVE_PCT = 8;
+/** Harga beli ke perajin per kg. Masih asumsi contoh. */
+export const BUY_PRICE = 20000;
+
+export const channelOf = (kg: number): Channel => (kg >= PRICE.resellerMinKg ? 'reseller' : 'langsung');
+export const unitPrice = (c: Channel): number => (c === 'reseller' ? PRICE.reseller : PRICE.direct);
+
 /** Harga untuk jumlah pesanan tertentu: reseller hanya berlaku bila memenuhi minimal order. */
 export const quote = (kg: number) => {
   const eligible = kg >= PRICE.resellerMinKg;

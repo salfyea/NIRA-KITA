@@ -133,7 +133,6 @@ export const KoleksiDetail: React.FC = () => {
           </p>
           <p className="text-xs text-ink-soft">
             {locLabel(r.location)}
-            {r.isIllustrativePlaceholder && t(' · data ilustratif', ' · illustrative data')}
           </p>
         </Ornate>
       </div>

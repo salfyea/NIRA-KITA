@@ -5,10 +5,11 @@ import { Ornate } from '../components/ui';
 import { getGerakan } from '../data/gerakan';
 import { t } from '../i18n';
 import { subStatus } from '../data/display';
+import { RoleMascot } from '../art/RoleMascot';
+import { LeafArrow } from '../art/Organic';
 import { RekamIrama } from '../components/RekamIrama';
 import { HeritageRecord, KnowledgeCategory, LearnerSubmission } from '../types/jejakNira';
 import { useStore } from '../store';
-import { StaffBar } from './Kurator';
 
 const CATEGORIES: KnowledgeCategory[] = ['Cerita lisan', 'Teknik tradisional', 'Alat produksi', 'Istilah lokal', 'Tahapan proses'];
 const EXPLORE: Record<KnowledgeCategory, HeritageRecord['exploreCategory']> = {
@@ -236,7 +237,7 @@ const Validasi: React.FC = () => {
               {s.questTitle} · {s.submittedDate === 'Hari ini' ? t('Hari ini', 'Today') : s.submittedDate}
             </p>
             <p className="mt-2 text-sm leading-relaxed text-charcoal">"{s.reflectionText}"</p>
-            <p className="mt-1 text-xs text-ink-soft">{t('Jawaban alat', 'Tool answer')}: {s.selectedToolAnswer}</p>
+            {s.selectedToolAnswer && <p className="mt-1 text-xs text-ink-soft">{t('Jawaban alat', 'Tool answer')}: {s.selectedToolAnswer}</p>}
             {s.status === 'Menunggu Validasi' ? (
               open === s.id ? (
                 <ValidateForm sub={s} onSave={(i) => { validateSubmission(s.id, i); setOpen(null); showToast(i.status === 'Tervalidasi Mentor' ? t('Pelajar divalidasi dan tercatat di audit.', 'Learner validated and logged in the audit.') : t('Revisi diminta dan tercatat di audit.', 'Revision requested and logged in the audit.')); }} />
@@ -331,29 +332,74 @@ const Anotasi: React.FC = () => {
   );
 };
 
-export const Mentor: React.FC = () => {
-  const [tab, setTab] = React.useState<'unggah' | 'validasi' | 'anotasi'>('unggah');
+const Head: React.FC<{ title: string; text: string }> = ({ title, text }) => (
+  <div>
+    <h1 className="font-serif text-[30px] leading-tight text-deep-forest">{title}</h1>
+    <p className="mt-1 text-sm leading-relaxed text-ink-soft">{text}</p>
+  </div>
+);
+
+export const MentorRekam: React.FC = () => (
+  <div className="px-4 pt-4">
+    <Head title={t('Rekam cerita', 'Record a story')} text={t('Langkah demi langkah: izin narasumber lebih dulu, lalu cerita. Rekaman baru Privat sampai disetujui kurator.', 'Step by step: the source\'s consent first, then the story. New recordings stay Private until the curator approves.')} />
+    <Unggah />
+  </div>
+);
+
+export const MentorValidasi: React.FC = () => (
+  <div className="px-4 pt-4">
+    <Head title={t('Validasi pelajar', 'Validate learners')} text={t('Baca refleksi pelajar, centang kompetensi yang sudah terlihat, lalu validasi atau minta revisi.', 'Read the learners\' reflections, tick the competencies you saw, then validate or ask for a revision.')} />
+    <Validasi />
+  </div>
+);
+
+export const MentorAnotasi: React.FC = () => (
+  <div className="px-4 pt-4">
+    <Head title={t('Anotasi klip dan irama acuan', 'Clip annotations and reference rhythm')} text={t('Tandai teknik pada klip, atau rekam irama mengaduk perajin sebagai acuan bagi pelajar.', 'Mark technique on clips, or record an artisan\'s stirring rhythm as a reference for learners.')} />
+    <Anotasi />
+  </div>
+);
+
+/** Beranda Mentor: sederhana dan besar, karena dipakai di lapangan lewat ponsel. */
+export const MentorHome: React.FC = () => {
+  const { submissions, annotations, session } = useStore();
+  const waiting = submissions.filter((s) => s.status === 'Menunggu Validasi').length;
+  const validated = submissions.filter((s) => s.status === 'Tervalidasi Mentor').length;
+  const notes = Object.keys(annotations).length;
   return (
-    <div className="min-h-full bg-cream pb-10">
-      <StaffBar current="mentor" />
-      <div className="px-5 pt-4">
-        <h1 className="text-[28px] leading-tight text-deep-forest">{t('Ruang mentor', 'Mentor room')}</h1>
-        <p className="mt-1 text-sm leading-relaxed text-ink-soft">{t('Mentor membawa pengetahuan dari lapangan dengan persetujuan narasumber, menandai teknik, dan memvalidasi pelajar.', 'Mentors bring knowledge from the field with the source\'s consent, mark technique, and validate learners.')}</p>
-        <div className="mt-4 grid grid-cols-3 rounded-full border border-bamboo bg-coconut p-1" role="tablist">
-          {([
-            ['unggah', t('Unggah', 'Upload')],
-            ['validasi', t('Validasi', 'Validate')],
-            ['anotasi', t('Anotasi', 'Annotate')],
-          ] as const).map(([k, t]) => (
-            <button key={k} type="button" role="tab" aria-selected={tab === k} onClick={() => setTab(k)} className={`min-h-[44px] rounded-full text-sm font-semibold ${tab === k ? 'bg-forest text-coconut' : 'text-ink-soft'}`}>
-              {t}
-            </button>
-          ))}
+    <div className="px-4 pt-4">
+      <div className="flex items-center gap-4 rounded-[28px_36px_28px_36px] p-5" style={{ background: 'linear-gradient(120deg, #F3E3CC, #FBF1DC)' }}>
+        <RoleMascot role="mentor" size={96} mood="wave" />
+        <div className="min-w-0">
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-caramel-dark">{t('Hari ini', 'Today')}</p>
+          <h1 className="font-serif text-[28px] leading-tight text-deep-forest">{t('Halo', 'Hello')}, {session?.name?.split(' (')[0]}</h1>
+          <p className="mt-0.5 text-sm text-ink-soft">{t('Apa yang mau kamu lakukan?', 'What would you like to do?')}</p>
         </div>
-        {tab === 'unggah' && <Unggah />}
-        {tab === 'validasi' && <Validasi />}
-        {tab === 'anotasi' && <Anotasi />}
       </div>
+
+      <Link to="/mentor/rekam" className="btn-sticker mt-4 flex min-h-[72px] items-center justify-between gap-3 rounded-[32px_38px_30px_38px] bg-caramel-dark px-6 text-coconut">
+        <span>
+          <span className="block font-serif text-2xl leading-tight">{t('Rekam cerita', 'Record a story')}</span>
+          <span className="block text-sm text-coconut/85">{t('Izin narasumber dulu, lalu ceritanya.', 'The source\'s consent first, then the story.')}</span>
+        </span>
+        <LeafArrow className="h-7 w-7 shrink-0" />
+      </Link>
+
+      <div className="mt-4 grid grid-cols-2 gap-3">
+        <Link to="/mentor/validasi" className="surface rounded-[22px_28px_22px_28px] p-4">
+          <span className="block font-serif text-[34px] leading-none text-deep-forest">{waiting}</span>
+          <span className="mt-1 block text-sm font-semibold text-deep-forest">{t('Pelajar menunggu validasi', 'Learners awaiting validation')}</span>
+        </Link>
+        <Link to="/mentor/anotasi" className="surface rounded-[22px_28px_22px_28px] p-4">
+          <span className="block font-serif text-[34px] leading-none text-deep-forest">{notes}</span>
+          <span className="mt-1 block text-sm font-semibold text-deep-forest">{t('Anotasi klip dan irama', 'Clip and rhythm notes')}</span>
+        </Link>
+        <div className="surface col-span-2 rounded-[22px_28px_22px_28px] p-4">
+          <span className="block font-serif text-[34px] leading-none text-forest">{validated}</span>
+          <span className="mt-1 block text-sm font-semibold text-deep-forest">{t('Pelajar yang sudah kamu validasi', 'Learners you have validated')}</span>
+        </div>
+      </div>
+      <p className="mt-4 text-xs leading-relaxed text-ink-soft">{t('Hanya validasi mentor manusia yang membuka lencana tervalidasi mentor bagi pelajar.', 'Only human mentor validation unlocks the mentor-validated badge for learners.')}</p>
     </div>
   );
 };

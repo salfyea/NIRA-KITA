@@ -7,56 +7,10 @@ import { CuratorChecklist, HeritageRecord, VisibilityScope } from '../types/jeja
 import { useStore } from '../store';
 import { t } from '../i18n';
 import { locLabel } from '../data/display';
+import { Nira } from '../art/Nira';
+import { RoleMascot } from '../art/RoleMascot';
 
 /** Bilah atas area staf: berpindah antara Kurator dan Admin, plus keluar. */
-export const StaffBar: React.FC<{ current: 'mentor' | 'kurator' | 'admin' | 'enterprise' }> = ({ current }) => {
-  const { session, signOut } = useStore();
-  const navigate = useNavigate();
-  return (
-    <header className="sticky top-0 z-10 border-b border-bamboo bg-cream/95 px-5 pb-3 pt-4 backdrop-blur">
-      <div className="flex items-center justify-between gap-2">
-        <div className="min-w-0">
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-caramel-dark">{t('Area staf · prototipe', 'Staff area · prototype')}</p>
-          <p className="truncate text-sm font-semibold text-deep-forest">{session?.name}</p>
-        </div>
-        <button
-          type="button"
-          onClick={() => {
-            signOut();
-            navigate('/masuk', { replace: true });
-          }}
-          className="flex min-h-[44px] items-center gap-1.5 rounded-full border border-bamboo px-4 text-sm font-semibold text-ink-soft"
-        >
-          <LogOut className="h-4 w-4" /> {t('Keluar', 'Sign out')}
-        </button>
-      </div>
-      <nav className="mt-2 grid grid-cols-4 rounded-full border border-bamboo bg-coconut p-1" aria-label={t('Area staf', 'Staff area')}>
-        {([
-          ['mentor', '/mentor', 'Mentor', Mic],
-          ['kurator', '/kurator', t('Kurator', 'Curator'), ShieldCheck],
-          ['admin', '/admin', 'Admin', Users],
-          ['enterprise', '/enterprise', 'Enterprise', Store],
-        ] as const).map(([k, to, label, Icon]) => (
-          <Link
-            key={k}
-            to={to}
-            aria-current={current === k ? 'page' : undefined}
-            className={`flex min-h-[44px] items-center justify-center gap-1 rounded-full text-[13px] font-semibold ${current === k ? 'bg-forest text-coconut' : 'text-ink-soft'}`}
-          >
-            <Icon className="hidden h-4 w-4 min-[400px]:block" /> {label}
-          </Link>
-        ))}
-      </nav>
-    </header>
-  );
-};
-
-/** Hanya peran staf (kurator atau admin) yang boleh masuk. */
-export const RequireStaff: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { session } = useStore();
-  return session && session.role !== 'learner' ? <>{children}</> : <Navigate to="/kode-undangan" replace />;
-};
-
 const statusLabel = (s: string): string =>
   ({ Approved: t('Disetujui', 'Approved'), 'In Review': t('Menunggu tinjauan', 'Awaiting review'), 'Revision Requested': t('Perlu revisi', 'Needs revision'), Rejected: t('Ditolak', 'Rejected'), Draft: t('Draf', 'Draft'), Archived: t('Diarsipkan', 'Archived') } as Record<string, string>)[s] ?? s;
 const statusTone = (s: string) =>
@@ -66,71 +20,146 @@ const scopeLabel = (v: VisibilityScope) => (v === 'public' ? t('Publik (halaman 
 
 /* ============================== Antrean ============================== */
 
-export const Kurator: React.FC = () => {
-  const { records, annotations, approveAnnotation, showToast } = useStore();
-  const navigate = useNavigate();
-  const pendingNotes = Object.entries(annotations).filter(([, a]) => !a.approved);
-  const [f, setF] = React.useState<'tunggu' | 'setuju' | 'semua'>('tunggu');
-  const pending = records.filter((r) => r.reviewStatus === 'In Review' || r.reviewStatus === 'Revision Requested');
-  const approved = records.filter((r) => r.reviewStatus === 'Approved');
-  const list = f === 'tunggu' ? pending : f === 'setuju' ? approved : records;
+const MONTHS: Record<string, number> = { Jan: 0, Feb: 1, Mar: 2, Apr: 3, Mei: 4, Jun: 5, Jul: 6, Agu: 7, Sep: 8, Okt: 9, Nov: 10, Des: 11 };
+/** Tanggal acuan data contoh. Pada pemakaian nyata ini diganti tanggal hari ini. */
+const DEMO_TODAY = Date.UTC(2026, 4, 22);
+const daysWaiting = (d: string): number => {
+  if (d === 'Hari ini') return 0;
+  const m = d.match(/(\d+)\s+(\w+)\s+(\d{4})/);
+  if (!m || MONTHS[m[2].slice(0, 3)] === undefined) return 0;
+  return Math.max(0, Math.round((DEMO_TODAY - Date.UTC(Number(m[3]), MONTHS[m[2].slice(0, 3)], Number(m[1]))) / 86400000));
+};
+
+const Head: React.FC<{ title: string; text: string }> = ({ title, text }) => (
+  <div>
+    <h1 className="font-serif text-[30px] leading-tight text-deep-forest">{title}</h1>
+    <p className="mt-1 text-sm leading-relaxed text-ink-soft">{text}</p>
+  </div>
+);
+
+const RecordCard: React.FC<{ r: HeritageRecord; onOpen: () => void }> = ({ r, onOpen }) => {
+  const waiting = r.reviewStatus === 'In Review' || r.reviewStatus === 'Revision Requested' ? daysWaiting(r.submittedDate) : null;
+  const missing = !r.consent.internalLearning;
   return (
-    <div className="min-h-full bg-cream pb-8">
-      <StaffBar current="kurator" />
-      <div className="px-5 pt-4">
-        <h1 className="text-[28px] leading-tight text-deep-forest">{t('Antrean tinjauan', 'Review queue')}</h1>
-        <p className="mt-1 text-sm leading-relaxed text-ink-soft">
-          {t('Kurator memeriksa izin kontributor dan konteks budaya, lalu menentukan siapa yang boleh melihat setiap rekaman. Tidak ada yang tampil ke pelajar atau publik tanpa persetujuan di sini.', 'Curators check contributor consent and cultural context, then decide who may see each recording. Nothing reaches learners or the public without approval here.')}
-        </p>
-        <div className="mt-4 grid grid-cols-3 rounded-full border border-bamboo bg-coconut p-1" role="tablist">
-          {([
-            ['tunggu', t(`Menunggu (${pending.length})`, `Pending (${pending.length})`)],
-            ['setuju', t(`Disetujui (${approved.length})`, `Approved (${approved.length})`)],
-            ['semua', t('Semua', 'All')],
-          ] as const).map(([k, t]) => (
-            <button key={k} type="button" role="tab" aria-selected={f === k} onClick={() => setF(k)} className={`min-h-[44px] rounded-full text-xs font-bold ${f === k ? 'bg-forest text-coconut' : 'text-ink-soft'}`}>
-              {t}
+    <li>
+      <Ornate as="button" onClick={onOpen} className="p-4">
+        <span className="flex items-start justify-between gap-2">
+          <span className="text-xs font-bold text-ink-soft">{r.id}</span>
+          <span className="flex gap-1.5">
+            {missing && <span className="rounded-full bg-[#9E4F37]/10 px-2.5 py-0.5 text-[11px] font-bold text-[#9E4F37]">{t('Izin belum lengkap', 'Consent incomplete')}</span>}
+            <span className={`rounded-full border px-2.5 py-0.5 text-[11px] font-bold ${statusTone(r.reviewStatus)}`}>{statusLabel(r.reviewStatus)}</span>
+          </span>
+        </span>
+        <span className="mt-1 block text-lg leading-snug text-deep-forest">{r.title}</span>
+        <span className="mt-1 block text-sm text-ink-soft">
+          {r.contributorName} · {locLabel(r.location.replace(', Cilongok, Banyumas', ''))}
+          {waiting !== null && <b className="ml-2 text-caramel-dark">{t(`menunggu ${waiting} hari`, `waiting ${waiting} days`)}</b>}
+        </span>
+        <span className="mt-2 flex flex-wrap gap-1.5 text-[11px] font-bold">
+          <span className={`rounded-full px-2 py-0.5 ${r.consent.internalLearning ? 'bg-forest/10 text-forest' : 'bg-bamboo/60 text-ink-soft'}`}>{t('Izin pelajar', 'Learner permission')} {r.consent.internalLearning ? t('ya', 'yes') : t('belum', 'not yet')}</span>
+          <span className={`rounded-full px-2 py-0.5 ${r.consent.publicQrPage ? 'bg-forest/10 text-forest' : 'bg-bamboo/60 text-ink-soft'}`}>{t('Izin QR publik', 'Public QR permission')} {r.consent.publicQrPage ? t('ya', 'yes') : t('belum', 'not yet')}</span>
+          <span className="rounded-full bg-coconut px-2 py-0.5 text-deep-forest ring-1 ring-bamboo">{scopeLabel(r.visibility)}</span>
+        </span>
+      </Ornate>
+    </li>
+  );
+};
+
+const NotesBlock: React.FC = () => {
+  const { annotations, approveAnnotation, showToast } = useStore();
+  const pendingNotes = Object.entries(annotations).filter(([, a]) => !a.approved);
+  if (pendingNotes.length === 0)
+    return (
+      <div className="surface mt-4 flex flex-col items-center rounded-3xl p-8 text-center">
+        <Nira mood="cheer" size={92} />
+        <p className="mt-2 font-serif text-xl text-deep-forest">{t('Tidak ada anotasi yang menunggu', 'No annotations waiting')}</p>
+        <p className="mt-1 text-sm text-ink-soft">{t('Anotasi dari mentor akan muncul di sini untuk kamu setujui.', 'Annotations from mentors will appear here for you to approve.')}</p>
+      </div>
+    );
+  return (
+    <ul className="mt-4 space-y-3">
+      {pendingNotes.map(([clip, a]) => (
+        <li key={clip} className="surface rounded-[22px_28px_22px_28px] p-4">
+          <p className="text-sm font-semibold text-deep-forest">{clip === 'irama-aduk' ? t('Irama acuan mengaduk (hasil ukur kamera)', 'Stirring reference rhythm (camera measurement)') : `${t('Klip', 'Clip')}: ${clip}`}</p>
+          <p className="mt-1 text-sm leading-relaxed text-charcoal">"{a.text}"</p>
+          <p className="text-xs text-ink-soft">{t('Oleh', 'By')} {a.author}</p>
+          <button type="button" onClick={() => { approveAnnotation(clip); showToast(t('Anotasi disetujui dan tampil di Arsip Gerakan.', 'Annotation approved and shown in the Movement Archive.')); }} className="mt-3 min-h-[44px] rounded-full bg-forest px-5 text-sm font-semibold text-coconut">
+            {t('Setujui anotasi', 'Approve annotation')}
+          </button>
+        </li>
+      ))}
+    </ul>
+  );
+};
+
+export const Kurator: React.FC<{ view: 'inbox' | 'anotasi' | 'arsip' }> = ({ view }) => {
+  const { records, annotations, session } = useStore();
+  const navigate = useNavigate();
+  const [f, setF] = React.useState<'setuju' | 'semua'>('setuju');
+  const pending = records.filter((r) => r.reviewStatus === 'In Review');
+  const revision = records.filter((r) => r.reviewStatus === 'Revision Requested');
+  const approved = records.filter((r) => r.reviewStatus === 'Approved');
+  const notes = Object.values(annotations).filter((a) => !a.approved).length;
+  const inbox = [...pending, ...revision].sort((a, b) => daysWaiting(b.submittedDate) - daysWaiting(a.submittedDate));
+  const list = f === 'setuju' ? approved : records;
+
+  if (view === 'anotasi')
+    return (
+      <div className="px-4 pt-4 lg:px-0 lg:pt-0">
+        <Head title={t('Anotasi mentor', 'Mentor annotations')} text={t('Catatan teknik dan irama acuan dari mentor. Baru tampil ke pelajar setelah kamu setujui.', 'Technique notes and reference rhythms from mentors. They reach learners only after you approve them.')} />
+        <NotesBlock />
+      </div>
+    );
+
+  if (view === 'arsip')
+    return (
+      <div className="px-4 pt-4 lg:px-0 lg:pt-0">
+        <Head title={t('Arsip rekaman', 'Recording archive')} text={t('Semua rekaman yang sudah kamu putuskan, beserta visibilitasnya.', 'Every recording you have decided on, with its visibility.')} />
+        <div className="mt-4 flex gap-1 border-b border-bamboo" role="tablist">
+          {([['setuju', t(`Disetujui (${approved.length})`, `Approved (${approved.length})`)], ['semua', t(`Semua (${records.length})`, `All (${records.length})`)]] as const).map(([k, label]) => (
+            <button key={k} type="button" role="tab" aria-selected={f === k} onClick={() => setF(k)} className={`relative min-h-[46px] px-4 text-sm font-semibold ${f === k ? 'text-deep-forest' : 'text-ink-soft'}`}>
+              {label}
+              {f === k && <span className="absolute inset-x-3 -bottom-px h-[3px] rounded-full bg-forest" />}
             </button>
           ))}
         </div>
-        {pendingNotes.length > 0 && (
-          <div className="mt-3 rounded-2xl border border-caramel/40 bg-coconut p-3">
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-caramel-dark">{t('Anotasi mentor menunggu', 'Mentor annotations pending')} ({pendingNotes.length})</p>
-            {pendingNotes.map(([clip, a]) => (
-              <div key={clip} className="mt-2 border-t border-bamboo/60 pt-2">
-                <p className="text-sm font-semibold text-deep-forest">{clip === 'irama-aduk' ? t('Irama acuan mengaduk (hasil ukur kamera)', 'Stirring reference rhythm (camera measurement)') : `${t('Klip', 'Clip')}: ${clip}`}</p>
-                <p className="text-sm leading-relaxed text-charcoal">"{a.text}"</p>
-                <p className="text-xs text-ink-soft">{t('Oleh', 'By')} {a.author}</p>
-                <button type="button" onClick={() => { approveAnnotation(clip); showToast(t('Anotasi disetujui dan tampil di Arsip Gerakan.', 'Annotation approved and shown in the Movement Archive.')); }} className="mt-2 min-h-[44px] rounded-full bg-forest px-5 text-sm font-semibold text-coconut">
-                  {t('Setujui anotasi', 'Approve annotation')}
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-        <ul className="mt-3 space-y-3">
-          {list.map((r) => (
-            <li key={r.id}>
-              <Ornate as="button" onClick={() => navigate(`/kurator/${r.id}`)} className="p-4">
-                <span className="flex items-start justify-between gap-2">
-                  <span className="text-xs font-bold text-ink-soft">{r.id}</span>
-                  <span className={`rounded-full border px-2.5 py-0.5 text-[11px] font-bold ${statusTone(r.reviewStatus)}`}>{statusLabel(r.reviewStatus)}</span>
-                </span>
-                <span className="mt-1 block text-lg leading-snug text-deep-forest">{r.title}</span>
-                <span className="mt-1 block text-sm text-ink-soft">
-                  {r.contributorName} · {locLabel(r.location.replace(', Cilongok, Banyumas', ''))}
-                </span>
-                <span className="mt-2 flex flex-wrap gap-1.5 text-[11px] font-bold">
-                  <span className={`rounded-full px-2 py-0.5 ${r.consent.internalLearning ? 'bg-forest/10 text-forest' : 'bg-bamboo/60 text-ink-soft'}`}>{t('Izin pelajar', 'Learner permission')} {r.consent.internalLearning ? t('ya', 'yes') : t('belum', 'not yet')}</span>
-                  <span className={`rounded-full px-2 py-0.5 ${r.consent.publicQrPage ? 'bg-forest/10 text-forest' : 'bg-bamboo/60 text-ink-soft'}`}>{t('Izin QR publik', 'Public QR permission')} {r.consent.publicQrPage ? t('ya', 'yes') : t('belum', 'not yet')}</span>
-                  <span className="rounded-full bg-coconut px-2 py-0.5 text-deep-forest ring-1 ring-bamboo">{scopeLabel(r.visibility)}</span>
-                </span>
-              </Ornate>
-            </li>
-          ))}
-          {list.length === 0 && <li className="rounded-2xl bg-coconut p-4 text-sm text-ink-soft">{t('Tidak ada rekaman di daftar ini.', 'No recordings in this list.')}</li>}
+        <ul className="mt-4 grid gap-3 lg:grid-cols-2">
+          {list.map((r) => <RecordCard key={r.id} r={r} onOpen={() => navigate(`/kurator/${r.id}`)} />)}
         </ul>
       </div>
+    );
+
+  return (
+    <div className="px-4 pt-4 lg:px-0 lg:pt-0">
+      <div className="flex items-center gap-4 rounded-[28px_36px_28px_36px] p-5" style={{ background: 'linear-gradient(120deg, #DDEBDD, #F2F6E8)' }}>
+        <RoleMascot role="curator" size={92} mood="happy" />
+        <div className="min-w-0">
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-forest">{t('Kotak masuk tinjauan', 'Review inbox')}</p>
+          <h1 className="font-serif text-[28px] leading-tight text-deep-forest">{t('Halo', 'Hello')}, {session?.name?.split(' (')[0]}</h1>
+          <p className="mt-0.5 text-sm text-ink-soft">{t('Tidak ada yang tampil ke pelajar atau publik tanpa persetujuanmu.', 'Nothing reaches learners or the public without your approval.')}</p>
+        </div>
+      </div>
+      <div className="mt-4 grid grid-cols-3 gap-3">
+        {[[pending.length, t('Menunggu', 'Waiting')], [revision.length, t('Perlu revisi', 'Needs revision')], [notes, t('Anotasi', 'Annotations')]].map(([n, l]) => (
+          <div key={String(l)} className="surface rounded-[22px_28px_22px_28px] p-4 text-center">
+            <p className="font-serif text-[32px] leading-none text-deep-forest">{n}</p>
+            <p className="mt-1 text-xs font-semibold text-ink-soft">{l}</p>
+          </div>
+        ))}
+      </div>
+      <h2 className="mt-6 text-xl text-deep-forest">{t('Perlu ditinjau', 'To review')}</h2>
+      <p className="text-xs text-ink-soft">{t('Diurutkan dari yang paling lama menunggu.', 'Sorted by longest waiting.')}</p>
+      {inbox.length === 0 ? (
+        <div className="surface mt-3 flex flex-col items-center rounded-3xl p-8 text-center">
+          <Nira mood="cheer" size={92} />
+          <p className="mt-2 font-serif text-xl text-deep-forest">{t('Kotak masuk kosong', 'Inbox is empty')}</p>
+          <p className="mt-1 text-sm text-ink-soft">{t('Semua rekaman sudah kamu tinjau. Terima kasih sudah menjaga izin perajin.', 'You have reviewed every recording. Thank you for guarding the artisans\' consent.')}</p>
+        </div>
+      ) : (
+        <ul className="mt-3 grid gap-3 lg:grid-cols-2">
+          {inbox.map((r) => <RecordCard key={r.id} r={r} onOpen={() => navigate(`/kurator/${r.id}`)} />)}
+        </ul>
+      )}
     </div>
   );
 };
@@ -187,17 +216,28 @@ const Detail: React.FC<{
   ];
 
   return (
-    <div className="min-h-full bg-cream pb-10">
-      <StaffBar current="kurator" />
-      <div className="px-5 pt-3">
+    <div className="px-4 pt-3 lg:px-0 lg:pt-0">
+      <div>
         <Link to="/kurator" className="inline-flex min-h-[44px] items-center gap-1 text-sm font-semibold text-deep-forest">
-          <ArrowLeft className="h-4 w-4" /> {t('Antrean', 'Queue')}
+          <ArrowLeft className="h-4 w-4" /> {t('Kotak masuk', 'Inbox')}
         </Link>
         <div className="flex items-start justify-between gap-2">
           <p className="text-xs font-bold text-ink-soft">{r.id}</p>
           <span className={`rounded-full border px-2.5 py-0.5 text-[11px] font-bold ${statusTone(r.reviewStatus)}`}>{statusLabel(r.reviewStatus)}</span>
         </div>
         <h1 className="text-[26px] leading-tight text-deep-forest">{r.title}</h1>
+        <div className="surface mt-3 rounded-3xl p-4">
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-caramel-dark">{t('Pratinjau: begini tampilannya', 'Preview: how it will look')}</p>
+          <div className="mt-2 flex gap-3">
+            <RoleMascot role="curator" size={64} mood="happy" />
+            <div className="min-w-0">
+              <p className="text-base font-semibold leading-snug text-deep-forest">{r.title}</p>
+              <p className="mt-0.5 text-sm leading-snug text-ink-soft">{r.shortDescription}</p>
+              <p className="mt-1 text-xs font-semibold text-caramel-dark">{r.attributionPreference === 'Anonim' ? t('Narasumber komunitas (anonim)', 'Community source (anonymous)') : r.attributionPreference === 'Tampilkan Inisial Komunitas' ? t('Narasumber komunitas', 'Community source') : r.contributorName}</p>
+            </div>
+          </div>
+          <p className="mt-2 text-xs text-ink-soft">{t('Tampil di aplikasi pelajar bila Akses Pelajar, dan di halaman QR pembeli bila Publik.', 'Shown in the learner app with Learner access, and on the buyer QR page when Public.')}</p>
+        </div>
         <p className="mt-2 text-base leading-relaxed text-charcoal">{r.culturalExplanation}</p>
         <p className="mt-2 text-sm text-ink-soft">
           {attribution(r)} · {locLabel(r.location)}
