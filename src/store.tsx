@@ -18,6 +18,7 @@ import {
   JOURNEY_LEVELS,
 } from './data/initialData';
 import { QR_BATCHES, QrBatch } from './data/batches';
+import { DEFAULT_VOUCHER, VoucherConfig } from './lib/voucher';
 import { BADGE_EN, LEVEL_EN, MOD_EN, QUEST_EN, REC_EN } from './data/en';
 import { useLang } from './i18n';
 
@@ -42,6 +43,8 @@ interface PersistedState {
   partners: Partner[];
   purchases: Purchase[];
   orders: Order[];
+  voucherConfig: VoucherConfig;
+  voucherUsed: string[];
   marketRef: number;
   session: Session | null;
   onboarded: boolean;
@@ -56,6 +59,9 @@ export interface Partner {
   capacityKg: number; // kapasitas gula per bulan
   status: 'Mitra aktif' | 'Penjajakan';
   consentName: boolean; // boleh menampilkan nama kelompok di halaman publik
+  /** Jumlah anggota yang sudah punya jaminan kerja (kecelakaan dan kematian), dan status pendampingan pendaftaran. */
+  insured: number;
+  insurance: InsuranceStatus;
 }
 
 export interface Purchase {
@@ -66,6 +72,9 @@ export interface Purchase {
   pricePerKg: number;
   marketRef: number; // harga acuan pasar saat dicatat
 }
+
+export type InsuranceStatus = 'Belum ada' | 'Dibantu daftar' | 'Terdaftar';
+export const INSURANCE_FLOW: InsuranceStatus[] = ['Belum ada', 'Dibantu daftar', 'Terdaftar'];
 
 export type OrderStatus = 'Baru' | 'Dikemas' | 'Dikirim' | 'Selesai';
 export const ORDER_FLOW: OrderStatus[] = ['Baru', 'Dikemas', 'Dikirim', 'Selesai'];
@@ -84,6 +93,8 @@ export interface Order {
   source?: 'toko' | 'koperasi';
   /** Koperasi menandai sudah dibayar setelah transfer dicocokkan. */
   paid?: boolean;
+  voucher?: string;
+  discount?: number;
 }
 
 export interface Annotation {
@@ -109,9 +120,9 @@ const SEED_AUDIT: AuditLogEntry[] = [
 
 const NO_CHECK = { identifiesTools: false, explainsFunctions: false, understandsSequence: false, identifiesGroundHazards: false, understandsSafetyPrinciples: false };
 const SEED_PARTNERS: Partner[] = [
-  { id: 'MIT-01', name: 'Kelompok Penderes Pernasidi', village: 'Pernasidi', members: 14, capacityKg: 220, status: 'Mitra aktif', consentName: true },
-  { id: 'MIT-02', name: 'Kelompok Pengolah Panembangan', village: 'Panembangan', members: 9, capacityKg: 160, status: 'Mitra aktif', consentName: true },
-  { id: 'MIT-03', name: 'Kelompok Penderes Karangtengah', village: 'Karangtengah', members: 11, capacityKg: 120, status: 'Penjajakan', consentName: false },
+  { id: 'MIT-01', name: 'Kelompok Penderes Pernasidi', village: 'Pernasidi', members: 14, capacityKg: 220, status: 'Mitra aktif', consentName: true, insured: 3, insurance: 'Dibantu daftar' },
+  { id: 'MIT-02', name: 'Kelompok Pengolah Panembangan', village: 'Panembangan', members: 9, capacityKg: 160, status: 'Mitra aktif', consentName: true, insured: 0, insurance: 'Belum ada' },
+  { id: 'MIT-03', name: 'Kelompok Penderes Karangtengah', village: 'Karangtengah', members: 11, capacityKg: 120, status: 'Penjajakan', consentName: false, insured: 0, insurance: 'Belum ada' },
 ];
 const SEED_PURCHASES: Purchase[] = [
   { id: 'PUR-001', date: '4 Mei 2026', partnerId: 'MIT-01', kg: 90, pricePerKg: 20000, marketRef: 16000 },
@@ -160,6 +171,8 @@ const initialState = (): PersistedState => ({
   partners: SEED_PARTNERS,
   purchases: SEED_PURCHASES,
   orders: SEED_ORDERS,
+  voucherConfig: DEFAULT_VOUCHER,
+  voucherUsed: [],
   marketRef: 16000,
   session: null,
   onboarded: false,
@@ -213,7 +226,9 @@ interface Store extends PersistedState {
   addBatch: (b: Omit<QrBatch, 'code'>) => QrBatch;
   addRecord: (r: HeritageRecord) => void;
   addPurchase: (p: { partnerId: string; kg: number; pricePerKg: number }) => void;
-  addOrder: (o: { buyer: string; kg: number; contact?: string; address?: string; source?: 'toko' | 'koperasi' }) => string;
+  addOrder: (o: { buyer: string; kg: number; contact?: string; address?: string; source?: 'toko' | 'koperasi'; voucher?: string; discount?: number }) => string;
+  setVoucherConfig: (c: VoucherConfig) => void;
+  setInsurance: (partnerId: string, status: InsuranceStatus, insured?: number) => void;
   advanceOrder: (id: string) => void;
   markPaid: (id: string) => void;
   setMarketRef: (v: number) => void;
@@ -444,12 +459,12 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const addOrder = useCallback((o: { buyer: string; kg: number; contact?: string; address?: string; source?: 'toko' | 'koperasi' }): string => {
+  const addOrder = useCallback((o: { buyer: string; kg: number; contact?: string; address?: string; source?: 'toko' | 'koperasi'; voucher?: string; discount?: number }): string => {
     const id = `ORD-${String(stateRef.current.orders.length + 1).padStart(3, '0')}`;
     setState((s) => {
       const channel: Order['channel'] = o.kg >= 30 ? 'reseller' : 'langsung';
-      const rec: Order = { id, date: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }), buyer: o.buyer, channel, kg: o.kg, status: 'Baru', paid: false, contact: o.contact, address: o.address, source: o.source ?? 'koperasi' };
-      return { ...s, orders: [rec, ...s.orders], audit: audited(s, 'Enterprise', 'Mencatat pesanan', id, `${o.buyer}: ${o.kg} kg (${channel})`) };
+      const rec: Order = { id, date: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }), buyer: o.buyer, channel, kg: o.kg, status: 'Baru', paid: false, contact: o.contact, address: o.address, source: o.source ?? 'koperasi', voucher: o.voucher, discount: o.discount };
+      return { ...s, orders: [rec, ...s.orders], voucherUsed: o.voucher ? [...s.voucherUsed, o.voucher] : s.voucherUsed, audit: audited(s, 'Enterprise', 'Mencatat pesanan', id, `${o.buyer}: ${o.kg} kg (${channel})`) };
     });
     return id;
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -462,6 +477,20 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const next = ORDER_FLOW[ORDER_FLOW.indexOf(o.status) + 1];
       if (!next) return s;
       return { ...s, orders: s.orders.map((x) => (x.id === id ? { ...x, status: next } : x)), audit: audited(s, 'Enterprise', 'Memajukan pesanan', id, `${o.status} → ${next}`) };
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const setVoucherConfig = useCallback((c: VoucherConfig) => {
+    setState((s) => ({ ...s, voucherConfig: c, audit: audited(s, 'Enterprise', 'Mengatur voucher', 'VOUCHER', `${c.active ? c.percent + '%' : 'nonaktif'}, maks Rp${c.capRp}, min ${c.minKg} kg`) }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const setInsurance = useCallback((partnerId: string, status: InsuranceStatus, insured?: number) => {
+    setState((s) => {
+      const p = s.partners.find((x) => x.id === partnerId);
+      if (!p) return s;
+      return { ...s, partners: s.partners.map((x) => (x.id === partnerId ? { ...x, insurance: status, insured: insured ?? x.insured } : x)), audit: audited(s, 'Enterprise', 'Mendampingi asuransi', partnerId, `${p.name}: ${status}`) };
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -534,8 +563,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           badges: state.badges.map((b) => (BADGE_EN[b.id] ? { ...b, ...BADGE_EN[b.id] } : b)),
         }
       : { records: state.records, modules: state.modules, quests: state.quests, badges: state.badges };
-    return { ...state, ...loc, level: lvl(level) as typeof level, nextLevel: lvl(nextLevel), toast, showToast, completeQuest, submitReflection, checkIn, completeModule, completeLab, signIn, reviewRecord, addBatch, addRecord, addPurchase, addOrder, advanceOrder, markPaid, setMarketRef, setBatchPricing, validateSubmission, saveAnnotation, approveAnnotation, signOut, finishOnboarding, reset };
-  }, [state, lang, toast, showToast, completeQuest, submitReflection, checkIn, completeModule, completeLab, signIn, reviewRecord, addBatch, addRecord, addPurchase, addOrder, advanceOrder, markPaid, setMarketRef, setBatchPricing, validateSubmission, saveAnnotation, approveAnnotation, signOut, finishOnboarding, reset]);
+    return { ...state, ...loc, level: lvl(level) as typeof level, nextLevel: lvl(nextLevel), toast, showToast, completeQuest, submitReflection, checkIn, completeModule, completeLab, signIn, reviewRecord, addBatch, addRecord, addPurchase, addOrder, setVoucherConfig, setInsurance, advanceOrder, markPaid, setMarketRef, setBatchPricing, validateSubmission, saveAnnotation, approveAnnotation, signOut, finishOnboarding, reset };
+  }, [state, lang, toast, showToast, completeQuest, submitReflection, checkIn, completeModule, completeLab, signIn, reviewRecord, addBatch, addRecord, addPurchase, addOrder, setVoucherConfig, setInsurance, advanceOrder, markPaid, setMarketRef, setBatchPricing, validateSubmission, saveAnnotation, approveAnnotation, signOut, finishOnboarding, reset]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 };

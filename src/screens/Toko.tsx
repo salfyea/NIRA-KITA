@@ -7,6 +7,7 @@ import { BUY_PRICE, PRESERVE_PCT, PRICE, channelOf, quote, rupiah } from '../lib
 import { ORDER_FLOW, OrderStatus, useStore } from '../store';
 import { LangToggle, t } from '../i18n';
 import { PAYMENT, waLink } from '../data/payment';
+import { verifyVoucher, voucherDiscount } from '../lib/voucher';
 
 const field =
   'mt-1 min-h-[50px] w-full rounded-[16px_20px_16px_20px] border border-bamboo bg-coconut px-4 text-base text-charcoal shadow-[inset_0_2px_4px_rgba(24,56,44,0.06)] placeholder:text-ink-soft/80 focus:border-caramel focus:outline-none focus:ring-2 focus:ring-caramel/30';
@@ -20,23 +21,45 @@ const STATUS_TEXT: Record<OrderStatus, () => string> = {
 
 /** Toko pembeli: publik, tanpa login. Pesanan masuk ke tab Pesanan di ruang kerja Enterprise. */
 export const Toko: React.FC = () => {
-  const { addOrder, showToast } = useStore();
+  const { addOrder, showToast, voucherConfig, voucherUsed } = useStore();
   const navigate = useNavigate();
   const [kg, setKg] = React.useState(5);
   const [name, setName] = React.useState('');
   const [contact, setContact] = React.useState('');
   const [address, setAddress] = React.useState('');
   const [code, setCode] = React.useState('');
+  const [vcode, setVcode] = React.useState('');
+  const [vApplied, setVApplied] = React.useState('');
   const q = quote(kg);
   const ch = channelOf(kg);
   const unit = ch === 'reseller' ? PRICE.reseller : PRICE.direct;
-  const total = kg * unit;
+  // Voucher: diverifikasi lewat karakter pemeriksa dan tanggal di dalam kode; hanya saluran langsung.
+  const vNorm = vApplied.trim().toUpperCase();
+  const vCheck = vNorm ? verifyVoucher(vNorm, voucherConfig) : null;
+  const vUsed = !!vNorm && voucherUsed.includes(vNorm);
+  const vOff = vCheck?.ok && !vUsed ? voucherDiscount(voucherConfig, kg) : 0;
+  const vMsg = !vNorm
+    ? ''
+    : !voucherConfig.active
+      ? t('Voucher sedang tidak berlaku.', 'Vouchers are not active right now.')
+      : vCheck && !vCheck.ok
+        ? vCheck.reason === 'expired'
+          ? t('Voucher ini sudah kedaluwarsa.', 'This voucher has expired.')
+          : t('Kode voucher tidak valid. Periksa lagi penulisannya.', 'This voucher code is not valid. Please check it.')
+        : vUsed
+          ? t('Voucher ini sudah dipakai.', 'This voucher has already been used.')
+          : kg >= PRICE.resellerMinKg
+            ? t('Voucher hanya berlaku untuk pembelian langsung (di bawah 30 kg).', 'Vouchers apply to direct purchases only (under 30 kg).')
+            : kg < voucherConfig.minKg
+              ? t(`Voucher berlaku mulai ${voucherConfig.minKg} kg.`, `Vouchers apply from ${voucherConfig.minKg} kg.`)
+              : '';
+  const total = kg * unit - vOff;
   const ok = name.trim() && contact.trim() && address.trim() && kg > 0;
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!ok) return;
-    const id = addOrder({ buyer: name.trim(), kg, contact: contact.trim(), address: address.trim(), source: 'toko' });
+    const id = addOrder({ buyer: name.trim(), kg, contact: contact.trim(), address: address.trim(), source: 'toko', voucher: vOff ? vNorm : undefined, discount: vOff || undefined });
     showToast(t('Pesanan terkirim ke koperasi.', 'Order sent to the cooperative.'));
     navigate(`/toko/pesanan/${id}`);
   };
@@ -80,9 +103,21 @@ export const Toko: React.FC = () => {
             <input type="range" min={1} max={60} value={Math.min(kg, 60)} onChange={(e) => setKg(Number(e.target.value))} aria-label={t('Jumlah kilo', 'Kilos')} className="mt-3 w-full accent-[#8F5A2C]" />
           </label>
 
+          <div className="mt-3">
+            <label className="block text-sm font-semibold text-deep-forest">
+              {t('Punya voucher?', 'Have a voucher?')}
+              <div className="mt-1 flex gap-2">
+                <input className={field + ' mt-0 uppercase tracking-wide'} value={vcode} onChange={(e) => { setVcode(e.target.value); setVApplied(''); }} placeholder="NK001-XXX-XXX-X" aria-label={t('Kode voucher', 'Voucher code')} />
+                <button type="button" disabled={!vcode.trim()} onClick={() => setVApplied(vcode)} className="min-h-[50px] shrink-0 rounded-full bg-forest px-5 text-sm font-semibold text-coconut disabled:bg-sage disabled:text-deep-forest">{t('Pakai', 'Apply')}</button>
+              </div>
+            </label>
+            {vMsg && <p role="status" className="mt-1 text-xs font-semibold text-[#9E4F37]">{vMsg}</p>}
+            {vOff > 0 && <p role="status" className="mt-1 text-xs font-semibold text-forest">{t('Voucher terpasang: potongan', 'Voucher applied: discount of')} {rupiah(vOff)}.</p>}
+          </div>
+
           <div className="mt-3 rounded-2xl bg-cream p-3 text-sm leading-snug text-charcoal">
             <p className="flex items-baseline justify-between">
-              <span>{kg} kg × {rupiah(unit)}</span>
+              <span>{kg} kg × {rupiah(unit)}{vOff > 0 ? ` − ${rupiah(vOff)}` : ''}</span>
               <b className="font-serif text-xl text-deep-forest">{rupiah(total)}</b>
             </p>
             {ch === 'reseller' ? (
@@ -177,7 +212,7 @@ export const TokoPesanan: React.FC = () => {
             <Nira mood={o.status === 'Selesai' ? 'cheer' : 'happy'} size={96} />
             <p className="mt-2 text-xs font-bold uppercase tracking-[0.16em] text-caramel-dark">{o.id}</p>
             <h1 className="font-serif text-[28px] leading-tight text-deep-forest">{STATUS_TEXT[o.status]()}</h1>
-            <p className="mt-1 text-sm text-ink-soft">{o.buyer} · {o.kg} kg · {rupiah(o.kg * (o.channel === 'reseller' ? PRICE.reseller : PRICE.direct))}</p>
+            <p className="mt-1 text-sm text-ink-soft">{o.buyer} · {o.kg} kg · {rupiah(o.kg * (o.channel === 'reseller' ? PRICE.reseller : PRICE.direct) - (o.discount ?? 0))}{o.discount ? ` · ${t('voucher', 'voucher')} −${rupiah(o.discount)}` : ''}</p>
           </div>
           <ol className="surface mt-5 space-y-4 rounded-[26px_34px_26px_34px] p-5">
             {ORDER_FLOW.map((s, i) => (
@@ -188,7 +223,7 @@ export const TokoPesanan: React.FC = () => {
             ))}
           </ol>
           {(() => {
-            const total = o.kg * (o.channel === 'reseller' ? PRICE.reseller : PRICE.direct);
+            const total = o.kg * (o.channel === 'reseller' ? PRICE.reseller : PRICE.direct) - (o.discount ?? 0);
             const msg = t(`Halo, saya ${o.buyer}. Pesanan ${o.id}: ${o.kg} kg gula kelapa cetak (${o.channel === 'reseller' ? 'harga reseller' : 'harga langsung'}), total ${rupiah(total)}. Alamat: ${o.address ?? '-'}. Mohon konfirmasi pembayaran dan pengiriman.`, `Hello, I am ${o.buyer}. Order ${o.id}: ${o.kg} kg molded coconut sugar (${o.channel === 'reseller' ? 'reseller price' : 'direct price'}), total ${rupiah(total)}. Address: ${o.address ?? '-'}. Please confirm payment and delivery.`);
             return (
               <section className="surface mt-4 rounded-[26px_34px_26px_34px] p-5">

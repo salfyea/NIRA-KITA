@@ -12,6 +12,7 @@ import { Admin } from './screens/Admin';
 import { MentorAnotasi, MentorHome, MentorRekam, MentorValidasi } from './screens/Mentor';
 import { EnterpriseFinance, EnterprisePartners, EnterprisePrice } from './screens/Enterprise';
 import { EnterpriseHome, EnterpriseOrders } from './screens/EnterprisePages';
+import { EnterpriseCare, EnterpriseVoucher } from './screens/EnterpriseCare';
 import { RequireRole, StaffShell } from './staff/StaffShell';
 import { t } from './i18n';
 import { QuestDetail } from './screens/Misi';
@@ -35,11 +36,13 @@ export const App: React.FC = () => (
   <Routes>
     {/* Ruang kerja staf: satu cangkang per peran, tanpa pengalih peran. */}
     <Route element={<RequireRole role="enterprise" />}>
-      <Route element={<StaffShell role="enterprise" items={[{ to: '/enterprise', label: t('Beranda', 'Home'), end: true }, { to: '/enterprise/pesanan', label: t('Pesanan', 'Orders') }, { to: '/enterprise/mitra', label: t('Mitra', 'Partners') }, { to: '/enterprise/harga', label: t('Harga QR', 'QR price') }, { to: '/enterprise/keuangan', label: t('Keuangan', 'Finance') }]} />}>
+      <Route element={<StaffShell role="enterprise" items={[{ to: '/enterprise', label: t('Beranda', 'Home'), end: true }, { to: '/enterprise/pesanan', label: t('Pesanan', 'Orders') }, { to: '/enterprise/mitra', label: t('Mitra', 'Partners') }, { to: '/enterprise/harga', label: t('Harga QR', 'QR price') }, { to: '/enterprise/voucher', label: 'Voucher' }, { to: '/enterprise/perlindungan', label: t('Perlindungan', 'Protection') }, { to: '/enterprise/keuangan', label: t('Keuangan', 'Finance') }]} />}>
         <Route path="/enterprise" element={<EnterpriseHome />} />
         <Route path="/enterprise/pesanan" element={<EnterpriseOrders />} />
         <Route path="/enterprise/mitra" element={<EnterprisePartners />} />
         <Route path="/enterprise/harga" element={<EnterprisePrice />} />
+        <Route path="/enterprise/voucher" element={<EnterpriseVoucher />} />
+        <Route path="/enterprise/perlindungan" element={<EnterpriseCare />} />
         <Route path="/enterprise/keuangan" element={<EnterpriseFinance />} />
       </Route>
     </Route>

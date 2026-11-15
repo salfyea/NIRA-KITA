@@ -245,6 +245,7 @@ export const CURRICULUM_MODULES: CurriculumModule[] = [
       { id: 'L-301', title: 'Peta Risiko Lingkungan Kebun dan Cuaca Hujan', duration: '15 mnt', type: 'Skenario Darat', completed: false },
       { id: 'L-302', title: 'Keselamatan Tungku, Suhu Tinggi, dan Ergonomi Dapur Produksi', duration: '20 mnt', type: 'Diagram Proses', completed: false },
       { id: 'L-303', title: 'Prosedur Tanggap Darurat Komunitas Desa', duration: '15 mnt', type: 'Artikel Visual', completed: false },
+      { id: 'L-304', title: 'Perlindungan Kerja: Mengenal Jaminan Kecelakaan Kerja', duration: '10 mnt', type: 'Artikel Visual', completed: false },
     ],
     associatedQuestId: 'QUEST-03',
   },
