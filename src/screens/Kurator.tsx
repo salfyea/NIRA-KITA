@@ -217,7 +217,8 @@ const Detail: React.FC<{
 
   return (
     <div className="px-4 pt-3 lg:px-0 lg:pt-0">
-      <div>
+      <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_410px] lg:items-start lg:gap-8">
+        <div className="min-w-0 lg:sticky lg:top-4 lg:max-h-[calc(100dvh-32px)] lg:self-start lg:overflow-y-auto lg:pr-1">
         <Link to="/kurator" className="inline-flex min-h-[44px] items-center gap-1 text-sm font-semibold text-deep-forest">
           <ArrowLeft className="h-4 w-4" /> {t('Kotak masuk', 'Inbox')}
         </Link>
@@ -238,18 +239,37 @@ const Detail: React.FC<{
           </div>
           <p className="mt-2 text-xs text-ink-soft">{t('Tampil di aplikasi pelajar bila Akses Pelajar, dan di halaman QR pembeli bila Publik.', 'Shown in the learner app with Learner access, and on the buyer QR page when Public.')}</p>
         </div>
-        <p className="mt-2 text-base leading-relaxed text-charcoal">{r.culturalExplanation}</p>
-        <p className="mt-2 text-sm text-ink-soft">
+        <p className="mt-3 text-sm text-ink-soft">
           {attribution(r)} · {locLabel(r.location)}
         </p>
+        <div className="surface mt-4 rounded-3xl p-5">
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-ink-soft">{t('Bahan yang ditinjau', 'Material under review')}</p>
+          <p className="mt-2 text-[15px] leading-relaxed text-charcoal">{r.culturalExplanation}</p>
+          {r.audioTranscript ? (
+            <blockquote className="mt-3 rounded-2xl bg-cream p-4 text-[15px] italic leading-relaxed text-deep-forest">
+              {r.audioTranscript}
+              {r.audioDurationSec > 0 && <span className="mt-2 block text-xs not-italic text-ink-soft">{t('Durasi', 'Duration')} {Math.floor(r.audioDurationSec / 60)}:{String(r.audioDurationSec % 60).padStart(2, '0')}</span>}
+            </blockquote>
+          ) : (
+            <p className="mt-3 rounded-2xl bg-cream p-4 text-sm text-ink-soft">{t('Belum ada transkrip atau media pada rekaman ini. Berkas dari mentor dicatat saat pengiriman.', 'There is no transcript or media on this recording yet. Files from the mentor are noted at submission.')}</p>
+          )}
+          <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
+            <dt className="text-ink-soft">{t('Bahasa', 'Language')}</dt><dd className="font-semibold text-deep-forest">{r.language}</dd>
+            <dt className="text-ink-soft">{t('Diajukan', 'Submitted')}</dt><dd className="font-semibold text-deep-forest">{r.submittedDate === 'Hari ini' ? t('Hari ini', 'Today') : r.submittedDate}</dd>
+            <dt className="text-ink-soft">{t('Modul terkait', 'Related module')}</dt><dd className="font-semibold text-deep-forest">{r.relatedModuleSlug.split('-')[0]}</dd>
+          </dl>
+        </div>
         {r.revisionNotes && r.reviewStatus === 'Revision Requested' && (
           <p className="mt-3 rounded-xl bg-[#9E4F37]/10 p-3 text-sm leading-relaxed text-[#9E4F37]">
             <b>{t('Catatan revisi sebelumnya:', 'Previous revision note:')}</b> {r.revisionNotes}
           </p>
         )}
 
+        </div>
+
+        <aside className="min-w-0" aria-label={t('Keputusan', 'Decision')}>
         {/* izin kontributor */}
-        <h2 className="mt-6 text-[20px] text-deep-forest">1. {t('Izin dari kontributor', 'Contributor consent')}</h2>
+        <h2 className="mt-6 text-[20px] text-deep-forest lg:mt-0">1. {t('Izin dari kontributor', 'Contributor consent')}</h2>
         <ul className="mt-2 space-y-1.5">
           {([
             ['internalLearning', t('Pembelajaran di aplikasi', 'Learning in the app')],
@@ -306,7 +326,18 @@ const Detail: React.FC<{
           ))}
         </div>
 
-        <label className="mt-5 block text-sm font-semibold text-deep-forest">
+        <div className="mt-5 flex flex-wrap gap-1.5" aria-label={t('Alasan siap pakai', 'Ready-made reasons')}>
+          {[
+            [t('Izin belum lengkap', 'Consent incomplete'), t('Izin narasumber belum lengkap. Mohon lampirkan rekaman persetujuan.', 'The source\'s consent is incomplete. Please attach the consent recording.')],
+            [t('Istilah perlu dicek', 'Terms need checking'), t('Mohon konfirmasi istilah dan terjemahan dengan narasumber.', 'Please confirm the terms and translation with the source.')],
+            [t('Konteks sakral', 'Sacred context'), t('Ada konteks yang mungkin sakral. Mohon konfirmasi batas tampil dengan komunitas.', 'There may be sacred context. Please confirm the limits of display with the community.')],
+          ].map(([chip, text]) => (
+            <button key={chip} type="button" onClick={() => setNote((n) => (n ? n + ' ' + text : text))} className="min-h-[40px] rounded-full bg-cream px-3 text-xs font-semibold text-deep-forest">
+              + {chip}
+            </button>
+          ))}
+        </div>
+        <label className="mt-2 block text-sm font-semibold text-deep-forest">
           {t('Catatan untuk kontributor atau mentor', 'Note for the contributor or mentor')}
           <textarea
             value={note}
@@ -373,6 +404,7 @@ const Detail: React.FC<{
             {!note.trim() && <p className="text-center text-xs text-ink-soft">{t('Isi catatan untuk bisa meminta revisi atau menolak.', 'Add a note to request a revision or reject.')}</p>}
           </div>
         )}
+        </aside>
       </div>
     </div>
   );

@@ -30,28 +30,74 @@ const catLabel = (c: string) =>
 
 const field = 'mt-1 min-h-[48px] w-full rounded-xl border border-bamboo bg-cream px-3 text-base text-charcoal placeholder:text-ink-soft';
 
-/* ============================ Unggah ============================ */
+/* ============================ Rekam bertahap ============================ */
+const DRAFT_KEY = 'niraKita.mentorDraft.v1';
+
+interface Draft {
+  step: number;
+  title: string;
+  category: KnowledgeCategory;
+  slug: string;
+  name: string;
+  role: string;
+  attr: HeritageRecord['attributionPreference'];
+  village: string;
+  text: string;
+  file: string;
+  consent: { internalLearning: boolean; publicQrPage: boolean; promotionalMaterial: boolean };
+  recorded: boolean;
+  ethics: boolean[];
+}
+
+const loadDraft = (): Partial<Draft> => {
+  try {
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if (raw) return JSON.parse(raw) as Partial<Draft>;
+  } catch {
+    /* tanpa penyimpanan */
+  }
+  return {};
+};
+
+const big = 'mt-1 min-h-[54px] w-full rounded-[16px_20px_16px_20px] border border-bamboo bg-cream px-4 text-[17px] text-charcoal placeholder:text-ink-soft focus:border-caramel focus:outline-none focus:ring-2 focus:ring-caramel/30';
+
+/**
+ * Alur rekam satu layar per langkah: narasumber, izin lebih dulu, cerita, lalu periksa dan kirim.
+ * Draf tersimpan di ponsel setiap perubahan, jadi tidak hilang saat sinyal putus atau layar tertutup.
+ */
 const Unggah: React.FC = () => {
   const { records, modules, addRecord, showToast } = useStore();
-  const [title, setTitle] = React.useState('');
-  const [category, setCategory] = React.useState<KnowledgeCategory>('Teknik tradisional');
-  const [slug, setSlug] = React.useState(modules[1]?.slug ?? modules[0].slug);
-  const [name, setName] = React.useState('Pak Parmadi');
-  const [role, setRole] = React.useState('Penderes Senior & Mentor Komunitas');
-  const [attr, setAttr] = React.useState<HeritageRecord['attributionPreference']>('Tampilkan Nama Lengkap');
-  const [village, setVillage] = React.useState(VILLAGES[0]);
-  const [text, setText] = React.useState('');
-  const [file, setFile] = React.useState('');
-  const [consent, setConsent] = React.useState({ internalLearning: true, publicQrPage: false, promotionalMaterial: false });
-  const [recorded, setRecorded] = React.useState(false);
-  const [ethics, setEthics] = React.useState([false, false, false]);
+  const saved = React.useMemo(loadDraft, []);
+  const [step, setStep] = React.useState(saved.step ?? 0);
+  const [title, setTitle] = React.useState(saved.title ?? '');
+  const [category, setCategory] = React.useState<KnowledgeCategory>(saved.category ?? 'Teknik tradisional');
+  const [slug, setSlug] = React.useState(saved.slug ?? modules[1]?.slug ?? modules[0].slug);
+  const [name, setName] = React.useState(saved.name ?? 'Pak Parmadi');
+  const [role, setRole] = React.useState(saved.role ?? 'Penderes Senior & Mentor Komunitas');
+  const [attr, setAttr] = React.useState<HeritageRecord['attributionPreference']>(saved.attr ?? 'Tampilkan Nama Lengkap');
+  const [village, setVillage] = React.useState(saved.village ?? VILLAGES[0]);
+  const [text, setText] = React.useState(saved.text ?? '');
+  const [file, setFile] = React.useState(saved.file ?? '');
+  const [consent, setConsent] = React.useState(saved.consent ?? { internalLearning: true, publicQrPage: false, promotionalMaterial: false });
+  const [recorded, setRecorded] = React.useState(saved.recorded ?? false);
+  const [ethics, setEthics] = React.useState<boolean[]>(saved.ethics ?? [false, false, false]);
   const [created, setCreated] = React.useState<string | null>(null);
 
-  const ready = title.trim() && text.trim() && name.trim() && recorded && ethics.every(Boolean);
+  React.useEffect(() => {
+    if (created) return;
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({ step, title, category, slug, name, role, attr, village, text, file, consent, recorded, ethics } satisfies Draft));
+    } catch {
+      /* abaikan */
+    }
+  }, [step, title, category, slug, name, role, attr, village, text, file, consent, recorded, ethics, created]);
 
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!ready) return;
+  const STEPS = [t('Narasumber', 'Source'), t('Izin', 'Consent'), t('Cerita', 'Story'), t('Kirim', 'Send')];
+  const canNext = [!!name.trim(), recorded, !!title.trim() && !!text.trim(), ethics.every(Boolean)][step];
+  const whyNot = [t('Isi nama narasumber.', 'Enter the source\'s name.'), t('Centang bahwa persetujuan sudah direkam.', 'Tick that the consent has been recorded.'), t('Isi judul dan penjelasan.', 'Fill in the title and explanation.'), t('Setujui tiga pernyataan etika.', 'Agree to the three ethics statements.')][step];
+
+  const submit = () => {
+    if (!ethics.every(Boolean)) return;
     const n = records.reduce((m, r) => Math.max(m, Number(r.id.replace(/\D/g, '')) || 0), 0) + 1;
     const id = `REC-CLG-${String(n).padStart(3, '0')}`;
     addRecord({
@@ -78,134 +124,183 @@ const Unggah: React.FC = () => {
       isIllustrativePlaceholder: false,
       bookmarked: false,
     });
+    try {
+      localStorage.removeItem(DRAFT_KEY);
+    } catch {
+      /* abaikan */
+    }
     setCreated(id);
     showToast(t(`${id} terkirim ke antrean kurator.`, `${id} sent to the curator queue.`));
   };
 
+  const reset = () => {
+    setCreated(null);
+    setStep(0);
+    setTitle('');
+    setText('');
+    setFile('');
+    setRecorded(false);
+    setEthics([false, false, false]);
+    setConsent({ internalLearning: true, publicQrPage: false, promotionalMaterial: false });
+  };
+
   if (created) {
     return (
-      <Ornate className="mt-4 p-5 text-center">
-        <CheckCircle2 className="mx-auto h-10 w-10 text-forest" />
-        <h2 className="mt-2 text-2xl text-deep-forest">{t('Terkirim ke kurator', 'Sent to the curator')}</h2>
+      <div className="surface mt-4 rounded-[28px_36px_28px_36px] p-6 text-center">
+        <RoleMascot role="mentor" size={104} mood="cheer" className="mx-auto" />
+        <h2 className="mt-2 font-serif text-[26px] leading-tight text-deep-forest">{t('Terkirim ke kurator', 'Sent to the curator')}</h2>
         <p className="mt-1 text-sm leading-relaxed text-ink-soft">
           {created} {t('berstatus', 'has the status')} <b>{t('Menunggu tinjauan', 'Awaiting review')}</b> {t('dan', 'and is')} <b>{t('Privat', 'Private')}</b>. {t('Belum tampil ke pelajar maupun publik sampai kurator menyetujuinya.', 'It is not shown to learners or the public until the curator approves it.')}
         </p>
-        <div className="mt-4 grid gap-2">
-          <Link to="/kurator" className="flex min-h-[52px] items-center justify-center rounded-full bg-forest text-base font-semibold text-coconut">
-            {t('Lihat di antrean kurator', 'See it in the curator queue')}
-          </Link>
-          <button type="button" onClick={() => { setCreated(null); setTitle(''); setText(''); setFile(''); setRecorded(false); setEthics([false, false, false]); }} className="min-h-[52px] rounded-full border-2 border-bamboo text-base font-semibold text-deep-forest">
-            {t('Unggah lagi', 'Upload another')}
-          </button>
-        </div>
-      </Ornate>
+        <button type="button" onClick={reset} className="btn-sticker mt-5 min-h-[56px] w-full rounded-[28px_32px_26px_32px] bg-caramel-dark text-lg font-semibold text-coconut">
+          {t('Rekam cerita lain', 'Record another story')}
+        </button>
+        <Link to="/mentor" className="mt-1 flex min-h-[48px] items-center justify-center text-sm font-semibold text-forest underline decoration-caramel decoration-2 underline-offset-[5px]">
+          {t('Kembali ke Hari ini', 'Back to Today')}
+        </Link>
+      </div>
     );
   }
 
   return (
-    <form onSubmit={submit} className="mt-4 space-y-4">
-      <p className="text-sm leading-relaxed text-ink-soft">
-        {t('Unggah demonstrasi atau cerita dari narasumber. Rekaman baru berstatus Privat dan menunggu kurator, jadi aman.', 'Upload a demonstration or story from a source. New recordings are Private and wait for the curator, so it is safe.')}
-      </p>
-      <label className="block text-sm font-semibold text-deep-forest">
-        {t('Judul rekaman', 'Recording title')}
-        <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t('Contoh: Cara memegang pengaduk saat memasak', 'Example: How to hold the stirrer while cooking')} className={field} />
-      </label>
-      <div className="grid grid-cols-2 gap-3">
-        <label className="block text-sm font-semibold text-deep-forest">
-          {t('Jenis', 'Type')}
-          <select value={category} onChange={(e) => setCategory(e.target.value as KnowledgeCategory)} className={field}>
-            {CATEGORIES.map((c) => (
-              <option key={c} value={c}>{catLabel(c)}</option>
-            ))}
-          </select>
-        </label>
-        <label className="block text-sm font-semibold text-deep-forest">
-          {t('Untuk modul', 'For module')}
-          <select value={slug} onChange={(e) => setSlug(e.target.value)} className={field}>
-            {modules.map((m) => (
-              <option key={m.slug} value={m.slug}>
-                {m.number.replace('MODUL ', t('Modul ', 'Module '))}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
-      <label className="block text-sm font-semibold text-deep-forest">
-        {t('Penjelasan budaya', 'Cultural explanation')}
-        <textarea value={text} onChange={(e) => setText(e.target.value)} rows={4} placeholder={t('Ceritakan apa yang diperagakan atau dijelaskan narasumber, dengan kata-kata mereka.', 'Describe what the source demonstrated or explained, in their own words.')} className={`${field} py-2`} />
-      </label>
-      <label className="flex min-h-[56px] cursor-pointer items-center gap-3 rounded-xl border-2 border-dashed border-bamboo bg-coconut px-3 py-2 text-sm font-semibold text-deep-forest">
-        <FileAudio className="h-6 w-6 shrink-0 text-caramel-dark" />
-        <span className="min-w-0 flex-1 truncate">{file || t('Pilih berkas audio, video, atau foto', 'Choose an audio, video, or photo file')}</span>
-        <input type="file" accept="audio/*,video/*,image/*" className="sr-only" onChange={(e) => setFile(e.target.files?.[0]?.name ?? '')} />
-        <Upload className="h-5 w-5 shrink-0 text-ink-soft" />
-      </label>
-      <p className="-mt-2 text-xs text-ink-soft">{t('Prototipe: berkas tidak dikirim ke server, hanya namanya yang dicatat.', 'Prototype: the file is not sent to a server, only its name is recorded.')}</p>
-
-      <fieldset className="rounded-2xl bg-coconut p-3">
-        <legend className="px-1 text-sm font-bold text-deep-forest">{t('Narasumber', 'Source')}</legend>
-        <label className="block text-sm font-semibold text-deep-forest">
-          {t('Nama', 'Name')}
-          <input value={name} onChange={(e) => setName(e.target.value)} className={field} />
-        </label>
-        <label className="mt-2 block text-sm font-semibold text-deep-forest">
-          {t('Peran', 'Role')}
-          <input value={role} onChange={(e) => setRole(e.target.value)} className={field} />
-        </label>
-        <div className="mt-2 grid grid-cols-2 gap-3">
-          <label className="block text-sm font-semibold text-deep-forest">
-            {t('Atribusi', 'Attribution')}
-            <select value={attr} onChange={(e) => setAttr(e.target.value as HeritageRecord['attributionPreference'])} className={field}>
-              <option value="Tampilkan Nama Lengkap">{t('Tampilkan Nama Lengkap', 'Show full name')}</option>
-              <option value="Tampilkan Inisial Komunitas">{t('Tampilkan Inisial Komunitas', 'Show community initials')}</option>
-              <option value="Anonim">{t('Anonim', 'Anonymous')}</option>
-            </select>
-          </label>
-          <label className="block text-sm font-semibold text-deep-forest">
-            {t('Desa', 'Village')}
-            <select value={village} onChange={(e) => setVillage(e.target.value)} className={field}>
-              {VILLAGES.map((v) => (
-                <option key={v}>{v}</option>
-              ))}
-            </select>
-          </label>
+    <div className="mt-4">
+      {/* kemajuan */}
+      <div role="progressbar" aria-valuemin={1} aria-valuemax={4} aria-valuenow={step + 1} aria-label={t('Langkah', 'Step')}>
+        <div className="flex gap-1.5">
+          {STEPS.map((_, i) => (
+            <span key={i} className={`h-2 flex-1 rounded-full ${i < step ? 'bg-forest' : i === step ? 'bg-caramel-dark' : 'bg-bamboo/70'}`} />
+          ))}
         </div>
-      </fieldset>
+        <p className="mt-2 flex items-baseline justify-between text-sm font-semibold text-deep-forest">
+          <span>{t('Langkah', 'Step')} {step + 1} {t('dari', 'of')} 4 · {STEPS[step]}</span>
+          <span className="text-xs font-normal text-ink-soft">{t('Draf tersimpan di ponsel', 'Draft saved on this phone')}</span>
+        </p>
+      </div>
 
-      <fieldset className="rounded-2xl bg-coconut p-3">
-        <legend className="px-1 text-sm font-bold text-deep-forest">{t('Izin dari narasumber', 'Permissions from the source')}</legend>
-        {([
-          ['internalLearning', t('Boleh dipakai untuk pembelajaran di aplikasi', 'May be used for learning in the app')],
-          ['publicQrPage', t('Boleh tampil di halaman QR publik', 'May be shown on the public QR page')],
-          ['promotionalMaterial', t('Boleh dipakai untuk materi promosi', 'May be used for promotional material')],
-        ] as const).map(([k, t]) => (
-          <label key={k} className="flex min-h-[48px] cursor-pointer items-center gap-3 text-sm leading-snug text-charcoal">
-            <input type="checkbox" checked={consent[k]} onChange={() => setConsent((c) => ({ ...c, [k]: !c[k] }))} className="h-6 w-6 shrink-0 accent-[#234B3A]" />
-            {t}
-          </label>
-        ))}
-        <label className="mt-1 flex min-h-[48px] cursor-pointer items-center gap-3 rounded-xl bg-forest/10 px-2 text-sm font-semibold leading-snug text-forest">
-          <input type="checkbox" checked={recorded} onChange={() => setRecorded((v) => !v)} className="h-6 w-6 shrink-0 accent-[#234B3A]" />
-          {t('Persetujuan narasumber sudah direkam dan disimpan', 'The source\'s consent has been recorded and stored')}
-        </label>
-      </fieldset>
+      <div className="surface mt-3 rounded-[26px_34px_26px_34px] p-5">
+        {step === 0 && (
+          <div className="space-y-4">
+            <div>
+              <h2 className="font-serif text-[24px] leading-tight text-deep-forest">{t('Siapa yang bercerita?', 'Who is telling the story?')}</h2>
+              <p className="mt-1 text-sm text-ink-soft">{t('Narasumberlah pemilik pengetahuan ini.', 'The source owns this knowledge.')}</p>
+            </div>
+            <label className="block text-sm font-semibold text-deep-forest">{t('Nama', 'Name')}<input value={name} onChange={(e) => setName(e.target.value)} className={big} /></label>
+            <label className="block text-sm font-semibold text-deep-forest">{t('Peran', 'Role')}<input value={role} onChange={(e) => setRole(e.target.value)} className={big} /></label>
+            <label className="block text-sm font-semibold text-deep-forest">
+              {t('Bagaimana namanya ditampilkan?', 'How should the name be shown?')}
+              <select value={attr} onChange={(e) => setAttr(e.target.value as HeritageRecord['attributionPreference'])} className={big}>
+                <option value="Tampilkan Nama Lengkap">{t('Nama lengkap', 'Full name')}</option>
+                <option value="Tampilkan Inisial Komunitas">{t('Inisial komunitas', 'Community initials')}</option>
+                <option value="Anonim">{t('Anonim', 'Anonymous')}</option>
+              </select>
+            </label>
+            <label className="block text-sm font-semibold text-deep-forest">
+              {t('Desa', 'Village')}
+              <select value={village} onChange={(e) => setVillage(e.target.value)} className={big}>{VILLAGES.map((v) => <option key={v}>{v}</option>)}</select>
+            </label>
+          </div>
+        )}
 
-      <fieldset className="rounded-2xl bg-coconut p-3">
-        <legend className="px-1 text-sm font-bold text-deep-forest">{t('Pernyataan etika', 'Ethics statement')}</legend>
-        {getEthics().map((label, i) => (
-          <label key={label} className="flex min-h-[48px] cursor-pointer items-center gap-3 text-sm leading-snug text-charcoal">
-            <input type="checkbox" checked={ethics[i]} onChange={() => setEthics((a) => a.map((v, k) => (k === i ? !v : v)))} className="h-6 w-6 shrink-0 accent-[#234B3A]" />
-            {label}
-          </label>
-        ))}
-      </fieldset>
+        {step === 1 && (
+          <div className="space-y-3">
+            <div>
+              <h2 className="font-serif text-[24px] leading-tight text-deep-forest">{t('Izin dulu, baru cerita', 'Consent first, then the story')}</h2>
+              <p className="mt-1 text-sm text-ink-soft">{t('Tanyakan ke narasumber, lalu centang sesuai jawabannya.', 'Ask the source, then tick according to their answer.')}</p>
+            </div>
+            {([
+              ['internalLearning', t('Boleh dipakai untuk pembelajaran di aplikasi', 'May be used for learning in the app')],
+              ['publicQrPage', t('Boleh tampil di halaman QR publik', 'May be shown on the public QR page')],
+              ['promotionalMaterial', t('Boleh dipakai untuk materi promosi', 'May be used for promotional material')],
+            ] as const).map(([k, label]) => (
+              <label key={k} className="flex min-h-[60px] cursor-pointer items-center gap-3 rounded-2xl bg-cream px-4 py-2 text-[16px] leading-snug text-charcoal">
+                <input type="checkbox" checked={consent[k]} onChange={() => setConsent((c) => ({ ...c, [k]: !c[k] }))} className="h-7 w-7 shrink-0 accent-[#8F5A2C]" />
+                {label}
+              </label>
+            ))}
+            <label className="flex min-h-[64px] cursor-pointer items-center gap-3 rounded-2xl bg-forest/10 px-4 py-2 text-[16px] font-semibold leading-snug text-forest">
+              <input type="checkbox" checked={recorded} onChange={() => setRecorded((v) => !v)} className="h-7 w-7 shrink-0 accent-[#234B3A]" />
+              {t('Persetujuan narasumber sudah direkam dan disimpan', 'The source\'s consent has been recorded and stored')}
+            </label>
+          </div>
+        )}
 
-      <button type="submit" disabled={!ready} className="flex min-h-[56px] w-full items-center justify-center gap-2 rounded-full bg-caramel-dark text-lg font-semibold text-coconut disabled:bg-sage disabled:text-deep-forest">
-        {!ready && <Lock className="h-5 w-5" />} {t('Kirim ke kurator', 'Send to curator')}
-      </button>
-      {!ready && <p className="text-center text-xs text-ink-soft">{t('Lengkapi judul, penjelasan, rekaman izin, dan tiga pernyataan etika.', 'Complete the title, explanation, consent recording, and the three ethics statements.')}</p>}
-    </form>
+        {step === 2 && (
+          <div className="space-y-4">
+            <div>
+              <h2 className="font-serif text-[24px] leading-tight text-deep-forest">{t('Ceritanya', 'The story')}</h2>
+              <p className="mt-1 text-sm text-ink-soft">{t('Pakai kata-kata narasumber sendiri.', 'Use the source\'s own words.')}</p>
+            </div>
+            <label className="flex min-h-[68px] cursor-pointer items-center gap-3 rounded-[16px_20px_16px_20px] border-2 border-dashed border-bamboo bg-coconut px-4 text-[16px] font-semibold text-deep-forest">
+              <FileAudio className="h-7 w-7 shrink-0 text-caramel-dark" />
+              <span className="min-w-0 flex-1 truncate">{file || t('Ambil atau pilih audio, video, atau foto', 'Take or choose audio, video, or a photo')}</span>
+              <input type="file" accept="audio/*,video/*,image/*" capture className="sr-only" onChange={(e) => setFile(e.target.files?.[0]?.name ?? '')} />
+              <Upload className="h-6 w-6 shrink-0 text-ink-soft" />
+            </label>
+            <p className="-mt-2 text-xs text-ink-soft">{t('Prototipe: berkas tidak dikirim ke server, hanya namanya yang dicatat.', 'Prototype: the file is not sent to a server, only its name is recorded.')}</p>
+            <label className="block text-sm font-semibold text-deep-forest">
+              {t('Judul', 'Title')}
+              <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t('Contoh: Cara memegang pengaduk', 'Example: How to hold the stirrer')} className={big} />
+            </label>
+            <label className="block text-sm font-semibold text-deep-forest">
+              {t('Apa yang diperagakan atau dijelaskan?', 'What was shown or explained?')}
+              <textarea value={text} onChange={(e) => setText(e.target.value)} rows={5} placeholder={t('Ceritakan dengan kata-kata narasumber.', 'Tell it in the source\'s words.')} className={`${big} py-3`} />
+            </label>
+            <div className="grid grid-cols-2 gap-3">
+              <label className="block text-sm font-semibold text-deep-forest">
+                {t('Jenis', 'Type')}
+                <select value={category} onChange={(e) => setCategory(e.target.value as KnowledgeCategory)} className={big}>{CATEGORIES.map((c) => <option key={c} value={c}>{catLabel(c)}</option>)}</select>
+              </label>
+              <label className="block text-sm font-semibold text-deep-forest">
+                {t('Untuk modul', 'For module')}
+                <select value={slug} onChange={(e) => setSlug(e.target.value)} className={big}>{modules.map((m) => <option key={m.slug} value={m.slug}>{m.number.replace('MODUL ', t('Modul ', 'Module '))}</option>)}</select>
+              </label>
+            </div>
+          </div>
+        )}
+
+        {step === 3 && (
+          <div className="space-y-4">
+            <div>
+              <h2 className="font-serif text-[24px] leading-tight text-deep-forest">{t('Periksa, lalu kirim', 'Check, then send')}</h2>
+              <p className="mt-1 text-sm text-ink-soft">{t('Rekaman baru Privat dan menunggu kurator, jadi aman.', 'New recordings are Private and wait for the curator, so it is safe.')}</p>
+            </div>
+            <dl className="space-y-2 rounded-2xl bg-cream p-4 text-sm">
+              <div className="flex justify-between gap-3"><dt className="text-ink-soft">{t('Narasumber', 'Source')}</dt><dd className="text-right font-semibold text-deep-forest">{name} · {village}</dd></div>
+              <div className="flex justify-between gap-3"><dt className="text-ink-soft">{t('Judul', 'Title')}</dt><dd className="text-right font-semibold text-deep-forest">{title}</dd></div>
+              <div className="flex justify-between gap-3"><dt className="text-ink-soft">{t('Izin', 'Consent')}</dt><dd className="text-right font-semibold text-deep-forest">{[consent.internalLearning && t('pembelajaran', 'learning'), consent.publicQrPage && 'QR', consent.promotionalMaterial && t('promosi', 'promo')].filter(Boolean).join(', ') || '-'}</dd></div>
+              <div className="flex justify-between gap-3"><dt className="text-ink-soft">{t('Berkas', 'File')}</dt><dd className="max-w-[55%] truncate text-right font-semibold text-deep-forest">{file || '-'}</dd></div>
+            </dl>
+            <div>
+              <p className="text-sm font-bold text-deep-forest">{t('Pernyataan etika', 'Ethics statement')}</p>
+              {getEthics().map((label, i) => (
+                <label key={label} className="mt-1 flex min-h-[56px] cursor-pointer items-center gap-3 text-[15px] leading-snug text-charcoal">
+                  <input type="checkbox" checked={ethics[i]} onChange={() => setEthics((a) => a.map((v, k) => (k === i ? !v : v)))} className="h-7 w-7 shrink-0 accent-[#234B3A]" />
+                  {label}
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="mt-3 flex gap-3">
+        {step > 0 && (
+          <button type="button" onClick={() => setStep(step - 1)} className="min-h-[58px] w-[34%] rounded-full border-2 border-bamboo text-base font-semibold text-deep-forest">
+            {t('Kembali', 'Back')}
+          </button>
+        )}
+        {step < 3 ? (
+          <button type="button" disabled={!canNext} onClick={() => setStep(step + 1)} className="btn-sticker flex min-h-[58px] flex-1 items-center justify-center gap-2 rounded-[28px_32px_26px_32px] bg-caramel-dark text-lg font-semibold text-coconut disabled:bg-sage disabled:text-deep-forest">
+            {t('Lanjut', 'Next')} <LeafArrow className="h-6 w-6" />
+          </button>
+        ) : (
+          <button type="button" disabled={!canNext} onClick={submit} className="btn-sticker flex min-h-[58px] flex-1 items-center justify-center gap-2 rounded-[28px_32px_26px_32px] bg-forest text-lg font-semibold text-coconut disabled:bg-sage disabled:text-deep-forest">
+            {!canNext && <Lock className="h-5 w-5" />} {t('Kirim ke kurator', 'Send to curator')}
+          </button>
+        )}
+      </div>
+      {!canNext && <p className="mt-2 text-center text-xs text-ink-soft">{whyNot}</p>}
+    </div>
   );
 };
 
