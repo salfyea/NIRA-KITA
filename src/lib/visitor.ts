@@ -4,6 +4,8 @@ const KEY = 'niraKita.visitor.v1';
 export interface VisitorState {
   cards: string[];
   best: Record<string, number>;
+  /** Voucher yang sudah diklaim di perangkat ini, per batch kemasan. Satu batch, satu voucher per perangkat. */
+  vouchers?: Record<string, string>;
 }
 
 export const loadVisitor = (): VisitorState => {

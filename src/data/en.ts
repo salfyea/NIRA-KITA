@@ -114,6 +114,7 @@ export const MOD_EN: Record<string, ModEn> = {
       'L-301': 'Risk Map of the Grove Environment and Rainy Weather',
       'L-302': 'Stove Safety, High Temperatures, and Kitchen Ergonomics',
       'L-303': 'Village Community Emergency Procedures',
+      'L-304': 'Work Protection: Getting to Know Work-Accident Coverage',
     },
   },
   'MOD-04': {

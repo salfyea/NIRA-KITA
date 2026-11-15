@@ -47,6 +47,10 @@ export const getLessonBody = (id: string): string =>
       'Kenali lebih dulu siapa yang harus dihubungi saat ada kejadian: mentor atau koordinator keselamatan. Jangan menolong sendiri di tempat yang berbahaya. Prosedur tanggap darurat desa disusun bersama mentor sebelum pilot berjalan.',
       'Know in advance who to contact when something happens: the mentor or the safety coordinator. Do not try to help alone in a dangerous place. The village emergency procedure is drawn up with the mentors before the pilot starts.',
     ),
+    'L-304': t(
+      'Pekerjaan penderes berisiko, dan kecelakaan kerja bisa terjadi walau sudah berhati-hati. Pekerja informal dapat memiliki jaminan kecelakaan kerja dan kematian lewat program pemerintah (BPJS Ketenagakerjaan, untuk pekerja bukan penerima upah). Syarat dan iuran terbaru perlu dicek di sumber resminya. Kalau kamu atau keluargamu belum punya, tanyakan kepada mentor: NIRA Enterprise bisa membantu mendaftar. Ini ajakan, bukan keharusan.',
+      'A tapper\'s work is risky, and accidents can happen even with great care. Informal workers can have work-accident and death coverage through a government programme (BPJS Ketenagakerjaan, for workers who do not receive a wage). Current requirements and contributions should be checked at the official source. If you or your family do not have it yet, ask a mentor: NIRA Enterprise can help you register. This is an invitation, not an obligation.',
+    ),
     'L-401': t(
       'Nira menjadi gula cetak, dibeli dari kelompok perajin, dikemas dengan QR, lalu sampai ke pembeli. Setiap tahap bisa menambah nilai, dan bisa pula mengambilnya bila perajin tidak ikut menentukan harga.',
       'Sap becomes molded sugar, is bought from artisan groups, packed with a QR, and reaches the buyer. Every stage can add value, and can also take it away if the artisans have no say in the price.',
@@ -82,6 +86,7 @@ export const getLessonMedia = (id: string): LessonMedia =>
     'L-301': { kind: '3d', prop: 'pohon', caption: t('Belajar dari darat: tidak ada yang memanjat', 'Learning from the ground: nobody climbs') },
     'L-302': { kind: '3d', prop: 'tungku', caption: t('Tungku panas: duduk di luar lingkaran aman', 'A hot stove: sit outside the safe ring') },
     'L-303': { kind: 'scene', scene: 'keselamatan', caption: t('Tahu siapa yang harus dihubungi', 'Know who to contact') },
+    'L-304': { kind: 'scene', scene: 'keselamatan', caption: t('Terlindungi saat bekerja', 'Protected while working') },
     'L-401': { kind: 'scene', scene: 'keberlanjutan', caption: t('Dari nira sampai ke pembeli', 'From sap to the buyer') },
     'L-402': { kind: 'scene', scene: 'bersama', caption: t('Cerita dengan izin perajin', 'Stories told with the artisan\'s consent') },
     'L-403': { kind: '3d', prop: 'kemasan', caption: t('Kemasan dengan QR Paspor Warisan', 'A package with the Heritage Passport QR') },

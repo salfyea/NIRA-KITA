@@ -141,18 +141,18 @@ export const StaffShell: React.FC<{ role: StaffRole; items: NavItem[] }> = ({ ro
         </div>
       </main>
 
-      {/* bilah navigasi ponsel */}
+      {/* bilah navigasi ponsel: semua menu, bisa digeser bila banyak */}
       <nav aria-label={c.label} className="fixed inset-x-3 bottom-[max(12px,env(safe-area-inset-bottom))] z-30 rounded-[30px] bg-coconut/[0.98] p-1.5 shadow-[0_16px_34px_-12px_rgba(16,38,30,0.55),0_2px_6px_rgba(16,38,30,0.08)] lg:hidden">
-        <ul className="grid gap-1" style={{ gridTemplateColumns: `repeat(${items.length}, minmax(0, 1fr))` }}>
+        <ul className="no-scrollbar flex gap-1 overflow-x-auto [mask-image:linear-gradient(to_right,#000_calc(100%-22px),transparent_100%)]">
           {items.map((it) => (
-            <li key={it.to}>
+            <li key={it.to} className="min-w-[76px] flex-1">
               <NavLink
                 to={it.to}
                 end={it.end}
-                className={({ isActive }) => `relative flex min-h-[48px] items-center justify-center rounded-[22px] px-1 text-[12px] font-semibold leading-tight ${isActive ? 'text-coconut' : 'text-ink-soft'}`}
+                className={({ isActive }) => `relative flex min-h-[48px] items-center justify-center rounded-[22px] px-2 text-[12px] font-semibold leading-tight ${isActive ? 'text-coconut' : 'text-ink-soft'}`}
                 style={({ isActive }) => (isActive ? { background: c.accent } : undefined)}
               >
-                <span className="text-center">{it.label}</span>
+                <span className="whitespace-nowrap text-center">{it.label}</span>
                 {it.badge ? <span className="absolute -right-0.5 -top-0.5 rounded-full bg-caramel px-1.5 text-[10px] font-bold text-coconut">{it.badge}</span> : null}
               </NavLink>
             </li>

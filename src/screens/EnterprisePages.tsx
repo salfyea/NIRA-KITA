@@ -11,7 +11,7 @@ import { t } from '../i18n';
 
 const STATUS_LABEL = (s: OrderStatus) => ({ Baru: t('Baru', 'New'), Dikemas: t('Dikemas', 'Packing'), Dikirim: t('Dikirim', 'Shipped'), Selesai: t('Selesai', 'Done') })[s];
 const NEXT_ACTION = (s: OrderStatus) => ({ Baru: t('Kemas pesanan', 'Pack the order'), Dikemas: t('Tandai dikirim', 'Mark as shipped'), Dikirim: t('Tandai selesai', 'Mark as done'), Selesai: '' })[s];
-const orderTotal = (o: Order) => o.kg * unitPrice(o.channel);
+const orderTotal = (o: Order) => o.kg * unitPrice(o.channel) - (o.discount ?? 0);
 
 /** Hitungan bersama untuk beranda: stok, omzet, dan dana pelestarian dari data langsung di aplikasi. */
 export const useEnterpriseStats = () => {
@@ -149,6 +149,7 @@ export const EnterpriseOrders: React.FC = () => {
                 <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${o.paid ? 'bg-forest/10 text-forest' : 'bg-[#9E4F37]/10 text-[#9E4F37]'}`}>{o.paid ? t('Sudah dibayar', 'Paid') : t('Belum dibayar', 'Unpaid')}</span>
                 {o.source === 'toko' && <span className="rounded-full bg-forest/10 px-2.5 py-0.5 text-xs font-bold text-forest">{t('Dari Toko', 'From the Shop')}</span>}
                 <span>{o.kg} kg × {rupiah(unitPrice(o.channel))}</span>
+                {o.discount ? <span className="rounded-full bg-caramel/15 px-2 py-0.5 text-xs font-bold text-caramel-dark">{t('Voucher', 'Voucher')} −{rupiah(o.discount)}</span> : null}
                 <b className="text-deep-forest">{rupiah(orderTotal(o))}</b>
               </div>
               {(o.contact || o.address) && <p className="mt-1 text-xs leading-snug text-ink-soft">{o.contact}{o.contact && o.address ? ' · ' : ''}{o.address}</p>}

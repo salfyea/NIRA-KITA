@@ -18,6 +18,8 @@ const AUDIT_ACTION: Record<string, string> = {
   'Mencatat pesanan': 'Recorded order',
   'Memajukan pesanan': 'Advanced order',
   'Menandai dibayar': 'Marked as paid',
+  'Mengatur voucher': 'Set voucher',
+  'Mendampingi asuransi': 'Insurance support',
 };
 const AUDIT_NOTE: Record<string, string> = {
   'Publik (halaman QR)': 'Public (QR page)',

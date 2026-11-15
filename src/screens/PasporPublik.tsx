@@ -11,6 +11,7 @@ import { attribution } from '../data/attribution';
 import { useStore } from '../store';
 import { loadVisitor, saveVisitor } from '../lib/visitor';
 import { LangToggle, t } from '../i18n';
+import { makeVoucherCode } from '../lib/voucher';
 import { COLORS, StackBar } from '../components/StackBar';
 import { LeafArrow } from '../art/Organic';
 import { rupiah, splitPack } from '../lib/finance';
@@ -20,6 +21,60 @@ import { HeritageRecord } from '../types/jejakNira';
 const isPublicQr = (r: HeritageRecord) => r.reviewStatus === 'Approved' && r.visibility === 'public' && r.consent.publicQrPage;
 
 const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+/** Kartu voucher gaya tiket: potongan, kode unik, masa berlaku, dan tombol salin. Satu voucher per batch per perangkat. */
+const VoucherCard: React.FC<{ batchCode: string }> = ({ batchCode }) => {
+  const { voucherConfig, showToast } = useStore();
+  const [code, setCode] = React.useState<string>(() => loadVisitor().vouchers?.[batchCode] ?? '');
+  const [shown, setShown] = React.useState(!!code);
+  if (!voucherConfig.active) return null;
+  const claim = () => {
+    const v = loadVisitor();
+    const mine = v.vouchers?.[batchCode] ?? makeVoucherCode(batchCode);
+    saveVisitor({ ...v, vouchers: { ...(v.vouchers ?? {}), [batchCode]: mine } });
+    setCode(mine);
+    setShown(true);
+  };
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(code);
+      showToast(t('Kode voucher disalin.', 'Voucher code copied.'));
+    } catch {
+      showToast(t('Salin manual kodenya ya.', 'Please copy the code by hand.'));
+    }
+  };
+  return (
+    <div className="relative overflow-hidden rounded-[28px_36px_28px_36px] bg-forest text-coconut shadow-[0_18px_34px_-18px_rgba(16,38,30,0.7)]">
+      <span className="absolute -left-3 top-[58%] h-6 w-6 rounded-full bg-cream" aria-hidden />
+      <span className="absolute -right-3 top-[58%] h-6 w-6 rounded-full bg-cream" aria-hidden />
+      <div className="flex items-center gap-4 p-5">
+        <Nira mood="cheer" size={78} float={false} />
+        <div className="min-w-0">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#E7C79A]">{t('Terima kasih sudah menjelajah', 'Thanks for exploring')}</p>
+          <p className="font-serif text-[26px] leading-tight">{t(`Diskon ${voucherConfig.percent}% pembelian berikutnya`, `${voucherConfig.percent}% off your next purchase`)}</p>
+          <p className="mt-0.5 text-xs text-coconut/85">{t(`Maks. ${rupiah(voucherConfig.capRp)} · min. ${voucherConfig.minKg} kg · berlaku ${voucherConfig.validDays} hari`, `Up to ${rupiah(voucherConfig.capRp)} · min. ${voucherConfig.minKg} kg · valid ${voucherConfig.validDays} days`)}</p>
+        </div>
+      </div>
+      <div className="border-t-2 border-dashed border-coconut/30 p-5">
+        {shown ? (
+          <>
+            <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#E7C79A]">{t('Kode vouchermu', 'Your voucher code')}</p>
+            <p className="mt-1 select-all rounded-2xl bg-coconut px-4 py-3 text-center font-mono text-xl font-bold tracking-widest text-deep-forest">{code}</p>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <button type="button" onClick={copy} className="min-h-[48px] rounded-full bg-coconut/15 text-sm font-semibold text-coconut">{t('Salin kode', 'Copy code')}</button>
+              <Link to="/toko" className="flex min-h-[48px] items-center justify-center rounded-full bg-caramel text-sm font-semibold text-coconut">{t('Pakai di Toko', 'Use in the Shop')}</Link>
+            </div>
+          </>
+        ) : (
+          <button type="button" onClick={claim} className="btn-sticker flex min-h-[54px] w-full items-center justify-center gap-2 rounded-[28px_32px_26px_32px] bg-caramel text-base font-semibold text-coconut">
+            {t('Buka voucher', 'Open the voucher')} <LeafArrow className="h-5 w-5" />
+          </button>
+        )}
+        <p className="mt-3 text-[11px] leading-snug text-coconut/75">{t('Satu voucher per kemasan, sekali pakai, hanya untuk pembelian langsung (di bawah 30 kg).', 'One voucher per package, single use, for direct purchases only (under 30 kg).')}</p>
+      </div>
+    </div>
+  );
+};
 
 /** Paspor Warisan publik: halaman web dari QR kemasan, tanpa aplikasi dan tanpa login. */
 export const PasporPublik: React.FC = () => {
@@ -230,12 +285,17 @@ export const PasporPublik: React.FC = () => {
         </Ornate>
       </section>
 
+      {/* 6. voucher: halaman terakhir, alasan untuk membuka QR sampai habis */}
+      <section id="voucher" className="mt-8 px-6">
+        <VoucherCard batchCode={batch.code} />
+      </section>
+
       {/* 4b. beli */}
       <section className="mt-8 px-6">
-        <Link to="/toko" className="btn-sticker flex min-h-[56px] items-center justify-between gap-3 rounded-[30px_34px_28px_34px] bg-caramel-dark px-6 text-coconut">
+        <Link to="/toko" className="btn-sticker flex min-h-[72px] items-center justify-between gap-3 rounded-[30px_34px_28px_34px] bg-caramel-dark px-6 py-3 text-coconut">
           <span>
-            <span className="block font-serif text-xl leading-tight">{t('Suka gulanya? Pesan langsung', 'Like the sugar? Order directly')}</span>
-            <span className="block text-xs text-coconut/85">{t('Dari koperasi perajin, harga adil.', 'From the artisan cooperative, at a fair price.')}</span>
+            <span className="block font-serif text-xl leading-snug">{t('Suka gulanya? Pesan langsung', 'Like the sugar? Order directly')}</span>
+            <span className="mt-1 block text-xs text-coconut/85">{t('Dari koperasi perajin, harga adil.', 'From the artisan cooperative, at a fair price.')}</span>
           </span>
           <LeafArrow className="h-6 w-6 shrink-0" />
         </Link>
