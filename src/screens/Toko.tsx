@@ -2,8 +2,7 @@ import React from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { Nira } from '../art/Nira';
 import { LeafArrow, Frond } from '../art/Organic';
-import { COLORS, StackBar } from '../components/StackBar';
-import { BUY_PRICE, PRESERVE_PCT, PRICE, channelOf, quote, rupiah } from '../lib/finance';
+import { PRICE, channelOf, quote, rupiah } from '../lib/finance';
 import { ORDER_FLOW, OrderStatus, useStore } from '../store';
 import { LangToggle, t } from '../i18n';
 import { PAYMENT, waLink } from '../data/payment';
@@ -126,24 +125,6 @@ export const Toko: React.FC = () => {
               <p className="mt-1 text-caramel-dark">{t(`Tambah ${q.short} kg lagi untuk harga reseller ${rupiah(PRICE.reseller)}/kg.`, `Add ${q.short} kg more for the reseller price of ${rupiah(PRICE.reseller)}/kg.`)}</p>
             )}
           </div>
-        </section>
-
-        {/* ke mana uang pergi */}
-        <section className="surface rounded-[26px_34px_26px_34px] p-5">
-          <p className="font-serif text-xl text-deep-forest">{t('Ke mana uangmu pergi', 'Where your money goes')}</p>
-          <p className="mt-0.5 text-xs text-ink-soft">{t('Untuk setiap 1 kg.', 'For every 1 kg.')}</p>
-          <div className="mt-3">
-            <StackBar
-              parts={[
-                { label: t('Ke perajin', 'To artisans'), value: BUY_PRICE, color: COLORS.artisan },
-                { label: t('Dana pelestarian pengetahuan', 'Knowledge preservation fund'), value: (unit * PRESERVE_PCT) / 100, color: COLORS.preserve },
-                { label: t('Operasional dan margin', 'Operations and margin'), value: Math.max(0, unit - BUY_PRICE - (unit * PRESERVE_PCT) / 100), color: COLORS.rest },
-              ]}
-            />
-          </div>
-          <Link to="/p/NK-001" className="mt-3 inline-flex min-h-[44px] items-center gap-1.5 text-sm font-semibold text-forest underline decoration-caramel decoration-2 underline-offset-[5px]">
-            {t('Lihat kisah di balik gula ini', 'See the story behind this sugar')} <LeafArrow className="h-5 w-5" />
-          </Link>
         </section>
 
         {/* form pesan */}

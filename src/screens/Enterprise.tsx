@@ -249,7 +249,7 @@ const Harga: React.FC = () => {
     <div className="mt-4 space-y-3">
       <DaftarHarga />
       <p className="rounded-xl bg-bamboo/40 p-3 text-sm leading-relaxed text-deep-forest">
-        {t('Pembeli yang memindai kemasan melihat ke mana uangnya pergi: ke perajin, ke dana pelestarian Jejak Nira, dan ke operasional. Itulah nilai tambah produk ini.', 'A buyer who scans the package sees where the money goes: to the artisans, to the Jejak Nira preservation fund, and to operations. That is the added value of this product.')}
+        {t('Pembagian harga tiap batch dipakai koperasi untuk menghitung bagian perajin dan dana pelestarian. Pembeli melihat harga dan jumlah di Toko.', 'The price split of each batch is used by the cooperative to work out the artisan share and the preservation fund. Buyers see the price and amount in the Shop.')}
       </p>
       {batches.map((b) => (
         <BatchPricing key={`${b.code}-${b.pricing?.pricePerPack ?? 0}`} batch={b} />

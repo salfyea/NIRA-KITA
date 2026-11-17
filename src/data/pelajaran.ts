@@ -60,8 +60,8 @@ export const getLessonBody = (id: string): string =>
       'An artisan\'s story is shown only with their permission, with attribution as they choose, and after curator approval. Meanings the community holds sacred are not changed for marketing.',
     ),
     'L-403': t(
-      'Satu batch kemasan menaut ke desa asal dan hanya ke rekaman yang disetujui kurator dengan izin QR. Pembeli yang memindai melihat kisah, game, dan ke mana uang kemasan pergi.',
-      'One packaging batch links to its village of origin and only to recordings the curator approved with QR permission. A buyer who scans sees the story, the game, and where the money from the pack goes.',
+      'Satu batch kemasan menaut ke desa asal dan hanya ke rekaman yang disetujui kurator dengan izin QR. Pembeli yang memindai melihat kisah dan game, lalu mendapat voucher.',
+      'One packaging batch links to its village of origin and only to recordings the curator approved with QR permission. A buyer who scans sees the story and the game, then receives a voucher.',
     ),
   } as Record<string, string>)[id] ?? '';
 
