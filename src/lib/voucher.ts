@@ -14,7 +14,7 @@ export interface VoucherConfig {
 }
 
 /** Nilai awal yang dipilih agar aman terhadap margin (lihat voucherSafety). Hanya untuk saluran langsung. */
-export const DEFAULT_VOUCHER: VoucherConfig = { active: true, percent: 10, capRp: 15000, minKg: 3, validDays: 30 };
+export const DEFAULT_VOUCHER: VoucherConfig = { active: true, percent: 5, capRp: 7500, minKg: 3, validDays: 30 };
 
 const EPOCH = Date.UTC(2026, 0, 1);
 const ABC = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // tanpa 0/O/1/I agar mudah dibaca

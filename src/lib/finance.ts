@@ -10,7 +10,7 @@ export type Channel = 'langsung' | 'reseller';
 /** Persentase dana pelestarian dari omzet. Masih asumsi tim, bukan angka final. */
 export const PRESERVE_PCT = 8;
 /** Harga beli ke perajin per kg. Masih asumsi contoh. */
-export const BUY_PRICE = 20000;
+export const BUY_PRICE = 24000;
 
 export const channelOf = (kg: number): Channel => (kg >= PRICE.resellerMinKg ? 'reseller' : 'langsung');
 export const unitPrice = (c: Channel): number => (c === 'reseller' ? PRICE.reseller : PRICE.direct);
@@ -90,11 +90,11 @@ export const simulate = (a: Assumptions): Outcome => {
   };
 };
 
-const base = { buyPrice: 20000, marketRef: 16000, directPrice: PRICE.direct, resellerPrice: PRICE.reseller, resellerMinKg: PRICE.resellerMinKg, opsPerKg: 3000, preservePct: 8, mentorFee: 750000 };
+const base = { buyPrice: 24000, marketRef: 20000, directPrice: PRICE.direct, resellerPrice: PRICE.reseller, resellerMinKg: PRICE.resellerMinKg, opsPerKg: 3000, preservePct: 8, mentorFee: 750000 };
 export const PRESETS: { key: 'konservatif' | 'dasar' | 'tumbuh'; a: Assumptions }[] = [
-  { key: 'konservatif', a: { ...base, kgPerMonth: 150, resellerShare: 30, fixedCost: 1500000 } },
-  { key: 'dasar', a: { ...base, kgPerMonth: 400, resellerShare: 50, fixedCost: 2000000 } },
-  { key: 'tumbuh', a: { ...base, kgPerMonth: 1000, resellerShare: 60, fixedCost: 3500000, opsPerKg: 2800 } },
+  { key: 'konservatif', a: { ...base, kgPerMonth: 150, resellerShare: 25, fixedCost: 1500000 } },
+  { key: 'dasar', a: { ...base, kgPerMonth: 400, resellerShare: 25, fixedCost: 2000000 } },
+  { key: 'tumbuh', a: { ...base, kgPerMonth: 1000, resellerShare: 25, fixedCost: 3500000, opsPerKg: 2800 } },
 ];
 
 /** Harga per kemasan dipecah: ke perajin, dana pelestarian, dan operasional serta margin (sisa). */
