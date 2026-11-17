@@ -74,7 +74,7 @@ const Pembelian: React.FC = () => {
   const { partners, purchases, marketRef, addPurchase, setMarketRef, showToast } = useStore();
   const [partnerId, setPartnerId] = React.useState(partners[0]?.id ?? '');
   const [kg, setKg] = React.useState(50);
-  const [price, setPrice] = React.useState(20000);
+  const [price, setPrice] = React.useState(24000);
   const totalKg = purchases.reduce((a, p) => a + p.kg, 0);
   const totalPay = purchases.reduce((a, p) => a + p.kg * p.pricePerKg, 0);
   const premium = purchases.reduce((a, p) => a + p.kg * (p.pricePerKg - p.marketRef), 0);
@@ -156,7 +156,7 @@ const Pembelian: React.FC = () => {
 /* ============================ Harga kemasan ============================ */
 const BatchPricing: React.FC<{ batch: QrBatch }> = ({ batch }) => {
   const { setBatchPricing, showToast } = useStore();
-  const [p, setP] = React.useState<Pricing>(batch.pricing ?? { pricePerPack: 17500, packGram: 500, artisanPerKg: 20000, preservePct: 8 });
+  const [p, setP] = React.useState<Pricing>(batch.pricing ?? { pricePerPack: 17500, packGram: 500, artisanPerKg: 24000, preservePct: 8 });
   const split = splitPack(p);
   const set = (k: keyof Pricing) => (n: number) => setP((v) => ({ ...v, [k]: n }));
   return (

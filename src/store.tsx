@@ -125,9 +125,9 @@ const SEED_PARTNERS: Partner[] = [
   { id: 'MIT-03', name: 'Kelompok Penderes Karangtengah', village: 'Karangtengah', members: 11, capacityKg: 120, status: 'Penjajakan', consentName: false, insured: 0, insurance: 'Belum ada' },
 ];
 const SEED_PURCHASES: Purchase[] = [
-  { id: 'PUR-001', date: '4 Mei 2026', partnerId: 'MIT-01', kg: 90, pricePerKg: 20000, marketRef: 16000 },
-  { id: 'PUR-002', date: '9 Mei 2026', partnerId: 'MIT-02', kg: 70, pricePerKg: 20000, marketRef: 16000 },
-  { id: 'PUR-003', date: '16 Mei 2026', partnerId: 'MIT-01', kg: 110, pricePerKg: 20500, marketRef: 16000 },
+  { id: 'PUR-001', date: '4 Mei 2026', partnerId: 'MIT-01', kg: 90, pricePerKg: 24000, marketRef: 20000 },
+  { id: 'PUR-002', date: '9 Mei 2026', partnerId: 'MIT-02', kg: 70, pricePerKg: 24000, marketRef: 20000 },
+  { id: 'PUR-003', date: '16 Mei 2026', partnerId: 'MIT-01', kg: 110, pricePerKg: 24500, marketRef: 20000 },
 ];
 
 const SEED_ORDERS: Order[] = [
@@ -173,7 +173,7 @@ const initialState = (): PersistedState => ({
   orders: SEED_ORDERS,
   voucherConfig: DEFAULT_VOUCHER,
   voucherUsed: [],
-  marketRef: 16000,
+  marketRef: 20000,
   session: null,
   onboarded: false,
 });
