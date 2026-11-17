@@ -90,9 +90,14 @@ export const StaffShell: React.FC<{ role: StaffRole; items: NavItem[] }> = ({ ro
   }
 
   return (
-    <div className="paper min-h-dvh lg:grid lg:grid-cols-[280px_1fr]" style={{ ['--accent' as string]: c.accent, ['--accent-soft' as string]: c.accentSoft }}>
+    // Di laptop: ruang kerja tampil di dalam mockup laptop. Di ponsel: layar penuh seperti biasa.
+    <div className="paper laptop-wrap">
+      <div className="laptop-frame">
+        <div className="laptop-lid">
+          <div className="laptop-screen no-scrollbar">
+    <div className="paper min-h-dvh lg:min-h-full lg:grid lg:grid-cols-[280px_1fr]" style={{ ['--accent' as string]: c.accent, ['--accent-soft' as string]: c.accentSoft }}>
       {/* sidebar desktop */}
-      <aside className="sticky top-0 hidden h-dvh flex-col gap-5 overflow-y-auto px-4 py-6 lg:flex" style={{ background: `linear-gradient(170deg, ${c.accent} 0%, ${c.accent}f0 60%, #10261E 130%)` }}>
+      <aside className="sticky top-0 hidden h-dvh flex-col gap-5 overflow-y-auto px-4 py-6 lg:flex lg:h-[var(--lh)] lg:self-start" style={{ background: `linear-gradient(170deg, ${c.accent} 0%, ${c.accent}f0 60%, #10261E 130%)` }}>
         <div className="rounded-3xl bg-white/10 p-4 text-coconut">
           <div className="flex items-center gap-3">
             <RoleMascot role={role} size={84} mood="happy" className="-ml-1" />
@@ -166,6 +171,11 @@ export const StaffShell: React.FC<{ role: StaffRole; items: NavItem[] }> = ({ ro
       </div>
       <div id="phone-overlay" className="pointer-events-none fixed inset-y-0 right-0 z-50 w-full max-w-[420px] lg:right-6" />
       <TourOverlay />
+    </div>
+          </div>
+        </div>
+        <div className="laptop-base" aria-hidden />
+      </div>
     </div>
   );
 };

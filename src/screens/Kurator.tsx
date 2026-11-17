@@ -218,7 +218,7 @@ const Detail: React.FC<{
   return (
     <div className="px-4 pt-3 lg:px-0 lg:pt-0">
       <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_410px] lg:items-start lg:gap-8">
-        <div className="min-w-0 lg:sticky lg:top-4 lg:max-h-[calc(100dvh-32px)] lg:self-start lg:overflow-y-auto lg:pr-1">
+        <div className="min-w-0 lg:sticky lg:top-4 lg:max-h-[calc(var(--lh,100dvh)-32px)] lg:self-start lg:overflow-y-auto lg:pr-1">
         <Link to="/kurator" className="inline-flex min-h-[44px] items-center gap-1 text-sm font-semibold text-deep-forest">
           <ArrowLeft className="h-4 w-4" /> {t('Kotak masuk', 'Inbox')}
         </Link>
