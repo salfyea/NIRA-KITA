@@ -1,6 +1,7 @@
 import React from 'react';
 import { Navigate, NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { RoleMascot, StaffRole } from '../art/RoleMascot';
+import { SidePanel } from '../components/PhoneShell';
 import { Toast } from '../components/ui';
 import { LangToggle, t } from '../i18n';
 import { useStore } from '../store';
@@ -35,6 +36,45 @@ export const RequireRole: React.FC<{ role: StaffRole }> = ({ role }) => {
   return session?.role === role ? <Outlet /> : <Navigate to="/kode-undangan" replace />;
 };
 
+/** Ukuran desain layar laptop. Isi dirender pada ukuran ini lalu diskalakan agar muat di jendela. */
+const LAPTOP_W = 1280;
+const LAPTOP_H = 800;
+
+/** Di jendela lebar: ruang kerja tampil di dalam mockup laptop, berdampingan dengan panel konteks. Di ponsel: layar penuh. */
+const LaptopFrame: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [dim, setDim] = React.useState({ w: window.innerWidth, h: window.innerHeight });
+  React.useEffect(() => {
+    const on = () => setDim({ w: window.innerWidth, h: window.innerHeight });
+    window.addEventListener('resize', on);
+    return () => window.removeEventListener('resize', on);
+  }, []);
+  if (dim.w < 1024) return <>{children}</>;
+  const withPanel = dim.w >= 1280;
+  const availW = dim.w - 48 - (withPanel ? 400 : 0) - 28 - 70;
+  const availH = (dim.h - 92) * 1.6;
+  const sw = Math.max(480, Math.min(availW, availH, 1440));
+  const scale = sw / LAPTOP_W;
+  return (
+    <div className="paper flex min-h-dvh items-center justify-center gap-0 px-6 py-5">
+      {withPanel && <SidePanel />}
+      <div style={{ width: LAPTOP_W * scale + 28 }}>
+        <div className="relative rounded-t-[22px] rounded-b-md bg-[#0C1512] p-[14px] pb-4 shadow-[0_40px_70px_-30px_rgba(16,38,30,0.6),inset_0_0_0_2px_#1d2a25]">
+          <span aria-hidden className="absolute left-1/2 top-[5px] h-[5px] w-[5px] -translate-x-1/2 rounded-full bg-[#2c3b35]" />
+          <div className="overflow-hidden rounded-md" style={{ width: LAPTOP_W * scale, height: LAPTOP_H * scale }}>
+            <div
+              className="no-scrollbar relative overflow-y-auto bg-cream"
+              style={{ width: LAPTOP_W, height: LAPTOP_H, transform: `scale(${scale})`, transformOrigin: '0 0', ['--lh' as string]: `${LAPTOP_H}px` }}
+            >
+              {children}
+            </div>
+          </div>
+        </div>
+        <div aria-hidden className="relative -mx-[2.5%] h-4 rounded-b-[28px] bg-gradient-to-b from-[#DADDDA] to-[#A9AEA9] shadow-[0_14px_24px_-10px_rgba(16,38,30,0.5)]" />
+      </div>
+    </div>
+  );
+};
+
 /**
  * Cangkang ruang kerja staf. Satu cangkang per peran, tanpa pengalih peran di dalamnya:
  * sidebar di desktop, bilah mengambang di ponsel. Konten halaman ditampilkan lewat <Outlet />.
@@ -55,6 +95,7 @@ export const StaffShell: React.FC<{ role: StaffRole; items: NavItem[] }> = ({ ro
     // Mentor bekerja di lapangan lewat ponsel: selalu tampil dalam bingkai ponsel, tanpa sidebar desktop.
     return (
       <div className="paper flex min-h-dvh items-center justify-center md:p-6">
+        <SidePanel />
         <div className="relative flex h-dvh w-full flex-col overflow-hidden bg-cream md:h-[min(844px,calc(100dvh-48px))] md:w-[390px] md:rounded-[46px] md:border-[10px] md:border-night md:shadow-[0_40px_80px_-30px_rgba(16,38,30,0.6)]">
           <header className="flex shrink-0 items-center gap-3 px-4 py-3 text-coconut" style={{ background: c.accent }}>
             <RoleMascot role={role} size={48} />
@@ -90,9 +131,11 @@ export const StaffShell: React.FC<{ role: StaffRole; items: NavItem[] }> = ({ ro
   }
 
   return (
-    <div className="paper min-h-dvh lg:grid lg:grid-cols-[280px_1fr]" style={{ ['--accent' as string]: c.accent, ['--accent-soft' as string]: c.accentSoft }}>
+    // Di laptop: ruang kerja tampil di dalam mockup laptop. Di ponsel: layar penuh seperti biasa.
+    <LaptopFrame>
+    <div className="paper min-h-dvh lg:min-h-full lg:grid lg:grid-cols-[280px_1fr]" style={{ ['--accent' as string]: c.accent, ['--accent-soft' as string]: c.accentSoft }}>
       {/* sidebar desktop */}
-      <aside className="sticky top-0 hidden h-dvh flex-col gap-5 overflow-y-auto px-4 py-6 lg:flex" style={{ background: `linear-gradient(170deg, ${c.accent} 0%, ${c.accent}f0 60%, #10261E 130%)` }}>
+      <aside className="sticky top-0 hidden h-dvh flex-col gap-5 overflow-y-auto px-4 py-6 lg:flex lg:h-[var(--lh)] lg:self-start" style={{ background: `linear-gradient(170deg, ${c.accent} 0%, ${c.accent}f0 60%, #10261E 130%)` }}>
         <div className="rounded-3xl bg-white/10 p-4 text-coconut">
           <div className="flex items-center gap-3">
             <RoleMascot role={role} size={84} mood="happy" className="-ml-1" />
@@ -167,5 +210,6 @@ export const StaffShell: React.FC<{ role: StaffRole; items: NavItem[] }> = ({ ro
       <div id="phone-overlay" className="pointer-events-none fixed inset-y-0 right-0 z-50 w-full max-w-[420px] lg:right-6" />
       <TourOverlay />
     </div>
+    </LaptopFrame>
   );
 };

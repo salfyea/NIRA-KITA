@@ -63,7 +63,7 @@ const roleOfPath = (p: string): RoleKey | null =>
   p.startsWith('/learn') ? 'learner' : p.startsWith('/toko') ? 'buyer' : p.startsWith('/p/') ? 'visitor' : p.startsWith('/mentor') ? 'mentor' : p.startsWith('/kurator') ? 'curator' : p.startsWith('/admin') ? 'admin' : p.startsWith('/enterprise') ? 'enterprise' : null;
 
 /** Panel kiri di desktop: konteks ekosistem lima peran supaya juri tidak melihat satu aplikasi saja. */
-const SidePanel: React.FC = () => {
+export const SidePanel: React.FC = () => {
   const { reset, session, signIn, signOut } = useStore();
   const tour = useTour();
   const TOUR = getTour();
@@ -80,15 +80,15 @@ const SidePanel: React.FC = () => {
     navigate(path);
   };
   return (
-    <aside className="no-scrollbar hidden max-h-[calc(100dvh-48px)] max-w-sm flex-col justify-start gap-6 overflow-y-auto py-2 pr-10 lg:flex">
+    <aside className="no-scrollbar hidden max-h-[calc(100dvh-48px)] max-w-sm flex-col justify-start gap-5 overflow-y-auto py-2 pr-10 lg:flex [@media(max-height:760px)]:gap-3">
       <div>
         <p className="text-xs font-bold uppercase tracking-[0.2em] text-caramel-dark">{t('Prototipe konsep', 'Concept prototype')}</p>
         <Logo className="mt-3" size={72} />
         <LangToggle className="mt-3" />
-        <p className="mt-3 text-base leading-relaxed text-ink-soft">
+        <p className="mt-3 text-base leading-relaxed text-ink-soft [@media(max-height:940px)]:hidden">
           {t('Jejak pengetahuan, warisan masa depan. Platform belajar dan pelestarian pengetahuan gula kelapa Cilongok, dengan persetujuan komunitas di setiap langkah.', 'Trail of knowledge, heritage for the future. A learning and preservation platform for the coconut sugar knowledge of Cilongok, with community consent at every step.')}
         </p>
-        <PartnerLogos className="mt-4" height={30} />
+        <PartnerLogos className="mt-4 [@media(max-height:940px)]:hidden" height={30} />
       </div>
       <div className="rounded-2xl border border-caramel/40 bg-coconut p-4">
         <p className="text-xs font-bold uppercase tracking-[0.16em] text-caramel-dark">{t('Tur untuk juri · ±4 menit', 'Judges\' tour · ~4 minutes')}</p>
@@ -142,7 +142,7 @@ const SidePanel: React.FC = () => {
       {!tour.active && (
       <div>
         <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-ink-soft">{t('Tujuh peran dalam satu ekosistem', 'Seven roles in one ecosystem')}</p>
-        <ul className="space-y-1.5">
+        <ul className="grid grid-cols-2 gap-1.5">
           {getRoles().map(({ key, label, desc, Icon, path }) => {
             const active = current === key;
             return (
@@ -151,18 +151,18 @@ const SidePanel: React.FC = () => {
                   type="button"
                   onClick={() => open(key, path)}
                   aria-current={active ? 'page' : undefined}
-                  className={`flex min-h-[56px] w-full items-center gap-3 rounded-xl border px-3 py-2 text-left transition-colors ${
+                  title={desc}
+                  className={`flex min-h-[48px] w-full items-center gap-2 rounded-xl border px-2 py-1.5 text-left transition-colors ${
                     active ? 'border-forest/40 bg-coconut shadow-sm' : 'border-bamboo/70 bg-transparent hover:bg-coconut'
                   }`}
                 >
                   <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${active ? 'bg-forest text-coconut' : 'bg-bamboo/50 text-deep-forest'}`}>
                     <Icon className="h-4 w-4" />
                   </span>
-                  <span className="flex-1">
-                    <span className="block text-sm font-semibold text-deep-forest">{label}</span>
-                    <span className="block text-xs text-ink-soft">{desc}</span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-semibold text-deep-forest">{label}</span>
+                    {active && <span className="block text-[11px] font-semibold text-forest">{t('Sedang dilihat', 'Viewing')}</span>}
                   </span>
-                  <span className={`shrink-0 text-[11px] font-semibold ${active ? 'text-forest' : 'text-caramel-dark'}`}>{active ? t('Sedang dilihat', 'Viewing') : t('Buka', 'Open')}</span>
                 </button>
               </li>
             );
@@ -170,7 +170,7 @@ const SidePanel: React.FC = () => {
         </ul>
       </div>
       )}
-      <p className="text-xs leading-relaxed text-ink-soft">
+      <p className="text-xs leading-relaxed text-ink-soft [@media(max-height:940px)]:hidden">
         {t('Seluruh pembelajaran berbasis darat.', 'All learning is ground-based.')}
       </p>
       <button
