@@ -172,15 +172,3 @@
 .ornate > .corner {
   display: none;
 }
-
-
-/* Mockup laptop untuk ruang kerja staf (Kurator, Admin, Enterprise). Di bawah 1024px tidak ada bingkai. */
-@media (min-width: 1024px) {
-  .laptop-wrap { display: flex; align-items: center; justify-content: center; min-height: 100dvh; padding: 20px 24px; }
-  .laptop-frame { --lw: min(1440px, calc(100vw - 48px), calc((100dvh - 92px) * 1.6 + 28px)); width: var(--lw); }
-  .laptop-lid { position: relative; background: #0C1512; border-radius: 22px 22px 6px 6px; padding: 14px 14px 16px; box-shadow: 0 40px 70px -30px rgba(16, 38, 30, 0.6), inset 0 0 0 2px #1d2a25; }
-  .laptop-lid::before { content: ''; position: absolute; top: 5px; left: 50%; width: 5px; height: 5px; margin-left: -2.5px; border-radius: 50%; background: #2c3b35; }
-  .laptop-screen { --lh: calc((var(--lw) - 28px) / 1.6); height: var(--lh); overflow-y: auto; border-radius: 6px; position: relative; transform: translateZ(0); background: #F7F3E9; }
-  .laptop-base { height: 16px; margin: 0 -2.5%; background: linear-gradient(#DADDDA, #A9AEA9); border-radius: 0 0 28px 28px; box-shadow: 0 14px 24px -10px rgba(16, 38, 30, 0.5); position: relative; }
-  .laptop-base::after { content: ''; position: absolute; top: 0; left: 50%; width: 14%; height: 5px; margin-left: -7%; background: #8f948f; border-radius: 0 0 8px 8px; }
-}

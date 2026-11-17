@@ -63,7 +63,7 @@ const roleOfPath = (p: string): RoleKey | null =>
   p.startsWith('/learn') ? 'learner' : p.startsWith('/toko') ? 'buyer' : p.startsWith('/p/') ? 'visitor' : p.startsWith('/mentor') ? 'mentor' : p.startsWith('/kurator') ? 'curator' : p.startsWith('/admin') ? 'admin' : p.startsWith('/enterprise') ? 'enterprise' : null;
 
 /** Panel kiri di desktop: konteks ekosistem lima peran supaya juri tidak melihat satu aplikasi saja. */
-const SidePanel: React.FC = () => {
+export const SidePanel: React.FC = () => {
   const { reset, session, signIn, signOut } = useStore();
   const tour = useTour();
   const TOUR = getTour();
