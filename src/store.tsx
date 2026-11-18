@@ -125,9 +125,8 @@ const SEED_PARTNERS: Partner[] = [
   { id: 'MIT-03', name: 'Kelompok Penderes Karangtengah', village: 'Karangtengah', members: 11, capacityKg: 120, status: 'Penjajakan', consentName: false, insured: 0, insurance: 'Belum ada' },
 ];
 const SEED_PURCHASES: Purchase[] = [
-  { id: 'PUR-001', date: '4 Mei 2026', partnerId: 'MIT-01', kg: 90, pricePerKg: 24000, marketRef: 20000 },
-  { id: 'PUR-002', date: '9 Mei 2026', partnerId: 'MIT-02', kg: 70, pricePerKg: 24000, marketRef: 20000 },
-  { id: 'PUR-003', date: '16 Mei 2026', partnerId: 'MIT-01', kg: 110, pricePerKg: 24500, marketRef: 20000 },
+  { id: 'PUR-001', date: '4 Mei 2026', partnerId: 'MIT-01', kg: 60, pricePerKg: 24000, marketRef: 20000 },
+  { id: 'PUR-002', date: '9 Mei 2026', partnerId: 'MIT-02', kg: 60, pricePerKg: 24000, marketRef: 20000 },
 ];
 
 const SEED_ORDERS: Order[] = [
@@ -512,7 +511,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setState((s) => ({
       ...s,
       batches: s.batches.map((b) => (b.code === code ? { ...b, pricing } : b)),
-      audit: audited(s, 'Enterprise', 'Mengatur harga batch', code, `${pricing.preservePct}% ke dana pelestarian`),
+      audit: audited(s, 'Enterprise', 'Mengatur harga batch', code, `${pricing.preservePct}% ke dana pembelajaran`),
     }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

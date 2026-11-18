@@ -13,7 +13,7 @@ const STATUS_LABEL = (s: OrderStatus) => ({ Baru: t('Baru', 'New'), Dikemas: t('
 const NEXT_ACTION = (s: OrderStatus) => ({ Baru: t('Kemas pesanan', 'Pack the order'), Dikemas: t('Tandai dikirim', 'Mark as shipped'), Dikirim: t('Tandai selesai', 'Mark as done'), Selesai: '' })[s];
 const orderTotal = (o: Order) => o.kg * unitPrice(o.channel) - (o.discount ?? 0);
 
-/** Hitungan bersama untuk beranda: stok, omzet, dan dana pelestarian dari data langsung di aplikasi. */
+/** Hitungan bersama untuk beranda: stok, omzet, dan dana pembelajaran dari data langsung di aplikasi. */
 export const useEnterpriseStats = () => {
   const { orders, purchases } = useStore();
   const bought = purchases.reduce((a, p) => a + p.kg, 0);
@@ -72,7 +72,7 @@ export const EnterpriseHome: React.FC = () => {
           <p className="mt-1 text-xs text-ink-soft">{t(`Dari ${s.bought} kg yang dibeli di atas harga acuan.`, `From ${s.bought} kg bought above the reference price.`)}</p>
         </div>
         <div className="surface rounded-3xl p-5">
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-ink-soft">{t('Dana pelestarian terkumpul', 'Preservation fund collected')}</p>
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-ink-soft">{t('Dana pembelajaran terkumpul', 'Learning fund collected')}</p>
           <p className="mt-1 font-serif text-[30px] leading-none text-caramel-dark">{rupiah(s.preserve)}</p>
           <p className="mt-1 text-xs text-ink-soft">{t(`${PRESERVE_PCT}% dari omzet (persentase masih asumsi). Mendanai Jejak Nira.`, `${PRESERVE_PCT}% of revenue (the share is still an assumption). Funds Jejak Nira.`)}</p>
         </div>
@@ -84,7 +84,7 @@ export const EnterpriseHome: React.FC = () => {
           <StackBar
             parts={[
               { label: t('Ke perajin', 'To artisans'), value: s.artisan, color: COLORS.artisan },
-              { label: t('Dana pelestarian', 'Preservation fund'), value: s.preserve, color: COLORS.preserve },
+              { label: t('Dana pembelajaran', 'Learning fund'), value: s.preserve, color: COLORS.preserve },
               { label: t('Operasional dan margin (perkiraan)', 'Operations and margin (estimate)'), value: s.rest, color: COLORS.rest },
             ]}
           />

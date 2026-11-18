@@ -54,7 +54,7 @@ export const EnterpriseVoucher: React.FC = () => {
 
           <div className="surface rounded-3xl p-5">
             <p className="text-base font-bold text-deep-forest">{t('Uji keamanan margin', 'Margin safety check')}</p>
-            <p className="mt-0.5 text-xs text-ink-soft">{t('Penjualan langsung, setelah harga beli, biaya per kg, dan dana pelestarian. Angka biaya masih asumsi.', 'Direct sales, after purchase price, cost per kg, and the preservation fund. Cost figures are still assumptions.')}</p>
+            <p className="mt-0.5 text-xs text-ink-soft">{t('Penjualan langsung, setelah harga beli, biaya per kg, dan dana pembelajaran. Angka biaya masih asumsi.', 'Direct sales, after purchase price, cost per kg, and the learning fund. Cost figures are still assumptions.')}</p>
             <div className="mt-3 overflow-x-auto">
               <table className="w-full min-w-[420px] text-left text-sm">
                 <thead className="text-xs text-ink-soft">
