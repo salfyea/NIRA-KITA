@@ -33,7 +33,7 @@ const ROLE: Record<string, string> = { Kurator: 'Curator', Mentor: 'Mentor', Adm
 
 export const auditAction = (a: string) => (isEn() ? AUDIT_ACTION[a] ?? a : a);
 export const auditNote = (n: string) =>
-  isEn() ? AUDIT_NOTE[n] ?? n.replace(/^Menaut ke /, 'Linked to ').replace('tanpa rekaman', 'no recordings').replace(/% ke dana pelestarian/, '% to the preservation fund') : n;
+  isEn() ? AUDIT_NOTE[n] ?? n.replace(/^Menaut ke /, 'Linked to ').replace('tanpa rekaman', 'no recordings').replace(/% ke dana pembelajaran/, '% to the learning fund') : n;
 export const auditRole = (r: string) => (isEn() ? ROLE[r] ?? r : r);
 export const auditStamp = (s: string) =>
   isEn() ? s.replace(/\bMei\b/, 'May').replace(/\bAgu\b/, 'Aug').replace(/\bOkt\b/, 'Oct').replace(/\bDes\b/, 'Dec') : s;

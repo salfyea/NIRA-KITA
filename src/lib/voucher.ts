@@ -63,7 +63,7 @@ export const voucherDiscount = (cfg: VoucherConfig, kg: number): number => {
   return Math.min(cfg.capRp, Math.round((kg * PRICE.direct * cfg.percent) / 100 / 500) * 500);
 };
 
-/** Margin per kg saluran langsung setelah biaya per kg (asumsi Rp3.000) dan dana pelestarian. */
+/** Margin per kg saluran langsung setelah biaya per kg (asumsi Rp3.000) dan dana pembelajaran. */
 const OPS_PER_KG = 3000;
 const directMargin = (price: number) => price - BUY_PRICE - OPS_PER_KG - (price * PRESERVE_PCT) / 100;
 

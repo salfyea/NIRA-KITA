@@ -156,7 +156,7 @@ const Pembelian: React.FC = () => {
 /* ============================ Harga kemasan ============================ */
 const BatchPricing: React.FC<{ batch: QrBatch }> = ({ batch }) => {
   const { setBatchPricing, showToast } = useStore();
-  const [p, setP] = React.useState<Pricing>(batch.pricing ?? { pricePerPack: 17500, packGram: 500, artisanPerKg: 24000, preservePct: 8 });
+  const [p, setP] = React.useState<Pricing>(batch.pricing ?? { pricePerPack: 17500, packGram: 500, artisanPerKg: 24000, preservePct: 7.2 });
   const split = splitPack(p);
   const set = (k: keyof Pricing) => (n: number) => setP((v) => ({ ...v, [k]: n }));
   return (
@@ -178,18 +178,18 @@ const BatchPricing: React.FC<{ batch: QrBatch }> = ({ batch }) => {
         <Num label={t('Harga kemasan', 'Pack price')} value={p.pricePerPack} onChange={set('pricePerPack')} suffix="Rp" step={500} />
         <Num label={t('Isi kemasan', 'Pack weight')} value={p.packGram} onChange={set('packGram')} suffix="g" step={50} />
         <Num label={t('Harga ke perajin', 'Paid to artisans')} value={p.artisanPerKg} onChange={set('artisanPerKg')} suffix="Rp/kg" step={500} />
-        <Num label={t('Dana pelestarian', 'Preservation fund')} value={p.preservePct} onChange={set('preservePct')} suffix="%" step={1} />
+        <Num label={t('Dana pembelajaran', 'Learning fund')} value={p.preservePct} onChange={set('preservePct')} suffix="%" step={0.1} />
       </div>
       <div className="mt-3">
         <StackBar
           parts={[
             { label: t('Ke perajin', 'To artisans'), value: split.artisan, color: COLORS.artisan },
-            { label: t('Dana pelestarian (Jejak Nira)', 'Preservation fund (Jejak Nira)'), value: split.preserve, color: COLORS.preserve },
+            { label: t('Dana pembelajaran (Jejak Nira)', 'Learning fund (Jejak Nira)'), value: split.preserve, color: COLORS.preserve },
             { label: t('Operasional dan margin', 'Operations and margin'), value: Math.max(0, split.rest), color: COLORS.rest },
           ]}
         />
       </div>
-      {!split.valid && <p role="alert" className="mt-2 text-xs font-semibold text-[#9E4F37]">{t('Bagian perajin dan dana pelestarian melebihi harga kemasan. Naikkan harga atau kurangi bagian.', 'The artisan and fund shares exceed the pack price. Raise the price or lower a share.')}</p>}
+      {!split.valid && <p role="alert" className="mt-2 text-xs font-semibold text-[#9E4F37]">{t('Bagian perajin dan dana pembelajaran melebihi harga kemasan. Naikkan harga atau kurangi bagian.', 'The artisan and fund shares exceed the pack price. Raise the price or lower a share.')}</p>}
       <button
         type="button"
         disabled={!split.valid}
@@ -249,7 +249,7 @@ const Harga: React.FC = () => {
     <div className="mt-4 space-y-3">
       <DaftarHarga />
       <p className="rounded-xl bg-bamboo/40 p-3 text-sm leading-relaxed text-deep-forest">
-        {t('Pembagian harga tiap batch dipakai koperasi untuk menghitung bagian perajin dan dana pelestarian. Pembeli melihat harga dan jumlah di Toko.', 'The price split of each batch is used by the cooperative to work out the artisan share and the preservation fund. Buyers see the price and amount in the Shop.')}
+        {t('Pembagian harga tiap batch dipakai koperasi untuk menghitung bagian perajin dan dana pembelajaran. Pembeli melihat harga dan jumlah di Toko.', 'The price split of each batch is used by the cooperative to work out the artisan share and the learning fund. Buyers see the price and amount in the Shop.')}
       </p>
       {batches.map((b) => (
         <BatchPricing key={`${b.code}-${b.pricing?.pricePerPack ?? 0}`} batch={b} />
@@ -267,12 +267,12 @@ const Simulasi: React.FC = () => {
     setPreset('');
     setA((v) => ({ ...v, [k]: n }));
   };
-  const presetName = { konservatif: t('Konservatif', 'Conservative'), dasar: t('Dasar', 'Base'), tumbuh: t('Tumbuh', 'Growth') };
+  const presetName = { konservatif: t('1 penderes', 'One tapper'), dasar: t('Tahun 1', 'Year 1'), tumbuh: t('Tahun 5', 'Year 5') };
   const covered = o.net >= 0;
   return (
     <div className="mt-4">
       <p className="rounded-xl bg-bamboo/40 p-3 text-sm leading-relaxed text-deep-forest">
-        {t('Simulasi, bukan proyeksi. Harga jual (langsung Rp35.000, reseller Rp30.000, minimal 30 kg) dari tim. Harga beli, harga acuan, biaya, porsi reseller, dan dana pelestarian masih angka contoh yang bisa kamu ubah.', 'A simulation, not a projection. Selling prices (direct Rp35,000, reseller Rp30,000, minimum 30 kg) come from the team. The purchase price, reference price, costs, reseller share, and preservation fund are still example figures you can change.')}
+        {t('Simulasi, bukan proyeksi. Harga jual (langsung Rp35.000, reseller Rp30.000, minimal 30 kg) dari tim. Angka awal mengikuti asumsi tahun 1 tim: 2 penderes x 60 kg, 95% terjual, beli Rp24.000 (acuan Rp20.000), biaya Rp3.000 per kg, pemasaran Rp100.000 per bulan, pembelajaran 7,2% dari omzet. Semuanya bisa kamu ubah.', 'A simulation, not a projection. Selling prices (direct Rp35,000, reseller Rp30,000, minimum 30 kg) come from the team. The starting figures follow the team Year 1 assumptions: 2 tappers x 60 kg, 95% sold, bought at Rp24,000 (reference Rp20,000), Rp3,000 cost per kg, Rp100,000 marketing a month, learning at 7.2% of revenue. You can change all of them.')}
       </p>
       <div className="mt-3 grid grid-cols-3 gap-2" role="group" aria-label={t('Skenario', 'Scenario')}>
         {PRESETS.map((pr) => (
@@ -283,17 +283,18 @@ const Simulasi: React.FC = () => {
       </div>
 
       <div className="mt-3 grid grid-cols-2 gap-3">
-        <Num label={t('Volume dibeli', 'Volume bought')} value={a.kgPerMonth} onChange={set('kgPerMonth')} suffix="kg/bln" step={50} />
+        <Num label={t('Volume dibeli', 'Volume bought')} value={a.kgPerMonth} onChange={set('kgPerMonth')} suffix="kg/bln" step={60} hint={t('60 kg per penderes', '60 kg per tapper')} />
+        <Num label={t('Terjual', 'Sold')} value={a.sellThrough} onChange={set('sellThrough')} suffix={t('% produksi', '% of output')} step={5} />
         <Num label={t('Harga beli adil', 'Fair purchase price')} value={a.buyPrice} onChange={set('buyPrice')} suffix="Rp/kg" step={500} />
         <Num label={t('Harga acuan pasar', 'Market reference')} value={a.marketRef} onChange={set('marketRef')} suffix="Rp/kg" step={500} />
         <Num label={t('Harga jual langsung', 'Direct selling price')} value={a.directPrice} onChange={set('directPrice')} suffix="Rp/kg" step={500} />
         <Num label={t('Harga reseller', 'Reseller price')} value={a.resellerPrice} onChange={set('resellerPrice')} suffix="Rp/kg" step={500} />
         <Num label={t('Porsi lewat reseller', 'Share via resellers')} value={a.resellerShare} onChange={set('resellerShare')} suffix="% volume" step={5} />
         <Num label={t('Minimal order reseller', 'Reseller minimum order')} value={a.resellerMinKg} onChange={set('resellerMinKg')} suffix="kg" step={5} />
-        <Num label={t('Biaya per kg', 'Cost per kg')} value={a.opsPerKg} onChange={set('opsPerKg')} suffix="Rp/kg" step={250} hint={t('kemasan, QR, angkut', 'packaging, QR, transport')} />
-        <Num label={t('Biaya tetap', 'Fixed costs')} value={a.fixedCost} onChange={set('fixedCost')} suffix="Rp/bln" step={100000} />
-        <Num label={t('Dana pelestarian', 'Preservation fund')} value={a.preservePct} onChange={set('preservePct')} suffix="% omzet" step={1} hint={t('dipotong dari omzet, di depan', 'taken from revenue, up front')} />
-        <Num label={t('Honor 1 mentor', 'One mentor\'s fee')} value={a.mentorFee} onChange={set('mentorFee')} suffix="Rp/bln" step={50000} />
+        <Num label={t('Biaya per kg', 'Cost per kg')} value={a.opsPerKg} onChange={set('opsPerKg')} suffix="Rp/kg" step={250} hint={t('kemasan 2.000, QC 500, angkut 500', 'packaging 2,000, QC 500, transport 500')} />
+        <Num label={t('Biaya tetap', 'Fixed costs')} value={a.fixedCost} onChange={set('fixedCost')} suffix="Rp/bln" step={50000} hint={t('pemasaran', 'marketing')} />
+        <Num label={t('Dana pembelajaran', 'Learning fund')} value={a.preservePct} onChange={set('preservePct')} suffix="% omzet" step={0.1} hint={t('Jejak Nira dan situs, dipotong dari omzet', 'Jejak Nira and the site, taken from revenue')} />
+        <Num label={t('Lantai pembelajaran', 'Learning floor')} value={a.learningFloor} onChange={set('learningFloor')} suffix="Rp/bln" step={50000} hint={t('Rp3,4 juta per tahun', 'Rp3.4 million a year')} />
       </div>
 
       <Ornate className="mt-4 p-4">
@@ -303,7 +304,7 @@ const Simulasi: React.FC = () => {
         <StackBar
           parts={[
             { label: t('Dibayar ke perajin', 'Paid to artisans'), value: o.cogs, color: COLORS.artisan },
-            { label: t('Dana pelestarian', 'Preservation fund'), value: o.preserve, color: COLORS.preserve },
+            { label: t('Dana pembelajaran', 'Learning fund'), value: o.preserve, color: COLORS.preserve },
             { label: t('Biaya operasional', 'Operating costs'), value: o.ops, color: COLORS.rest },
             { label: t('Laba bersih', 'Net profit'), value: Math.max(0, o.net), color: '#234B3A' },
           ]}
@@ -332,12 +333,12 @@ const Simulasi: React.FC = () => {
           <li className="flex gap-2">
             <HeartHandshake className="mt-0.5 h-4 w-4 shrink-0 text-caramel-dark" />
             <span>
-              {t('Dana pelestarian', 'The preservation fund of')} <b>{rupiah(o.preserve)}</b> {t('mendanai', 'funds')} <b>{o.mentorsFunded.toFixed(1)}</b> {t('honorarium mentor per bulan.', 'mentor fee(s) per month.')}
+              {t('Margin sebelum biaya pembelajaran', 'Margin before learning costs')} <b>{rupiah(o.gross - o.ops)}</b> {t('menutup lantai pembelajaran', 'covers the learning floor')} <b>{o.floorCover.toFixed(1)}x</b>.
             </span>
           </li>
         </ul>
         <p className="mt-3 text-[11px] leading-snug text-ink-soft">
-          {t('Rumus: laba = omzet − pembelian − biaya operasional − dana pelestarian. Dana pelestarian dipotong dari omzet lebih dulu, jadi Jejak Nira terdanai walau laba tipis.', 'Formula: profit = revenue − purchases − operating costs − preservation fund. The fund is taken from revenue first, so Jejak Nira is funded even when profit is thin.')}
+          {t('Rumus: laba = omzet (hanya yang terjual) − pembelian − biaya operasional − dana pembelajaran. Dana pembelajaran dipotong dari omzet lebih dulu, jadi Jejak Nira terdanai walau laba tipis.', 'Formula: profit = revenue (sold volume only) − purchases − operating costs − learning fund. The fund is taken from revenue first, so Jejak Nira is funded even when profit is thin.')}
         </p>
       </Ornate>
     </div>
@@ -369,7 +370,7 @@ export const EnterprisePrice: React.FC = () => (
 
 export const EnterpriseFinance: React.FC = () => (
   <div className="px-4 pt-4 lg:px-0 lg:pt-0">
-    <Head title={t('Keuangan', 'Finance')} text={t('Simulasi yang menunjukkan bagaimana dana pelestarian menopang Jejak Nira.', 'A simulation of how the preservation fund sustains Jejak Nira.')} />
+    <Head title={t('Keuangan', 'Finance')} text={t('Simulasi yang menunjukkan bagaimana dana pembelajaran menopang Jejak Nira.', 'A simulation of how the learning fund sustains Jejak Nira.')} />
     <Simulasi />
   </div>
 );
