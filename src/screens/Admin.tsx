@@ -42,8 +42,72 @@ const Kpi: React.FC<{ label: string; value: number; target: number; note: string
   </Ornate>
 );
 
+
+/** Rencana KPI lima tahun dari deck (slide 28). Rencana, bukan hasil. */
+const KPI_YEARS = ['2027', '2028', '2029', '2030', '2031'];
+const KPI_ROWS: { label: () => string; v: string[]; group: () => string }[] = [
+  { group: () => t('Warisan dan pembelajaran', 'Heritage and learning'), label: () => t('Pelajar muda aktif', 'Active youth learners'), v: ['5', '10', '15', '20', '25'] },
+  { group: () => '', label: () => t('Mentor lokal', 'Local mentors'), v: ['2', '2', '3', '3', '4'] },
+  { group: () => '', label: () => t('Sesi belajar per tahun', 'Learning sessions a year'), v: ['4', '6', '8', '10', '12'] },
+  { group: () => '', label: () => t('Rekaman dokumentasi per tahun', 'Documentation records a year'), v: ['15', '20', '25', '30', '35'] },
+  { group: () => t('Penghidupan', 'Livelihood'), label: () => t('Penderes mitra', 'Partner tappers'), v: ['2', '3', '4', '5', '6'] },
+  { group: () => '', label: () => t('Gula terjual (kg per tahun)', 'Sugar sold (kg a year)'), v: ['1.368', '2.052', '2.736', '3.420', '4.104'] },
+  { group: () => '', label: () => t('Premi untuk penderes (Rp juta)', 'Premium paid to tappers (IDR M)'), v: ['5,8', '8,9', '12,2', '15,7', '19,4'] },
+  { group: () => t('Reinvestasi', 'Reinvestment'), label: () => t('Belanja Jejak Nira (Rp juta)', 'JEJAK NIRA spending (IDR M)'), v: ['2,2', '5,2', '7,5', '9,1', '12,0'] },
+];
+
+const PlanCard: React.FC = () => (
+  <div className="surface rounded-3xl p-5">
+    <p className="text-sm font-bold text-deep-forest">{t('Fase 1: pilot lokal di Cilongok, mulai 2027', 'Phase 1: local pilot in Cilongok, from 2027')}</p>
+    <ul className="mt-2 space-y-1.5 text-sm text-charcoal">
+      <li><b>{t('Hari ke-90', 'Day 90')}</b>: {t('apakah pelajar masih berlatih? Minimal 2 dari 3.', 'do learners still practise? At least 2 of 3.')}</li>
+      <li><b>{t('Bulan ke-12 (uji keluar)', 'Month 12 (exit test)')}</b>: {t('lanjut, sesuaikan, atau berhenti.', 'pass, adjust, or stop.')}</li>
+      <li><b>{t('Uji keluar Fase 2', 'Exit test, Phase 2')}</b>: {t('15 pelajar aktif dan 4 penderes mitra.', '15 active learners and 4 partner tappers.')}</li>
+      <li><b>{t('Uji keluar Fase 3', 'Exit test, Phase 3')}</b>: {t('balik modal selama 2030 dan kerangka replikasi siap.', 'payback reached during 2030 and a replication framework ready.')}</li>
+    </ul>
+    <p className="mt-2 text-xs leading-relaxed text-ink-soft">{t('Rencana dari deck (slide 14). Belum ada hasil.', 'Plan from the deck (slide 14). No results yet.')}</p>
+  </div>
+);
+
+const KpiTable: React.FC = () => (
+  <div className="surface rounded-3xl p-5">
+    <p className="text-sm font-bold text-deep-forest">{t('KPI lima tahun (rencana)', 'Five-year KPIs (plan)')}</p>
+    <div className="mt-2 overflow-x-auto">
+      <table className="w-full min-w-[460px] text-left text-sm">
+        <thead>
+          <tr className="text-xs text-ink-soft">
+            <th className="py-1 pr-2 font-semibold" />
+            {KPI_YEARS.map((y) => (
+              <th key={y} className="px-1 py-1 text-right font-semibold">{y}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {KPI_ROWS.map((r, i) => (
+            <React.Fragment key={i}>
+              {r.group() && (
+                <tr>
+                  <td colSpan={6} className="pt-2 text-[11px] font-bold uppercase tracking-[0.14em] text-caramel-dark">{r.group()}</td>
+                </tr>
+              )}
+              <tr className="border-t border-bamboo/40">
+                <td className="py-1 pr-2 text-charcoal">{r.label()}</td>
+                {r.v.map((x, j) => (
+                  <td key={j} className="px-1 py-1 text-right font-semibold text-deep-forest">{x}</td>
+                ))}
+              </tr>
+            </React.Fragment>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p className="mt-2 text-xs leading-relaxed text-ink-soft">{t('Rencana dari deck (slide 28), bukan hasil.', 'Plan from the deck (slide 28), not results.')}</p>
+  </div>
+);
+
 export const Admin: React.FC<{ view: 'ringkasan' | 'batch' | 'audit' | 'pengguna' }> = ({ view }) => {
-  const { records, batches, audit, submissions, modules, addBatch, showToast } = useStore();
+  const { records, batches, audit, submissions, modules, partners, addBatch, showToast } = useStore();
+  const activePartners = partners.filter((p) => p.status === 'Mitra aktif').length;
   const validated = submissions.filter((x) => x.status === 'Tervalidasi Mentor').length;
   const tab = view;
   const [product, setProduct] = React.useState('Gula Kelapa Cetak');
@@ -71,14 +135,14 @@ export const Admin: React.FC<{ view: 'ringkasan' | 'batch' | 'audit' | 'pengguna
     <div className="px-4 pt-4 lg:px-0 lg:pt-0">
       <div>
         <h1 className="font-serif text-[30px] leading-tight text-deep-forest">{{ ringkasan: t('Capaian pilot', 'Pilot progress'), batch: t('Batch QR', 'QR batches'), audit: t('Catatan audit', 'Audit log'), pengguna: t('Pengguna dan peran', 'Users and roles') }[view]}</h1>
-        <p className="mt-1 text-sm leading-relaxed text-ink-soft">{{ ringkasan: t('Pantau capaian terhadap target pilot 12 minggu.', 'Track progress against the 12-week pilot target.'), batch: t('Buat batch kemasan dengan kode QR yang bisa dipindai, hanya dari rekaman yang sudah disetujui.', 'Create packaging batches with scannable QR codes, from approved recordings only.'), audit: t('Setiap keputusan tata kelola tercatat di sini.', 'Every governance decision is logged here.'), pengguna: t('Siapa yang punya akses ke ruang kerja mana.', 'Who has access to which workspace.') }[view]}</p>
+        <p className="mt-1 text-sm leading-relaxed text-ink-soft">{{ ringkasan: t('Pantau capaian terhadap target Fase 1 (pilot 2027).', 'Track progress against the Phase 1 target (pilot, 2027).'), batch: t('Buat batch kemasan dengan kode QR yang bisa dipindai, hanya dari rekaman yang sudah disetujui.', 'Create packaging batches with scannable QR codes, from approved recordings only.'), audit: t('Setiap keputusan tata kelola tercatat di sini.', 'Every governance decision is logged here.'), pengguna: t('Siapa yang punya akses ke ruang kerja mana.', 'Who has access to which workspace.') }[view]}</p>
       </div>
         {tab === 'ringkasan' && (
           <div className="mt-4 space-y-3">
             <div className="surface flex items-center gap-4 rounded-[28px_36px_28px_36px] p-5">
               <RoleMascot role="admin" size={84} mood="think" />
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.16em] text-ink-soft">{t('Pilot 12 minggu', '12-week pilot')}</p>
+                <p className="text-xs font-bold uppercase tracking-[0.16em] text-ink-soft">{t('Fase 1: pilot 2027', 'Phase 1: pilot, 2027')}</p>
                 <p className="font-serif text-[26px] leading-tight text-deep-forest">{t('Belum dimulai', 'Not started yet')}</p>
                 <p className="text-sm text-ink-soft">{t('Angka di bawah berasal dari aplikasi ini, bukan dari lapangan.', 'The figures below come from this app, not from the field.')}</p>
               </div>
@@ -97,11 +161,15 @@ export const Admin: React.FC<{ view: 'ringkasan' | 'batch' | 'audit' | 'pengguna
               ))}
             </div>
             <div className="grid gap-3 lg:grid-cols-2">
-            <Kpi label={t('Rekaman warisan tervalidasi', 'Validated heritage recordings')} value={approved} target={15} live note={t('Target pilot 12 minggu: minimal 15 rekaman yang disetujui kurator.', '12-week pilot target: at least 15 curator-approved recordings.')} />
+            <Kpi label={t('Rekaman warisan tervalidasi', 'Validated heritage recordings')} value={approved} target={15} live note={t('Target Fase 1: 15 rekaman tervalidasi, disetujui kurator.', 'Phase 1 target: 15 validated records, approved by the curator.')} />
             <Kpi label={t('Pelajar mencapai milestone mentor', 'Learners reaching the mentor milestone')} value={validated} target={6} live note={t('Hanya validasi mentor manusia yang dihitung. Angka ini berasal dari alur Mentor di aplikasi; pilot lapangan belum berjalan.', 'Only human mentor validation counts. This number comes from the Mentor flow in the app; the field pilot has not started.')} />
             <Kpi label={t('Pelajar dalam pilot', 'Learners in the pilot')} value={10} target={10} note={t('Angka rencana (usia 18 sampai 29).', 'Planned figure (ages 18 to 29).')} />
+            <Kpi label={t('Pelajar aktif, tahun 1', 'Active learners, year 1')} value={5} target={5} note={t('Angka rencana (deck slide 14).', 'Planned figure (deck slide 14).')} />
             <Kpi label={t('Mentor penderes', 'Tapper mentors')} value={2} target={2} note={t('Angka rencana.', 'Planned figure.')} />
+            <Kpi label={t('Penderes mitra aktif', 'Active partner tappers')} value={activePartners} target={2} live note={t('Dihitung dari daftar mitra Enterprise. Rencana tahun 1: 2 penderes mitra.', 'Counted from the Enterprise partner list. Year 1 plan: 2 partner tappers.')} />
             </div>
+            <PlanCard />
+            <KpiTable />
             <p className="rounded-xl bg-bamboo/40 p-3 text-xs leading-relaxed text-deep-forest">
               {t('Pilot belum berjalan. Hanya jumlah rekaman yang dihitung langsung dari aplikasi ini; angka lain adalah rencana dari proposal dan tidak mengklaim hasil.', 'The pilot has not started. Only the recording count is computed live from this app; the other figures are plans from the proposal and claim no results.')}
             </p>
