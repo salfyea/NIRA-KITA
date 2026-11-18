@@ -130,11 +130,12 @@ const SEED_PURCHASES: Purchase[] = [
 ];
 
 const SEED_ORDERS: Order[] = [
-  { id: 'ORD-001', date: '18 Mei 2026', buyer: 'Toko Oleh-oleh Purwokerto', channel: 'reseller', kg: 40, status: 'Dikemas', paid: true },
+  { id: 'ORD-001', date: '18 Mei 2026', buyer: 'Toko Oleh-oleh Purwokerto', channel: 'reseller', kg: 30, status: 'Dikemas', paid: true },
   { id: 'ORD-002', date: '19 Mei 2026', buyer: 'Ibu Sari', channel: 'langsung', kg: 3, status: 'Baru', paid: false },
-  { id: 'ORD-003', date: '19 Mei 2026', buyer: 'Kedai Kopi Nira', channel: 'reseller', kg: 30, status: 'Baru', paid: false },
+  { id: 'ORD-003', date: '19 Mei 2026', buyer: 'Kedai Kopi Nira', channel: 'langsung', kg: 25, status: 'Baru', paid: false },
   { id: 'ORD-004', date: '15 Mei 2026', buyer: 'Pak Budi', channel: 'langsung', kg: 5, status: 'Dikirim', paid: true },
-  { id: 'ORD-005', date: '10 Mei 2026', buyer: 'Warung Gula Jawa', channel: 'reseller', kg: 35, status: 'Selesai', paid: true },
+  { id: 'ORD-005', date: '10 Mei 2026', buyer: 'Warung Gula Jawa', channel: 'langsung', kg: 28, status: 'Selesai', paid: true },
+  { id: 'ORD-006', date: '12 Mei 2026', buyer: 'Bu Ratna', channel: 'langsung', kg: 18, status: 'Dikirim', paid: true },
 ];
 
 const SEED_SUBMISSIONS: LearnerSubmission[] = [

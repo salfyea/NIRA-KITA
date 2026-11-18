@@ -94,11 +94,45 @@ export const simulate = (a: Assumptions): Outcome => {
   };
 };
 
-const base = { buyPrice: 24000, marketRef: 20000, sellThrough: 95, directPrice: PRICE.direct, resellerPrice: PRICE.reseller, resellerMinKg: PRICE.resellerMinKg, opsPerKg: 3000, preservePct: PRESERVE_PCT, learningFloor: Math.round(3400000 / 12) };
-export const PRESETS: { key: 'konservatif' | 'dasar' | 'tumbuh'; a: Assumptions }[] = [
-  { key: 'konservatif', a: { ...base, kgPerMonth: 60, resellerShare: 25, fixedCost: 100000 } },
-  { key: 'dasar', a: { ...base, kgPerMonth: 120, resellerShare: 25, fixedCost: 100000 } },
-  { key: 'tumbuh', a: { ...base, kgPerMonth: 360, resellerShare: 25, fixedCost: 100000 } },
+/**
+ * Asumsi per tahun dari deck (slide 21 sampai 25): penderes bertambah 1 per tahun (2 di tahun 1, masing-masing 60 kg per bulan),
+ * harga jual, harga beli, dan kemasan naik 3% per tahun, pemasaran naik 10% per tahun, 95% produksi terjual.
+ * Dana pembelajaran = belanja Jejak Nira + situs dan administrasi, dibagi omzet tahun itu (tahun 1: 7,2%, slide 16).
+ */
+const LEARNING_COST_PER_YEAR = [3400000, 6430000, 8778000, 10529150, 13483608];
+export const yearAssumptions = (y: number): Assumptions => {
+  const f = Math.pow(1.03, y - 1);
+  const tappers = 1 + y;
+  const kg = 60 * tappers;
+  const direct = Math.round(PRICE.direct * f);
+  const reseller = Math.round(PRICE.reseller * f);
+  const avg = 0.75 * direct + 0.25 * reseller;
+  const revenueYear = kg * 12 * 0.95 * avg;
+  const pct = y === 1 ? PRESERVE_PCT : Math.round((LEARNING_COST_PER_YEAR[y - 1] / revenueYear) * 1000) / 10;
+  return {
+    kgPerMonth: kg,
+    buyPrice: Math.round(BUY_PRICE * f),
+    sellThrough: 95,
+    marketRef: Math.round(20000 * f),
+    directPrice: direct,
+    resellerPrice: reseller,
+    resellerShare: 25,
+    resellerMinKg: PRICE.resellerMinKg,
+    opsPerKg: Math.round(2000 * f) + 1000,
+    fixedCost: Math.round(100000 * Math.pow(1.1, y - 1)),
+    preservePct: pct,
+    learningFloor: Math.round(LEARNING_COST_PER_YEAR[y - 1] / 12),
+  };
+};
+
+export type PresetKey = 'satu' | 'y1' | 'y2' | 'y3' | 'y4' | 'y5';
+export const PRESETS: { key: PresetKey; a: Assumptions }[] = [
+  { key: 'satu', a: { ...yearAssumptions(1), kgPerMonth: 60 } },
+  { key: 'y1', a: yearAssumptions(1) },
+  { key: 'y2', a: yearAssumptions(2) },
+  { key: 'y3', a: yearAssumptions(3) },
+  { key: 'y4', a: yearAssumptions(4) },
+  { key: 'y5', a: yearAssumptions(5) },
 ];
 
 /** Harga per kemasan dipecah: ke perajin, dana pembelajaran, dan operasional serta margin (sisa). */

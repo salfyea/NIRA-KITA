@@ -261,18 +261,18 @@ const Harga: React.FC = () => {
 /* ============================ Simulasi ============================ */
 const Simulasi: React.FC = () => {
   const [a, setA] = React.useState<Assumptions>(PRESETS[1].a);
-  const [preset, setPreset] = React.useState<string>('dasar');
+  const [preset, setPreset] = React.useState<string>('y1');
   const o = simulate(a);
   const set = (k: keyof Assumptions) => (n: number) => {
     setPreset('');
     setA((v) => ({ ...v, [k]: n }));
   };
-  const presetName = { konservatif: t('1 penderes', 'One tapper'), dasar: t('Tahun 1', 'Year 1'), tumbuh: t('Tahun 5', 'Year 5') };
+  const presetName: Record<string, string> = { satu: t('1 penderes', 'One tapper'), y1: t('Tahun 1', 'Year 1'), y2: t('Tahun 2', 'Year 2'), y3: t('Tahun 3', 'Year 3'), y4: t('Tahun 4', 'Year 4'), y5: t('Tahun 5', 'Year 5') };
   const covered = o.net >= 0;
   return (
     <div className="mt-4">
       <p className="rounded-xl bg-bamboo/40 p-3 text-sm leading-relaxed text-deep-forest">
-        {t('Simulasi, bukan proyeksi. Harga jual (langsung Rp35.000, reseller Rp30.000, minimal 30 kg) dari tim. Angka awal mengikuti asumsi tahun 1 tim: 2 penderes x 60 kg, 95% terjual, beli Rp24.000 (acuan Rp20.000), biaya Rp3.000 per kg, pemasaran Rp100.000 per bulan, pembelajaran 7,2% dari omzet. Semuanya bisa kamu ubah.', 'A simulation, not a projection. Selling prices (direct Rp35,000, reseller Rp30,000, minimum 30 kg) come from the team. The starting figures follow the team Year 1 assumptions: 2 tappers x 60 kg, 95% sold, bought at Rp24,000 (reference Rp20,000), Rp3,000 cost per kg, Rp100,000 marketing a month, learning at 7.2% of revenue. You can change all of them.')}
+        {t('Simulasi, bukan proyeksi. Harga jual (langsung Rp35.000, reseller Rp30.000, minimal 30 kg) dari tim. Angka awal mengikuti asumsi tahun 1 tim: 2 penderes x 60 kg, 95% terjual, beli Rp24.000 (acuan Rp20.000), biaya Rp3.000 per kg, pemasaran Rp100.000 per bulan, pembelajaran 7,2% dari omzet. Tahun 2 sampai 5 menambah 1 penderes per tahun dan menaikkan harga 3% per tahun. Semuanya bisa kamu ubah.', 'A simulation, not a projection. Selling prices (direct Rp35,000, reseller Rp30,000, minimum 30 kg) come from the team. The starting figures follow the team Year 1 assumptions: 2 tappers x 60 kg, 95% sold, bought at Rp24,000 (reference Rp20,000), Rp3,000 cost per kg, Rp100,000 marketing a month, learning at 7.2% of revenue. Years 2 to 5 add one tapper a year and raise prices 3% a year. You can change all of them.')}
       </p>
       <div className="mt-3 grid grid-cols-3 gap-2" role="group" aria-label={t('Skenario', 'Scenario')}>
         {PRESETS.map((pr) => (
